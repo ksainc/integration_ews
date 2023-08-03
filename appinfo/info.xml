@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <!--
+    SPDX-FileCopyrightText: Sebastian Krupinski <krupinski01@gmail.com>
+    SPDX-License-Identifier: CC0-1.0
+    -->
+    <id>integration_ews</id>
+    <name>EWS Integration</name>
+    <summary>Exchange Server data sync with Nextcloud</summary>
+    <description><![CDATA[EWS integration allows you to automatically sync your calendars and contacts with Nextcloud.]]></description>
+    <version>1.0.0</version>
+    <licence>agpl</licence>
+    <author mail="krupinski01@gmail.com">Sebastian Krupinski</author>
+    <namespace>EWS</namespace>
+    <documentation>
+        <developer></developer>
+    </documentation>
+    <category>integration</category>
+    <website></website>
+    <bugs></bugs>
+    <screenshot></screenshot>
+    <dependencies>
+        <nextcloud min-version="25" max-version="27"/>
+    </dependencies>
+    <settings>
+        <admin>OCA\EWS\Settings\AdminSettings</admin>
+        <admin-section>OCA\EWS\Settings\AdminSection</admin-section>
+        <personal>OCA\EWS\Settings\UserSettings</personal>
+        <personal-section>OCA\EWS\Settings\UserSection</personal-section>
+    </settings>
+</info>

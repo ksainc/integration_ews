@@ -1,0 +1,12 @@
+const { useListeners } = require("vue")
+
+// Major
+AccountService - Add Class and move functions
+
+
+// Minor
+AdminConfiguration - add items per cycle limit
+HarmonizationThread - evaluete if user exists and is active
+HarmonizationThread - evaluate if ews account is connected
+HarmonizationThreadService - add get all threads list 
+
