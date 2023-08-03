@@ -1,26 +1,32 @@
 <?xml version="1.0"?>
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-    <!--
-    SPDX-FileCopyrightText: Sebastian Krupinski <krupinski01@gmail.com>
-    SPDX-License-Identifier: CC0-1.0
-    -->
     <id>integration_ews</id>
+    <namespace>EWS</namespace>
+    <category>integration</category>
     <name>EWS Integration</name>
     <summary>Exchange Server data sync with Nextcloud</summary>
     <description><![CDATA[EWS integration allows you to automatically sync your calendars and contacts with Nextcloud.]]></description>
     <version>1.0.0</version>
     <licence>agpl</licence>
     <author mail="krupinski01@gmail.com">Sebastian Krupinski</author>
-    <namespace>EWS</namespace>
     <documentation>
-        <developer></developer>
+        <developer>https://github.com/ksainc/integration_ews</developer>
     </documentation>
-    <category>integration</category>
-    <website></website>
-    <bugs></bugs>
-    <screenshot></screenshot>
+    <repository>https://github.com/ksainc/integration_ews</repository>
+    <website>https://github.com/ksainc/integration_ews</website>
+    <bugs>https://github.com/ksainc/integration_ews/issues</bugs>
+    <discussion></discussion>    
     <dependencies>
-        <nextcloud min-version="25" max-version="27"/>
+        <nextcloud min-version="25" max-version="28"/>
+        <php min-version="8.0" max-version="8.2"  min-int-size="64" />
+        <database min-version="9.4">pgsql</database>
+        <database>sqlite</database>
+        <database min-version="5.5">mysql</database>
+        <command>php</command>
+        <command>ps</command>
+        <command>kill</command>
+        <lib>curl</lib>
+        <lib>soap</lib>
     </dependencies>
     <settings>
         <admin>OCA\EWS\Settings\AdminSettings</admin>

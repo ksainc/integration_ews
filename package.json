@@ -1,11 +1,18 @@
 {
 	"name": "integration_ews",
-	"version": "1.0.0",
 	"description": "EWS Integration",
-	"main": "index.js",
-	"directories": {
-		"test": "tests"
-	},
+	"version": "1.0.0",
+	"author": "Sebastian Krupinski",
+	"license": "AGPL-3.0",
+	"private": true,
+	"keywords": [
+		"nextcloud",
+		"Integration",
+		"exchange",
+		"microsoft",
+		"calendars",
+		"contacts"
+	],
 	"scripts": {
 		"build": "NODE_ENV=production webpack --progress --config webpack.config.js",
 		"dev": "NODE_ENV=development webpack --progress --config webpack.config.js",
@@ -15,19 +22,6 @@
 		"stylelint": "stylelint src/**/*.vue src/**/*.scss src/**/*.css",
 		"stylelint:fix": "stylelint src/**/*.vue src/**/*.scss src/**/*.css --fix"
 	},
-	"repository": {
-		"type": "git",
-		"url": ""
-	},
-	"keywords": [
-		"ews"
-	],
-	"author": "Sebastian Krupinski",
-	"license": "AGPL-3.0",
-	"bugs": {
-		"url": ""
-	},
-	"homepage": "",
 	"browserslist": [
 		"extends @nextcloud/browserslist-config"
 	],
