@@ -412,6 +412,11 @@ class ContactsService {
 		$ro = null;
 		// retrieve local contacts object
 		$lo = $this->LocalContactsService->fetchCollectionItem($lcid, $loid);
+		// evaluate, if local contact object was returned
+		if (!($lo instanceof \OCA\EWS\Objects\ContactObject)) {
+			// return status of action
+			return $status;
+		}
 		// try to retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByLocalId($uid, 'CO', $loid, $lcid);
 		// if correlation exists
@@ -521,6 +526,11 @@ class ContactsService {
 		$ro = null;
 		// retrieve local contacts object
 		$lo = $this->LocalContactsService->fetchCollectionItem($lcid, $loid);
+		// evaluate, if local contact object was returned
+		if (!($lo instanceof \OCA\EWS\Objects\ContactObject)) {
+			// return status of action
+			return $status;
+		}
 		// try to retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByLocalId($uid, 'CO', $loid, $lcid);
 		// if correlation exists
@@ -702,6 +712,11 @@ class ContactsService {
 		$lo = null;
 		// retrieve remote contact object
 		$ro = $this->RemoteContactsService->fetchCollectionItem($roid);
+		// evaluate, if remote contact object was returned
+		if (!($ro instanceof \OCA\EWS\Objects\ContactObject)) {
+			// return status of action
+			return $status;
+		}
 		// retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByRemoteId($uid, 'CO', $roid, $rcid);
 		// if correlation exists
@@ -807,6 +822,11 @@ class ContactsService {
 		$lo = null;
 		// retrieve remote contact object
 		$ro = $this->RemoteContactsService->fetchCollectionItem($roid);
+		// evaluate, if remote contact object was returned
+		if (!($ro instanceof \OCA\EWS\Objects\ContactObject)) {
+			// return status of action
+			return $status;
+		}
 		// retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByRemoteId($uid, 'CO', $roid, $rcid);
 		// if correlation exists, compare update state to correlation state and stop processing if they match

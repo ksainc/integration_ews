@@ -431,6 +431,11 @@ class EventsService {
 		$ro = null;
 		// retrieve local Events object
 		$lo = $this->LocalEventsService->fetchCollectionItem($lcid, $loid);
+		// evaluate, if local event object was returned
+		if (!($lo instanceof \OCA\EWS\Objects\EventObject)) {
+			// return status of action
+			return $status;
+		}
 		// try to retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByLocalId($uid, 'EO', $loid, $lcid);
 		// if correlation exists
@@ -540,8 +545,13 @@ class EventsService {
 		$lo = null;
 		// create/reset remote object place holder
 		$ro = null;
-		// retrieve local Events object
+		// retrieve local events object
 		$lo = $this->LocalEventsService->fetchCollectionItem($lcid, $loid);
+		// evaluate, if local event object was returned
+		if (!($lo instanceof \OCA\EWS\Objects\EventObject)) {
+			// return status of action
+			return $status;
+		}
 		// try to retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByLocalId($uid, 'EO', $loid, $lcid);
 		// if correlation exists
@@ -732,6 +742,11 @@ class EventsService {
 		$lo = null;
 		// retrieve remote event object
 		$ro = $this->RemoteEventsService->fetchCollectionItem($roid);
+		// evaluate, if remote event object was returned
+		if (!($ro instanceof \OCA\EWS\Objects\EventObject)) {
+			// return status of action
+			return $status;
+		}
 		// retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByRemoteId($uid, 'EO', $roid, $rcid);
 		// if correlation exists
@@ -840,6 +855,11 @@ class EventsService {
 		$lo = null;
 		// retrieve remote event object
 		$ro = $this->RemoteEventsService->fetchCollectionItem($roid);
+		// evaluate, if remote event object was returned
+		if (!($ro instanceof \OCA\EWS\Objects\EventObject)) {
+			// return status of action
+			return $status;
+		}
 		// retrieve correlation for remote and local object
 		$ci = $this->CorrelationsService->findByRemoteId($uid, 'EO', $roid, $rcid);
 		// if correlation exists, compare update state to correlation state and stop processing if they match

@@ -223,7 +223,7 @@ class HarmonizationService {
 
 		// retrieve harmonization status
 		$status = $this->getStatus($uid);
-		$ttl = $status->Started;
+		$ttl = $status->Start;
 
 		try {
 			// retrieve preferences
@@ -236,9 +236,9 @@ class HarmonizationService {
 				$this->ContactsService->RemoteStore = $RemoteStore;
 				$this->ContactsService->Settings = $settings;
 				// harmonize contact collections
-				$result = $this->ContactsService->performActions($ttl);
+				$statistics = $this->ContactsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
-				if ($result->total() > 0) {
+				if ($statistics->total() > 0) {
 					$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
 				}
 			}
@@ -247,9 +247,9 @@ class HarmonizationService {
 				$this->EventsService->RemoteStore = $RemoteStore;
 				$this->EventsService->Settings = $settings;
 				// harmonize event collections
-				$result = $this->EventsService->performActions($ttl);
+				$statistics = $this->EventsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
-				if ($result->total() > 0) {
+				if ($statistics->total() > 0) {
 					$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
 				}
 			}
@@ -472,7 +472,7 @@ class HarmonizationService {
 	public function getStatus(string $uid): object {
 
 		// construct status object
-		$hs = (object) ['State' => null, 'Started' => null, 'Ended' => null];
+		$hs = (object) ['State' => null, 'Start' => null, 'End' => null];
 		// retrieve status values
 		$hs->State = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_state');
 		$hs->Start = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_start');
