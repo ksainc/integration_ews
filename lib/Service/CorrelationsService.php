@@ -34,6 +34,12 @@ use OCA\EWS\Db\Correlation;
 use OCA\EWS\Db\CorrelationMapper;
 
 class CorrelationsService {
+
+	const ContactCollection = 'CC';
+	const ContactObject = 'CO';
+	const EventCollection = 'EC';
+	const EventObject = 'EO';
+
 	private CorrelationMapper $mapper;
 
 	public function __construct(CorrelationMapper $mapper) {

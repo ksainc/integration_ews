@@ -1065,4 +1065,123 @@ class RemoteCommonService {
 		return $data;
 
 	}
+
+	/**
+     * connect to event nofifications
+     * 
+	 * @param EWSClient $DataStore - Storage Interface
+	 * 
+	 * @return object Items Object on success / Null on failure
+	 */
+	public function connectEvents(EWSClient $DataStore, int $duration, array $ids = null, array $dids = null, array $types = null): ?object {
+		
+		// construct request
+		$request = new \OCA\EWS\Components\EWS\Request\SubscribeType();
+		$request->PullSubscriptionRequest = new \OCA\EWS\Components\EWS\Type\PullSubscriptionRequestType();
+		$request->PullSubscriptionRequest->FolderIds = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfBaseFolderIdsType();
+		$request->PullSubscriptionRequest->EventTypes = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfNotificationEventTypesType();
+		$request->PullSubscriptionRequest->Timeout = $duration;
+		// define target(s)
+		if (isset($ids)) {
+			foreach ($ids as $entry) {
+				$request->PullSubscriptionRequest->FolderIds->FolderId[] = new \OCA\EWS\Components\EWS\Type\FolderIdType($entry);
+			}
+		}
+		if (isset($dids)) {
+			foreach ($dids as $entry) {
+				$request->PullSubscriptionRequest->FolderIds->DistinguishedFolderId[] = new \OCA\EWS\Components\EWS\Type\DistinguishedFolderIdType($entry);
+			}
+		}
+		// define types(s)
+		if (isset($types)) {
+			$request->PullSubscriptionRequest->EventTypes->EventType = $types;
+		}
+		else {
+			$request->PullSubscriptionRequest->EventTypes->EventType = ['CreatedEvent', 'ModifiedEvent', 'DeletedEvent', 'NewMailEvent', 'CopiedEvent', 'MovedEvent'];
+		}
+		// execute request
+		$response = $DataStore->Subscribe($request);
+		// process response
+		$response = $response->ResponseMessages->SubscribeResponseMessage;
+		$data = null;
+		foreach ($response as $response_data) {
+			// check response for failure
+			if ($response_data->ResponseClass != ResponseClassType::SUCCESS) {
+				$code = $response_data->ResponseCode;
+				$message = $response_data->MessageText;
+				continue;
+			} else {
+				$data = (object) ['Id' => $response_data->SubscriptionId, 'Token' => $response_data->Watermark];
+			}
+		}
+		// return object or null
+		return $data;
+
+	}
+
+	/**
+     * disconnect from event nofifications
+     * 
+	 * @param EWSClient $DataStore - Storage Interface
+	 * 
+	 * @return object Items Object on success / Null on failure
+	 */
+	public function disconnectEvents(EWSClient $DataStore, string $id): ?bool {
+		
+		// construct request
+		$request = new \OCA\EWS\Components\EWS\Request\UnsubscribeType();
+		$request->SubscriptionId = $id;
+		// execute request
+		$response = $DataStore->Unsubscribe($request);
+		// process response
+		$response = $response->ResponseMessages->UnsubscribeResponseMessage;
+		$data = null;
+		foreach ($response as $response_data) {
+			// check response for failure
+			if ($response_data->ResponseClass != ResponseClassType::SUCCESS) {
+				$code = $response_data->ResponseCode;
+				$message = $response_data->MessageText;
+				continue;
+			} else {
+				$data = true;
+			}
+		}
+		// return object or null
+		return $data;
+
+	}
+
+	/**
+     * observe event nofifications
+     * 
+	 * @param EWSClient $DataStore - Storage Interface
+	 * 
+	 * @return object Items Object on success / Null on failure
+	 */
+	public function fetchEvents(EWSClient $DataStore, string $id, string $token): ?object {
+		
+		// construct request
+		$request = new \OCA\EWS\Components\EWS\Request\GetEventsType();
+		$request->SubscriptionId = $id;
+		$request->Watermark = $token;
+		// execute request
+		$response = $DataStore->GetEvents($request);
+		// process response
+		$response = $response->ResponseMessages->GetEventsResponseMessage;
+		$data = null;
+		foreach ($response as $response_data) {
+			// check response for failure
+			if ($response_data->ResponseClass != ResponseClassType::SUCCESS) {
+				$code = $response_data->ResponseCode;
+				$message = $response_data->MessageText;
+				continue;
+			} else {
+				$data = $response_data->Notification;
+			}
+		}
+		// return object or null
+		return $data;
+
+	}
+
 }

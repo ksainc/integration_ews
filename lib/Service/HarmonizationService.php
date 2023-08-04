@@ -35,6 +35,8 @@ use OCA\DAV\CalDAV\CalDavBackend;
 
 use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Components\EWS\EWSClient;
+use OCA\EWS\Db\Action;
+use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Service\CoreService;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
@@ -103,6 +105,7 @@ class HarmonizationService {
 	public function __construct (string $appName,
 								LoggerInterface $logger,
 								IConfig $config,
+								ActionMapper $ActionManager,
 								CoreService $CoreService,
 								CorrelationsService $CorrelationsService,
 								LocalContactsService $LocalContactsService,
@@ -127,6 +130,7 @@ class HarmonizationService {
 		$this->EventsService = $EventsService;
 		$this->LocalContactsStore = $LocalContactsStore;
 		$this->LocalEventsStore = $LocalEventsStore;
+		$this->ActionManager = $ActionManager;
 
 	}
 
@@ -168,26 +172,30 @@ class HarmonizationService {
 				($mode === 'M' && $settings->ContactsFrequency > -1)) {
 				$this->ContactsService->RemoteStore = $RemoteStore;;
 				$this->ContactsService->Settings = $settings;
-				// harmonize contact collections
-				$result = $this->ContactsService->performHarmonization();
-				// evaluate if anything was done and publish notice if needed
-				if ($result->LocalCreated > 0 || $result->LocalUpdated > 0 || $result->LocalDeleted > 0 ||
-					$result->RemoteCreated > 0 || $result->RemoteUpdated > 0 || $result->RemoteDeleted > 0 ) {
-					$this->CoreService->publishNotice($uid,'contacts_harmonized', (array) $result);
-				}
+				// execute contacts harmonization loop
+				do {
+					// harmonize contacts collections
+					$statistics = $this->ContactsService->performHarmonization();
+					// evaluate if anything was done and publish notice if needed
+					if ($statistics->total() > 0) {
+						$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
+					}
+				} while ($statistics->total() > 0);
 			}
 			// events harmonization
 			if (($mode === 'S' && $settings->EventsFrequency > 0) ||
 				($mode === 'M' && $settings->EventsFrequency > -1)) {
 				$this->EventsService->RemoteStore = $RemoteStore;
 				$this->EventsService->Settings = $settings;
-				// harmonize event collections
-				$result = $this->EventsService->performHarmonization();
-				// evaluate if anything was done and publish notice if needed
-				if ($result->LocalCreated > 0 || $result->LocalUpdated > 0 || $result->LocalDeleted > 0 ||
-					$result->RemoteCreated > 0 || $result->RemoteUpdated > 0 || $result->RemoteDeleted > 0 ) {
-					$this->CoreService->publishNotice($uid,'events_harmonized', (array) $result);
-				}
+				// execute events harmonization loop
+				do {
+					// harmonize events collections
+					$statistics = $this->EventsService->performHarmonization();
+					// evaluate if anything was done and publish notice if needed
+					if ($statistics->total() > 0) {
+						$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
+					}
+				} while ($statistics->total() > 0);
 			}
 		} catch (Exception $e) {
 			
@@ -230,9 +238,8 @@ class HarmonizationService {
 				// harmonize contact collections
 				$result = $this->ContactsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
-				if ($result->LocalCreated > 0 || $result->LocalUpdated > 0 || $result->LocalDeleted > 0 ||
-					$result->RemoteCreated > 0 || $result->RemoteUpdated > 0 || $result->RemoteDeleted > 0 ) {
-					$this->CoreService->publishNotice($uid,'contacts_harmonized', (array) $result);
+				if ($result->total() > 0) {
+					$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
 				}
 			}
 			// events harmonization
@@ -242,9 +249,8 @@ class HarmonizationService {
 				// harmonize event collections
 				$result = $this->EventsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
-				if ($result->LocalCreated > 0 || $result->LocalUpdated > 0 || $result->LocalDeleted > 0 ||
-					$result->RemoteCreated > 0 || $result->RemoteUpdated > 0 || $result->RemoteDeleted > 0 ) {
-					$this->CoreService->publishNotice($uid,'events_harmonized', (array) $result);
+				if ($result->total() > 0) {
+					$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
 				}
 			}
 		} catch (Exception $e) {
@@ -253,6 +259,167 @@ class HarmonizationService {
 			
 		}
 		
+	}
+	
+	public function connectEvents(string $uid, int $duration, string $ctype): ?object {
+
+		// create remote store client
+		$RemoteStore = $this->CoreService->createClient($uid);
+		// retrieve correlations
+		$cc = $this->CorrelationsService->findByType($uid, $ctype);
+		// extract correlation ids
+		$ids = array_map(function($o) { return $o->getroid();}, $cc);
+		// execute command
+		$rs = $this->RemoteCommonService->connectEvents($RemoteStore, $duration, $ids);
+		// return id and token
+		if ($rs instanceof \stdClass)
+		{
+			return $rs;
+		}
+		else {
+			return null;
+		}
+
+	}
+
+	public function disconnectEvents(string $uid, string $id): ?bool {
+
+		// create remote store client
+		$RemoteStore = $this->CoreService->createClient($uid);
+		// execute command
+		$rs = $this->RemoteCommonService->disconnectEvents($RemoteStore, $id);
+		// return response
+		return $rs;
+
+	}
+
+	public function consumeEvents(string $uid, string $id, string $token, string $otype): ?object {
+
+		// create remote store client
+		$RemoteStore = $this->CoreService->createClient($uid);
+		// execute command
+		$rs = $this->RemoteCommonService->fetchEvents($RemoteStore, $id, $token);
+
+		// top date time in epoch
+		$tt = 0;
+		
+		if (isset($rs->CreatedEvent)) {
+			foreach ($rs->CreatedEvent as $entry) {
+				// evaluate, if it was an object event, ignore collection events
+				if (isset($entry->ItemId)) {
+					// extract atributes
+					$cid = $entry->ParentFolderId->Id;
+					$oid = $entry->ItemId->Id;
+					$ostate = $entry->ItemId->ChangeKey;
+					// retrieve object corrollation
+					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
+					// work around to filter out harmonization generated events
+					// evaluate corrollation, if dose not exists or state does not match, create action
+					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrstate() != $ostate) {
+						// construct action entry
+						$a = new Action();
+						$a->setuid($uid);
+						$a->settype($otype);
+						$a->setaction('C');
+						$a->setorigin('R');
+						$a->setrcid($cid);
+						$a->setroid($oid);
+						$a->setrstate($ostate);
+						$a->setcreatedon($entry->TimeStamp);
+						// deposit action entry
+						$this->ActionManager->insert($a);
+					}
+					// workaround to find newest token
+					// convert date/time to epoch time
+					$et = strtotime($entry->TimeStamp);
+					// evaluate, if event time is greatest
+					if ($et !== false && $et > $tt) {
+						$tt = $et;
+						$token = $entry->Watermark;
+					}
+				}
+			}
+		}
+
+		if (isset($rs->ModifiedEvent)) {
+			foreach ($rs->ModifiedEvent as $entry) {
+				// evaluate, if it was an object event, ignore collection events
+				if (isset($entry->ItemId)) {
+					// extract atributes
+					$cid = $entry->ParentFolderId->Id;
+					$oid = $entry->ItemId->Id;
+					$ostate = $entry->ItemId->ChangeKey;
+					// retrieve object corrollation
+					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
+					// work around to filter out harmonization generated events
+					// evaluate corrollation, if dose not exists or state does not match, create action
+					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrstate() != $ostate) {
+						// construct action entry
+						$a = new Action();
+						$a->setuid($uid);
+						$a->settype($otype);
+						$a->setaction('U');
+						$a->setorigin('R');
+						$a->setrcid($cid);
+						$a->setroid($oid);
+						$a->setrstate($ostate);
+						$a->setcreatedon($entry->TimeStamp);
+						// deposit action entry
+						$this->ActionManager->insert($a);
+					}
+					// workaround to find newest token
+					// convert date/time to epoch time
+					$et = strtotime($entry->TimeStamp);
+					// evaluate, if event time is greatest
+					if ($et !== false && $et > $tt) {
+						$tt = $et;
+						$token = $entry->Watermark;
+					}
+				}
+			}
+		}
+
+		if (isset($rs->DeletedEvent)) {
+			foreach ($rs->DeletedEvent as $entry) {
+				// evaluate, if it was an object event, ignore collection events
+				if (isset($entry->ItemId)) {
+					// extract atributes
+					$cid = $entry->ParentFolderId->Id;
+					$oid = $entry->ItemId->Id;
+					$ostate = $entry->ItemId->ChangeKey;
+					// retrieve object corrollation
+					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
+					// work around to filter out harmonization generated events
+					// evaluate corrollation, if dose not exists or state does not match, create action
+					if ($ci instanceof \OCA\EWS\Db\Correlation) {
+						// construct action entry
+						$a = new Action();
+						$a->setuid($uid);
+						$a->settype($otype);
+						$a->setaction('D');
+						$a->setorigin('R');
+						$a->setrcid($cid);
+						$a->setroid($oid);
+						$a->setrstate($ostate);
+						$a->setcreatedon($entry->TimeStamp);
+						// deposit action entry
+						$this->ActionManager->insert($a);
+					}
+					// workaround to find newest token
+					// convert date/time to epoch time
+					$et = strtotime($entry->TimeStamp);
+					// evaluate, if event time is greatest
+					if ($et !== false && $et > $tt) {
+						$tt = $et;
+						$token = $entry->Watermark;
+					}
+				}
+			}
+		}
+
+		// return response
+		return (object) ['Id' => $id, 'Token' => $token];
+
 	}
 	
 	/**

@@ -306,42 +306,91 @@ class EventsService {
 				$this->ActionsManager->delete($action);
 				continue;
 			}
-			// retrieve collection corrollation
-			$cc = $this->CorrelationsService->findByLocalId($this->Settings->UserId, 'EC', $action->getlcid());
-			// evaluate corrollation, if corrollation exists for the local collection create action
-			if ($cc instanceof \OCA\EWS\Db\Correlation) {
-				// process based on action
-				switch ($action->getaction()) {
-					case 'C':
-					case 'U':
-						$as = $this->harmonizeLocalAltered(
-							$this->Settings->UserId,
-							$cc->getloid(),
-							$action->getloid(),
-							$cc->getroid(),
-							$cc->getid()
-						);
-						// increment statistics
-						switch ($as) {
-							case 'RC':
-								$statistics->RemoteCreated += 1;
-								break;
-							case 'RU':
-								$statistics->RemoteUpdated += 1;
-								break;
-							case 'LU':
-								$statistics->LocalUpdate += 1;
-								break;
-						}
-						break;
-					case 'D':
-						$as = $this->harmonizeLocalDelete(
-							$this->Settings->UserId,
-							$cc->getloid(),
-							$action->getloid()
-						);
-						$statistics->RemoteDeleted += 1;
-						break;
+			// evaluate, action origin
+			if ($action->getorigin() == "L") {
+				// retrieve collection corrollation
+				$cc = $this->CorrelationsService->findByLocalId($this->Settings->UserId, 'EC', $action->getlcid());
+				// evaluate corrollation, if corrollation exists for the local collection create action
+				if ($cc instanceof \OCA\EWS\Db\Correlation) {
+					// process based on action
+					switch ($action->getaction()) {
+						case 'C':
+						case 'U':
+							$as = $this->harmonizeLocalAltered(
+								$this->Settings->UserId,
+								$cc->getloid(),
+								$action->getloid(),
+								$cc->getroid(),
+								$cc->getid()
+							);
+							// increment statistics
+							switch ($as) {
+								case 'RC':
+									$statistics->RemoteCreated += 1;
+									break;
+								case 'RU':
+									$statistics->RemoteUpdated += 1;
+									break;
+								case 'LU':
+									$statistics->LocalUpdate += 1;
+									break;
+							}
+							break;
+						case 'D':
+							$as = $this->harmonizeLocalDelete(
+								$this->Settings->UserId,
+								$cc->getloid(),
+								$action->getloid()
+							);
+							if ($as == 'RD') {
+								// assign status
+								$statistics->RemoteDeleted += 1;
+							}
+							break;
+					}
+				}
+			}
+			elseif ($action->getorigin() == "R") {
+				// retrieve collection corrollation
+				$cc = $this->CorrelationsService->findByRemoteId($this->Settings->UserId, 'EC', $action->getrcid());
+				// evaluate corrollation, if corrollation exists for the remote collection create action
+				if ($cc instanceof \OCA\EWS\Db\Correlation) {
+					// process based on action
+					switch ($action->getaction()) {
+						case 'C':
+						case 'U':
+							$as = $this->harmonizeRemoteAltered(
+								$this->Settings->UserId,
+								$cc->getroid(),
+								$action->getroid(),
+								$cc->getloid(),
+								$cc->getid()
+							);
+							// increment statistics
+							switch ($as) {
+								case 'LC':
+									$statistics->LocalCreated += 1;
+									break;
+								case 'LU':
+									$statistics->LocalUpdated += 1;
+									break;
+								case 'RU':
+									$statistics->RemoteUpdate += 1;
+									break;
+							}
+							break;
+						case 'D':
+							$as = $this->harmonizeRemoteDelete(
+								$this->Settings->UserId,
+								$cc->getroid(),
+								$action->getroid()
+							);
+							if ($as == 'LD') {
+								// increment statistics
+								$statistics->LocalDeleted += 1;
+							}
+							break;
+					}
 				}
 			}
 			// destroy action

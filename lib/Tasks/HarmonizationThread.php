@@ -138,38 +138,54 @@ try {
 	// retrieve and assign defaults
 	$executionDuration = $HarmonizationService->getThreadDuration();
 	$executionPause = $HarmonizationService->getThreadPause();
-	$harmonizePause = 120;
-	$harmonizeStart = 0;
+	// no longer required since we listen to events feeds
+	//$harmonizePause = 120;
+	//$harmonizeStart = 0;
+
+	// execute initial harmonization
+	$HarmonizationService->performHarmonization($uid, 'S');
+	// connect to remote events feed(s)
+	$cs = $HarmonizationService->connectEvents($uid, 60, 'CC');
+	$es = $HarmonizationService->connectEvents($uid, 60, 'EC');
 
 	while ((time() - $executionStart) < $executionDuration) {
 		
+		/**
+		 * 
+		 * TODO: evaluate if user still exists and is active
+		 * 
+		 */
+
+		/**
+		 * 
+		 * TODO: evaluate if ews account is still connected
+		 * 
+		 */
+
 		// update heart beat
 		$HarmonizationThreadService->setHeartBeat($uid, time());
-
-		/**
-		 * 
-		 * TODO: evaluate if user exists and is active
-		 * 
-		 */
-
-		/**
-		 * 
-		 * TODO: evaluate if ews account is connected
-		 * 
-		 */
-
+		 // consume events from feed and create actions
+		$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CO');
+		$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
 		// execute actions
 		$HarmonizationService->performActions($uid);
 
+		// no longer required since we listen to events feed
 		// execute harmonization
+		/*
 		if ((time() - $harmonizeStart) > $harmonizePause) {
 			$harmonizeStart = time();
 			$HarmonizationService->performHarmonization($uid, 'S');
 		}
-		
+		*/
+
 		// pause execution
 		sleep($executionPause);
 	}
+
+	// disconnect from remote events feed(s)
+	$cs = $HarmonizationService->disconnectEvents($uid, $cs->Id);
+	$es = $HarmonizationService->disconnectEvents($uid, $es->Id);
 
 	$logger->info('Harmonization thread ended for ' . $uid, ['app' => 'integration_ews']);
 	echo 'Harmonization thread ended for ' . $uid . PHP_EOL;

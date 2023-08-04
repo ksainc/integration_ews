@@ -1562,33 +1562,37 @@ class RemoteEventsService {
         if (!empty($data->LastModifiedTime)) {
             $o->ModifiedOn = new DateTime($data->LastModifiedTime);
         }
-		// Start Date/Time
-		if (!empty($data->Start)) {
-			$o->StartsOn = new DateTime($data->Start);
-		}
 		// Start Time Zone
         if (!empty($data->StartTimeZone)) {
 			$o->StartsTZ = $this->fromTimeZone($data->StartTimeZone);
         }
+		// End Time Zone
+		if (!empty($data->EndTimeZone)) {
+			$o->EndsTZ = $this->fromTimeZone($data->EndTimeZone);
+		}
+		// Time Zone
+        if (!empty($data->TimeZone)) {
+        	$o->TimeZone = $this->fromTimeZone($data->TimeZone);
+			if (isset($o->TimeZone)) {
+				if (!isset($o->StartsTZ)) { $o->StartsTZ = clone $o->TimeZone; }
+				if (!isset($o->EndsTZ)) { $o->EndsTZ = clone $o->TimeZone; }
+			}
+        }
+		// Start Date/Time
+		if (!empty($data->Start)) {
+			$o->StartsOn = new DateTime($data->Start);
+			if (isset($o->StartsTZ)) { $o->StartsOn->setTimezone($o->StartsTZ); }
+		}
 		// End Date/Time
         if (!empty($data->End)) {
             $o->EndsOn = new DateTime($data->End);
-        }
-		// End Time Zone
-        if (!empty($data->EndTimeZone)) {
-        	$o->EndsTZ = $this->fromTimeZone($data->EndTimeZone);
+			if (isset($o->EndsTZ)) { $o->EndsOn->setTimezone($o->EndsTZ); }
         }
 		// All Day Event
 		if(isset($data->IsAllDayEvent) && $data->IsAllDayEvent == true) {
 			$o->StartsOn->setTime(0,0,0,0);
 			$o->EndsOn->setTime(0,0,0,0);
 		}
-		// Time Zone
-        if (!empty($data->TimeZone)) {
-        	$o->TimeZone = $this->fromTimeZone($data->TimeZone);
-			if (!isset($o->StartTZ)) { $o->StartTZ = $o->TimeZone; }
-			if (!isset($o->EndTZ)) { $o->EndTZ = $o->TimeZone; }
-        }
 		// Label
         if (!empty($data->Subject)) {
             $o->Label = $data->Subject;
