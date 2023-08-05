@@ -669,7 +669,7 @@ class ContactsService {
 	 *
 	 * @return string what action was performed
 	 */
-	function harmonizeLocalDelete ($uid, $lcid, $iid): string {
+	function harmonizeLocalDelete ($uid, $lcid, $loid): string {
 
 		// retrieve correlation
 		$ci = $this->CorrelationsService->findByLocalId($uid, 'CO', $loid, $lcid);

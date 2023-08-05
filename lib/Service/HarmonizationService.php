@@ -223,7 +223,7 @@ class HarmonizationService {
 
 		// retrieve harmonization status
 		$status = $this->getStatus($uid);
-		$ttl = $status->Start;
+		$ttl = $status->Started;
 
 		try {
 			// retrieve preferences
@@ -472,11 +472,11 @@ class HarmonizationService {
 	public function getStatus(string $uid): object {
 
 		// construct status object
-		$hs = (object) ['State' => null, 'Start' => null, 'End' => null];
+		$hs = (object) ['State' => null, 'Started' => null, 'Ended' => null];
 		// retrieve status values
 		$hs->State = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_state');
-		$hs->Start = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_start');
-		$hs->End = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_end');
+		$hs->Started = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_start');
+		$hs->Ended = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_end');
 		// return status object
 		return $hs;
 
