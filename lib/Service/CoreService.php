@@ -348,6 +348,9 @@ class CoreService {
 	 */
 	public function depositCorrelations(string $uid, array $cc, array $ec): void {
 		
+		// terminate harmonization thread, in case the user changed any correlations
+		$this->HarmonizationThreadService->terminate($uid);
+		// deposit contacts correlations
 		foreach ($cc as $entry) {
 			if (!empty($entry['action'])) {
 				try {
@@ -383,7 +386,7 @@ class CoreService {
 				}
 			}
 		}
-
+		// deposit events correlations
 		foreach ($ec as $entry) {
 			if (!empty($entry['action'])) {
 				try {
