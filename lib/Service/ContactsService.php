@@ -680,7 +680,7 @@ class ContactsService {
 			// destroy correlation
 			$this->CorrelationsService->delete($ci);
 			// return status of action
-			return 'LD';
+			return 'RD';
 		}
 		else {
 			// return status of action
@@ -970,7 +970,7 @@ class ContactsService {
 			// destroy correlation
 			$this->CorrelationsService->delete($ci);
 			// return status of action
-			return 'RD';
+			return 'LD';
 		}
 		else {
 			// return status of action
