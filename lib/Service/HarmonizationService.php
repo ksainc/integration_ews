@@ -562,7 +562,7 @@ class HarmonizationService {
 			return intval($interval);
 		}
 		else {
-			return 5;
+			return 15;
 		}
 
 	}
