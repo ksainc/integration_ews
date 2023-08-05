@@ -202,8 +202,6 @@ class HarmonizationService {
 			throw new Exception($e, 1);
 			
 		}
-		// destroy remote store client
-		$this->CoreService->destroyClient($RemoteStore);
 		// update harmonization status, state and end time
 		$this->setStatus($uid, 0, null, time());
 
