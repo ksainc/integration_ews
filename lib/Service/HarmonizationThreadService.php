@@ -79,28 +79,83 @@ class HarmonizationThreadService {
 	/**
 	 * Terminate harmonization thread
 	 * 
+	 * If tid is supplied terminates a harmonization thread with specific id.
+	 * If tid is missing and user id is supplied terminates all harmonization threads for specific user.
+	 * If tid is missing and user id is '*' terminates all harmonization threads for all users.
+	 * 
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid	nextcloud user id
-	 * @param string $uid	nextcloud user id
+	 * @param string $tid	thread id (optional)
 	 * 
-	 * @return string|null thread id on success | null on failure
+	 * @return int quantity of threads terminated
 	 */
-	public function terminate(string $uid, int $tid = 0): void {
+	public function terminate(string $uid, int $tid = 0): int {
 		
-		// evaluate if thread id exists
-		if ($tid = 0) {
-			// retrieve thread id
-			$tid = $this->getId($uid);
-		}
+		$tc = [];
 		// evaluate if thread id exists
 		if ($tid > 0) {
+			$tc[] = (object) ['TID' => $tid];
+		}
+		// evaluate if user id is present
+		elseif (!empty($uid)) {
+			// evaluate if user id is wildcard
+			if ($uid === '*') {
+				// retrieve list of threads
+				$tc = $this->list();
+			}
+			else {
+				// retrieve list of threads
+				$tc = $this->list($uid);
+			}
+		}
+		// terminate thread(s)
+		foreach ($tc as $entry) {
 			// construct command
-			$command = 'kill ' . $tid;
+			$command = 'kill ' . $entry->TID;
 			// execute command
 			$rs = shell_exec($command);
 		}
+		// return quantity of threads terminated
+		return count($tc);
+	}
 
+	/**
+	 * List harmonization thread(s)
+	 * 
+	 * Returns harmonization threads for all users if uid is null or only for a specific user if uid is supplied
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id (optional)
+	 * 
+	 * @return array thread of thread id's
+	 */
+	public function list(string $uid = null): array {
+		
+		// caputre 
+		$pattern = '/(?<ThreadUser>[a-zA-Z0-9-_+]+)\s+(?<ThreadId>\d{1,10000}+).*HarmonizationThread\.php\s+-u(?<NcUser>[a-zA-Z0-9-_+@.]+)[\s|$]+/iu';
+		// construct command
+		$command = 'ps -aux';
+		// execute command
+		$rs = shell_exec($command);
+		// evaluate, if any data was returned
+		if (!empty($rs)) {
+			preg_match_all($pattern, $rs, $matches, PREG_SET_ORDER);
+		}
+		// evaluate, if any matches are present
+		if (isset($matches)) {
+			if (isset($uid)) {
+				$matches = array_filter($matches, function ($entry) use ($uid) {
+					return $entry['NcUser'] == $uid;
+				});
+			}
+			$rs = array_map(function($entry) { return (object) ['TID' => intval($entry['ThreadId']), 'UID' => $entry['NcUser']];}, $matches);
+			return $rs;
+		} else {
+			return [];
+		}
+		
 	}
 
 	/**
