@@ -1393,48 +1393,48 @@ class RemoteContactsService {
         }
         // Address(es)
         if (isset($data->PhysicalAddresses)) {
-            foreach($data->PhysicalAddresses->Entry as $item) {
+            foreach($data->PhysicalAddresses->Entry as $entry) {
                 $o->addAddress(
-                    $item->Key,
-                    $item->Street,
-                    $item->City,
-                    $item->State,
-                    $item->PostalCode,
-                    $item->CountryOrRegion
+                    $entry->Key,
+                    $entry->Street,
+                    $entry->City,
+                    $entry->State,
+                    $entry->PostalCode,
+                    $entry->CountryOrRegion
                 );
             }
         }
         // Phone(s)
         if (isset($data->PhoneNumbers)) {
-            foreach($data->PhoneNumbers->Entry as $item) {
-                $t = $this->decodeTelType($item->Key); 
+            foreach($data->PhoneNumbers->Entry as $entry) {
+                $t = $this->decodeTelType($entry->Key); 
                 if ($t) {
                     $o->addPhone(
                         $t,
                         null,
-                        $item->_
+                        $entry->_
                     );
                 }
             }
         }
         // Email(s)
         if (isset($data->EmailAddresses)) {
-            foreach($data->EmailAddresses->Entry as $item) {
-                $t = $this->decodeEmailType($item->Key);
+            foreach($data->EmailAddresses->Entry as $entry) {
+                $t = $this->decodeEmailType($entry->Key);
                 if ($t) {
                     $o->addEmail(
                         $t, 
-                        $item->_
+                        $entry->_
                     );
                 }
             }
         }
         // IMPP(s)
         if (isset($data->ImAddresses)) {
-            foreach($data->ImAddresses->Entry as $item) {
+            foreach($data->ImAddresses->Entry as $entry) {
                 $o->addIMPP(
-                    $item->Key, 
-                    $item->_
+                    $entry->Key, 
+                    $entry->_
                 );
             }
         }
@@ -1513,18 +1513,18 @@ class RemoteContactsService {
 
         // UID / Dates
         if (isset($data->ExtendedProperty)) {
-            foreach ($data->ExtendedProperty as $item) {
-                switch ($item->ExtendedFieldURI->PropertyName) {
+            foreach ($data->ExtendedProperty as $entry) {
+                switch ($entry->ExtendedFieldURI->PropertyName) {
                     case 'DAV:uid':
-                        $o->UID = $item->Value;
+                        $o->UID = $entry->Value;
                         break;
                 }
-                switch ($item->ExtendedFieldURI->PropertyTag) {
+                switch ($entry->ExtendedFieldURI->PropertyTag) {
                     case '0x3007':
-                        $o->CreatedOn = new DateTime($item->Value);
+                        $o->CreatedOn = new DateTime($entry->Value);
                         break;
                     case '0x3008':
-                        $o->ModifiedOn = new DateTime($item->Value);
+                        $o->ModifiedOn = new DateTime($entry->Value);
                         break;
                 }
             }

@@ -12,4 +12,3 @@ UserConfiguration - add notification enable/disable
 UserConfiguration - remove time options, leave only (Never/Manually/Scheduled)
 HarmonizationThread - evaluate if user exists and is active
 HarmonizationThread - evaluate if ews account is connected
-HarmonizationThreadService - add get all threads list
