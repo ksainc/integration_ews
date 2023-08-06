@@ -677,12 +677,7 @@ class LocalContactsService {
         }
         // Tag(s)
         if (count($co->Tags) > 0) {
-            foreach ($co->Tags as $entry) {
-                $vo->add(
-                    'CATEGORIES', 
-                    $entry->Value
-                );
-            }
+            $vo->add('CATEGORIES', $co->Tags);
         }
         // Notes
         if (isset($co->Notes)) {

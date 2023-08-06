@@ -338,7 +338,7 @@ class RemoteContactsService {
                 if (isset($types[$entry->Type]) && $types[$entry->Type] == true) {
                     if (!isset($ro->PhysicalAddresses->Entry)) { $ro->PhysicalAddresses = new \OCA\EWS\Components\EWS\Type\PhysicalAddressDictionaryType(); }
                     $ro->PhysicalAddresses->Entry[] = new \OCA\EWS\Components\EWS\Type\PhysicalAddressDictionaryEntryType(
-                        $this->encodeAddressType($entry->Type),
+                        $this->toAddressType($entry->Type),
                         $entry->Street,
                         $entry->Locality,
                         $entry->Region,
@@ -352,7 +352,7 @@ class RemoteContactsService {
         // Phone(s)
         if (count($so->Phone) > 0) {
             foreach ($so->Phone as $entry) {
-                $type = $this->encodeTelType($entry->Type);
+                $type = $this->toTelType($entry->Type);
                 if ($type && !empty($entry->Number)) {
                     if (!isset($ro->PhoneNumbers->Entry)) { $ro->PhoneNumbers = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(); } 
                     $ro->PhoneNumbers->Entry[] = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryEntryType(
@@ -373,7 +373,7 @@ class RemoteContactsService {
                 if (isset($types[$entry->Type]) && $types[$entry->Type] == true && !empty($entry->Address)) {
                     if (!isset($ro->EmailAddresses->Entry)) { $ro->EmailAddresses = new \OCA\EWS\Components\EWS\Type\EmailAddressDictionaryType(); }
                     $ro->EmailAddresses->Entry[] = new \OCA\EWS\Components\EWS\Type\EmailAddressDictionaryEntryType(
-                        $this->encodeEmailType($entry->Type),
+                        $this->toEmailType($entry->Type),
                         $entry->Address
                     );
                     $types[$entry->Type] = false;
@@ -586,7 +586,7 @@ class RemoteContactsService {
         if (count($so->Address) > 0) {
             foreach ($so->Address as $entry) {
                 // convert address type
-                $type = $this->encodeAddressType($entry->Type);
+                $type = $this->toAddressType($entry->Type);
                 // process if index not used already
                 if (isset($types[$type]) && $types[$type] == true) {
                     // street
@@ -752,7 +752,7 @@ class RemoteContactsService {
         if (count($so->Phone) > 0) {
             foreach ($so->Phone as $entry) {
                 // convert email type
-                $type = $this->encodeTelType($entry->Type);
+                $type = $this->toTelType($entry->Type);
                 // process if index not used already
                 if (isset($types[$type]) && $types[$type] == true && !empty($entry->Number)) {
                     $rm[] = $this->updateFieldIndexed(
@@ -788,7 +788,7 @@ class RemoteContactsService {
         if (count($so->Email) > 0) {
             foreach ($so->Email as $entry) {
                 // convert email type
-                $type = $this->encodeEmailType($entry->Type);
+                $type = $this->toEmailType($entry->Type);
                 // process if index not used already
                 if (isset($types[$type]) && $types[$type] == true && !empty($entry->Address)) {
                     $rm[] = $this->updateFieldIndexed(
@@ -950,7 +950,7 @@ class RemoteContactsService {
     }
 
     /**
-     * retrieve collection item attachment from local storage
+     * retrieve collection item attachment from remote storage
      * 
      * @param string $aid - Attachment ID
 	 * 
@@ -999,7 +999,7 @@ class RemoteContactsService {
     }
 
     /**
-     * create collection item attachment in local storage
+     * create collection item attachment in remote storage
      * 
 	 * @param string $aid - Affiliation ID
      * @param array $sc - Collection of ContactAttachmentObject(S)
@@ -1064,7 +1064,7 @@ class RemoteContactsService {
     }
 
     /**
-     * delete collection item attachment from local storage
+     * delete collection item attachment from remote storage
      * 
      * @param string $aid - Attachment ID
 	 * 
@@ -1332,6 +1332,71 @@ class RemoteContactsService {
         // return object
         return $o;
     }
+
+    /**
+     * construct collection of default remote collection properties 
+	 * 
+	 * @return object
+	 */
+    private function constructDefaultCollectionProperties() : object {
+
+		// construct properties array
+		if (!isset($this->DefaultCollectionProperties)) {
+			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
+
+
+			$this->DefaultCollectionProperties = $p;
+		}
+
+		return $this->DefaultCollectionProperties;
+
+	}
+
+    /**
+     * construct collection of default remote object properties 
+	 * 
+	 * @return object
+	 */
+    private function constructDefaultItemProperties() : object {
+
+		// construct properties array
+		if (!isset($this->DefaultItemProperties)) {
+			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
+            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:DisplayName');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompleteName');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Birthday');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:SpouseName');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:WeddingAnniversary');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhysicalAddresses');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhoneNumbers');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:EmailAddresses');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:ImAddresses');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompanyName');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Department');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:JobTitle');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Profession');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
+            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:HasPicture');
+
+			$this->DefaultItemProperties = $p;
+		}
+
+		return $this->DefaultItemProperties;
+
+	}
     
     /**
      * convert remote ContactItemType object to contact object
@@ -1407,7 +1472,7 @@ class RemoteContactsService {
         // Phone(s)
         if (isset($data->PhoneNumbers)) {
             foreach($data->PhoneNumbers->Entry as $entry) {
-                $t = $this->decodeTelType($entry->Key); 
+                $t = $this->fromTelType($entry->Key); 
                 if ($t) {
                     $o->addPhone(
                         $t,
@@ -1420,7 +1485,7 @@ class RemoteContactsService {
         // Email(s)
         if (isset($data->EmailAddresses)) {
             foreach($data->EmailAddresses->Entry as $entry) {
-                $t = $this->decodeEmailType($entry->Key);
+                $t = $this->fromEmailType($entry->Key);
                 if ($t) {
                     $o->addEmail(
                         $t, 
@@ -1464,7 +1529,7 @@ class RemoteContactsService {
         //}
         // Tag(s)
         if (isset($data->Categories)) {
-            foreach($data->Categories->Entry as $entry) {
+            foreach($data->Categories->String as $entry) {
                 $o->addTag($entry);
             }
         }
@@ -1534,38 +1599,129 @@ class RemoteContactsService {
 
     }
 
-    private function encodeEmailType(string $type) : string {
+    /**
+     * convert remote email type to local type
+     * 
+	 * @param sting $type - remote email type
+	 * 
+	 * @return string|null local email type
+	 */
+    private function fromEmailType(string $type) : ?string {
+
+        $types = array(
+			'EmailAddress1' => 'WORK',
+			'EmailAddress2' => 'HOME',
+			'EmailAddress3' => 'OTHER'
+		);
+		if (isset($types[$type])) {
+			// return converted value
+			return $types[$type];
+		} else {
+			return null;
+		}
+
+    }
+
+    /**
+     * convert local email type to remote type
+     * 
+	 * @param sting $type - local email type
+	 * 
+	 * @return string|null remote email type
+	 */
+    private function toEmailType(string $type) : string {
+
+        $types = array(
+			'WORK' => 'EmailAddress1',
+			'HOME' => 'EmailAddress2',
+			'OTHER' => 'EmailAddress3'
+		);
+		if (isset($types[$type])) {
+			// return converted value
+			return $types[$type];
+		} else {
+			return '';
+		}
+
+    }
+
+    /**
+     * convert remote telephone type to local type
+     * 
+	 * @param sting $type - remote telephone type
+	 * 
+	 * @return string|null local telephone type
+	 */
+    private function fromTelType(string $type) : ?string {
         switch ($type) {
-            case 'WORK':
-                return 'EmailAddress1';
+            case 'BusinessPhone':
+                return 'WORK,VOICE,1';
                 break;
-            case 'HOME':
-                return 'EmailAddress2';
+            case 'BusinessPhone2':
+                return 'WORK,VOICE,2';
                 break;
-            case 'OTHER':
-                return 'EmailAddress3';
+            case 'BusinessFax':
+                return 'WORK,FAX,1';
                 break;
-            default:
-                return '';
+            case 'HomePhone':
+                return 'HOME,VOICE,1';
+                break;
+            case 'HomePhone2':
+                return 'HOME,VOICE,2';
+                break;
+            case 'HomeFax':
+                return 'HOME,FAX,1';
+                break;
+            case 'AssistantPhone':
+                return null;
+                break;
+            case 'Callback':
+                return null;
+                break;
+            case 'CarPhone':
+                return 'CAR';
+                break;
+            case 'CompanyMainPhone':
+                return null;
+                break;
+            case 'Isdn':
+                return 'ISDN';
+                break;
+            case 'MobilePhone':
+                return 'CELL';
+                break;
+            case 'OtherFax':
+                return 'OTHER,FAX,1';
+                break;
+            case 'OtherTelephone':
+                return 'OTHER,VOICE,1';
+                break;
+            case 'Pager':
+                return 'PAGER';
+                break;
+            case 'PrimaryPhone':
+                return null;
+                break;
+            case 'RadioPhone':
+                return null;
+                break;
+            case 'Telex':
+                return null;
+                break;
+            case 'TtyTddPhone':
+                return null;
                 break;
         }
     }
 
-    private function decodeEmailType(string $type) : ?string {
-        switch ($type) {
-            case 'EmailAddress1':
-                return 'WORK';
-                break;
-            case 'EmailAddress2':
-                return 'HOME';
-                break;
-            case 'EmailAddress3':
-                return 'OTHER';
-                break;
-        }
-    }
-
-    private function encodeTelType(string $type) : ?string {
+    /**
+     * convert local telephone type to remote type
+     * 
+	 * @param sting $type - local telephone type
+	 * 
+	 * @return string|null remote telephone type
+	 */
+    private function toTelType(string $type) : ?string {
         $parts = explode(",", $type);
         $part2 = false;
         $part3 = false;
@@ -1646,151 +1802,50 @@ class RemoteContactsService {
         return $type;
     }
 
-    private function decodeTelType(string $type) : ?string {
-        switch ($type) {
-            case 'BusinessPhone':
-                return 'WORK,VOICE,1';
-                break;
-            case 'BusinessPhone2':
-                return 'WORK,VOICE,2';
-                break;
-            case 'BusinessFax':
-                return 'WORK,FAX,1';
-                break;
-            case 'HomePhone':
-                return 'HOME,VOICE,1';
-                break;
-            case 'HomePhone2':
-                return 'HOME,VOICE,2';
-                break;
-            case 'HomeFax':
-                return 'HOME,FAX,1';
-                break;
-            case 'AssistantPhone':
-                return null;
-                break;
-            case 'Callback':
-                return null;
-                break;
-            case 'CarPhone':
-                return 'CAR';
-                break;
-            case 'CompanyMainPhone':
-                return null;
-                break;
-            case 'Isdn':
-                return 'ISDN';
-                break;
-            case 'MobilePhone':
-                return 'CELL';
-                break;
-            case 'OtherFax':
-                return 'OTHER,FAX,1';
-                break;
-            case 'OtherTelephone':
-                return 'OTHER,VOICE,1';
-                break;
-            case 'Pager':
-                return 'PAGER';
-                break;
-            case 'PrimaryPhone':
-                return null;
-                break;
-            case 'RadioPhone':
-                return null;
-                break;
-            case 'Telex':
-                return null;
-                break;
-            case 'TtyTddPhone':
-                return null;
-                break;
-        }
-    }
+    /**
+     * convert remote address type to local type
+     * 
+	 * @param sting $type - remote address type
+	 * 
+	 * @return string|null local address type
+	 */
+    private function fromAddressType(string $type) : ?string {
 
-    private function encodeAddressType(string $type) : string {
-        switch ($type) {
-            case 'WORK':
-                return 'Business';
-                break;
-            case 'HOME':
-                return 'Home';
-                break;
-            case 'OTHER':
-                return 'Other';
-                break;
-            default:
-                return '';
-                break;
-        }
-    }
-
-    private function decodeAddressType(string $type) : ?string {
-        switch ($type) {
-            case 'Business':
-                return 'WORK';
-                break;
-            case 'Home':
-                return 'HOME';
-                break;
-            case 'Other':
-                return 'OTHER';
-                break;
-        }
-    }
-
-    private function constructDefaultCollectionProperties() : object {
-
-		// construct properties array
-		if (!isset($this->DefaultCollectionProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
-
-
-			$this->DefaultCollectionProperties = $p;
+        $types = array(
+			'Business' => 'WORK',
+			'Home' => 'HOME',
+			'Other' => 'OTHER'
+		);
+		if (isset($types[$type])) {
+			// return converted value
+			return $types[$type];
+		} else {
+			return null;
 		}
 
-		return $this->DefaultCollectionProperties;
+    }
 
-	}
+    /**
+     * convert local address type to remote type
+     * 
+	 * @param sting $type - local address type
+	 * 
+	 * @return string|null remote address type
+	 */
+    private function toAddressType(string $type) : string {
 
-    private function constructDefaultItemProperties() : object {
-
-		// construct properties array
-		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompleteName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Birthday');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:SpouseName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:WeddingAnniversary');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhysicalAddresses');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhoneNumbers');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:EmailAddresses');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:ImAddresses');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompanyName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Department');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:JobTitle');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Profession');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:HasPicture');
-
-			$this->DefaultItemProperties = $p;
+        $types = array(
+			'WORK' => 'Business',
+			'HOME' => 'Home',
+			'OTHER' => 'Other'
+		);
+		if (isset($types[$type])) {
+			// return converted value
+			return $types[$type];
+		} else {
+			return '';
 		}
 
-		return $this->DefaultItemProperties;
+    }
 
-	}
 }
