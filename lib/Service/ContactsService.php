@@ -453,6 +453,9 @@ class ContactsService {
 			// chronology wins mode selected and local object is newer
 			if ($this->Settings->ContactsPrevalence == 'L' || 
 			($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				// delete all previous attachment(s) in remote store
+				// work around for missing update command in ews
+				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
 				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 				// assign status
@@ -570,6 +573,9 @@ class ContactsService {
 				// chronology wins mode selected and local object is newer
 				if ($this->Settings->ContactsPrevalence == 'L' || 
 				($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+					// delete all previous attachment(s) in remote store
+					// work around for missing update command in ews
+					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
 					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 					// assign status
@@ -596,6 +602,9 @@ class ContactsService {
 				// chronology wins mode selected and local object is newer
 				if ($this->Settings->ContactsPrevalence == 'L' || 
 				   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+					// delete all previous attachment(s) in remote store
+					// work around for missing update command in ews
+					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
 					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 					// assign status
@@ -617,6 +626,9 @@ class ContactsService {
 			// if states DO MATCH update remote object
 			elseif ($ci instanceof \OCA\EWS\Db\Correlation && 
 					$ro->State == $ci->getrstate()) {
+				// delete all previous attachment(s) in remote store
+				// work around for missing update command in ews
+				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
 				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 				// assign status
@@ -753,6 +765,9 @@ class ContactsService {
 			// chronology wins mode selected and local object is newer
 			if ($this->Settings->ContactsPrevalence == 'L' || 
 			   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				// delete all previous attachment(s) in remote store
+				// work around for missing update command in ews
+				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
 				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 				// assign status
@@ -865,6 +880,9 @@ class ContactsService {
 				// chronology wins mode selected and local object is newer
 				if ($this->Settings->ContactsPrevalence == 'L' || 
 				   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+					// delete all previous attachment(s) in remote store
+					// work around for missing update command in ews
+					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
 					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 					// assign status
@@ -891,6 +909,9 @@ class ContactsService {
 				// chronology wins mode selected and local object is newer
 				if ($this->Settings->ContactsPrevalence == 'L' || 
 				   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+					// delete all previous attachment(s) in remote store
+					// work around for missing update command in ews
+					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
 					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
 					// assign status

@@ -342,17 +342,19 @@ class LocalContactsService {
         if (isset($vo->PHOTO)) {
             $p = $vo->PHOTO->getValue();
             if (str_starts_with($p, 'data:')) {
-                $part = explode(';', $p);
-                if (count($part) == 2) {
+                $p = explode(';', $p);
+                if (count($p) == 2) {
                     $p[0] = explode(':', $p[0]);
                     $p[1] = explode(',', $p[1]);
                     $co->Photo->Type = 'data';
                     $co->Photo->Data = $vo->UID;
                     $co->addAttachment(
                         $vo->UID,
-                        $vo->UID,
+                        $vo->UID . '.' . \OCA\EWS\Utile\MIME::toExtension($p[0][1]),
                         $p[0][1],
                         'B64',
+                        'CP',
+                        null,
                         $p[1][1]
                     );
                 }
@@ -524,18 +526,19 @@ class LocalContactsService {
                     'uri:' . $co->Photo->Data
                 );
             } elseif ($co->Photo->Type == 'data') {
-                if (isset($co->Attachments[$co->Photo->Data])) {
-                    switch ($co->Attachments[$co->Photo->Data]->Encoding) {
+                $k = array_search($co->Photo->Data, array_column($co->Attachments, 'Id'));
+                if ($k !== false) {
+                    switch ($co->Attachments[$k]->Encoding) {
                         case 'B':
                             $vo->add(
                                 'PHOTO',
-                                'data:' . $co->Attachments[$co->Photo->Data]->Type . ';base64,' . base64_encode($co->Attachments[$co->Photo->Data]->Data)
+                                'data:' . $co->Attachments[$k]->Type . ';base64,' . base64_encode($co->Attachments[$k]->Data)
                             );
                             break;
                         case 'B64':
                             $vo->add(
                                 'PHOTO',
-                                'data:' . $co->Attachments[$co->Photo->Data]->Type . ';base64,' . $co->Attachments[$co->Photo->Data]->Data
+                                'data:' . $co->Attachments[$k]->Type . ';base64,' . $co->Attachments[$k]->Data
                             );
                             break;
                     }

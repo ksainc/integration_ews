@@ -431,6 +431,8 @@ class RemoteContactsService {
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
 
         // Photo
+        // TODO: Remove after testing
+        /*
         if ($result->ItemId) {
             if ($so->Photo->Data) {
                 $a = new \OCA\EWS\Components\EWS\Type\FileAttachmentType();
@@ -458,12 +460,20 @@ class RemoteContactsService {
                 }
             }
         }
+        */
+
         // process response
         if ($rs->ItemId) {
 			$co = clone $so;
 			$co->ID = $rs->ItemId->Id;
             $co->CID = $cid;
 			$co->State = $rs->ItemId->ChangeKey;
+			// deposit attachment(s)
+			if (count($co->Attachments) > 0) {
+				// create attachments in remote data store
+				$co->Attachments = $this->createCollectionItemAttachment($co->ID, $co->Attachments);
+				$co->State = $co->Attachments[0]->AffiliateState;
+			}
             return $co;
         } else {
             return null;
@@ -965,12 +975,19 @@ class RemoteContactsService {
 				} else {
 					$type = $entry->ContentType;
 				}
+                if ($entry->IsContactPhoto || str_contains($entry->Name, 'ContactPicture')) {
+                    $flag = 'CP';
+                }
+                else {
+                    $flag = null;
+                }
 				// insert attachment object in response collection
 				$rc[] = new ContactAttachmentObject(
 					$entry->AttachmentId->Id, 
 					$entry->Name,
 					$type,
 					'B',
+                    $flag,
 					$entry->Size,
 					$entry->Content
 				);
@@ -1002,12 +1019,18 @@ class RemoteContactsService {
 			// construct command object
 			$co = new \OCA\EWS\Components\EWS\Type\FileAttachmentType();
 			$co->IsInline = false;
-			$co->IsContactPhoto = false;
-			$co->Name = $entry->Name;
 			$co->ContentId = $entry->Name;
 			$co->ContentType = $entry->Type;
+            $co->Name = $entry->Name;
 			$co->Size = $entry->Size;
-			
+
+            if ($entry->Flag == 'CP') {
+                $co->IsContactPhoto = true;
+            }
+            else {
+                $co->IsContactPhoto = false;
+            }
+            
 			switch ($entry->Encoding) {
 				case 'B':
 					$co->Content = $entry->Data;
@@ -1460,23 +1483,31 @@ class RemoteContactsService {
 
         // Attachment(s)
         if (isset($data->Attachments)) {
-            foreach($data->Attachments->FileAttachment as $item) {
-                if ($item->ContentType == 'application/octet-stream') {
-                    $type = \OCA\EWS\Utile\MIME::fromFileName($item->Name);
+            foreach($data->Attachments->FileAttachment as $entry) {
+                // evaluate mime type
+                if ($entry->ContentType == 'application/octet-stream') {
+                    $type = \OCA\EWS\Utile\MIME::fromFileName($entry->Name);
                 } else {
-                    $type = $item->ContentType;
+                    $type = $entry->ContentType;
+                }
+                // evaluate attachemnt type
+                if ($entry->IsContactPhoto || str_contains($entry->Name, 'ContactPicture')) {
+                    $flag = 'CP';
+                    $o->Photo->Type = 'data';
+                    $o->Photo->Data = $entry->AttachmentId->Id;
+                }
+                else {
+                    $flag = null;
                 }
                 $o->addAttachment(
-                    $item->AttachmentId->Id, 
-                    $item->Name,
-                    $type,
-                    'binary',
-                    null
-                );
-                if ($item->IsContactPhoto || str_contains($item->Name, 'ContactPicture')) {
-                    $o->Photo->Type = 'data';
-                    $o->Photo->Data = $item->AttachmentId->Id;
-                }
+					$entry->AttachmentId->Id, 
+					$entry->Name,
+					$type,
+					'B',
+                    $flag,
+					$entry->Size,
+					$entry->Content
+				);
             }
         }
 
@@ -1737,6 +1768,9 @@ class RemoteContactsService {
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
+            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:DisplayName');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompleteName');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Birthday');
@@ -1751,10 +1785,8 @@ class RemoteContactsService {
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:JobTitle');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Profession');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-			
+            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:HasPicture');
+
 			$this->DefaultItemProperties = $p;
 		}
 

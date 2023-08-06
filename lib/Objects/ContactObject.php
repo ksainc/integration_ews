@@ -120,7 +120,7 @@ class ContactObject {
         $this->Phone[] = new ContactRelationObject($type, $value);
     }
     
-    public function addAttachment(string $id, ?string $name = null, ?string $type = null, ?string $encoding = null, ?string $data = null) {
-        $this->Attachments[$id] = new ContactAttachmentObject($id, $name, $type, $encoding, $data);
+    public function addAttachment(string $id, ?string $name = null, ?string $type = null, ?string $encoding = null, ?string $flag = null, ?string $size = null,  ?string $data = null) {
+        $this->Attachments[] = new ContactAttachmentObject($id, $name, $type, $encoding, $flag, $size, $data);
     }
 }

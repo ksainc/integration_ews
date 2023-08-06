@@ -925,7 +925,7 @@ class MIME {
      */ 
     static function toExtension(string $type): ?string {
 
-        if (array_key_exists($type, $mime)) {
+        if (array_key_exists($type, self::$m2e)) {
             return self::$m2e[$type];
         } else {
             return null;

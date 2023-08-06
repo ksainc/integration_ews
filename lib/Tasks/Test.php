@@ -78,9 +78,8 @@ try {
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 	$HarmonizationThreadService = \OC::$server->get(\OCA\EWS\Service\HarmonizationThreadService::class);
 
-	$HarmonizationThreadService->terminate($uid);
 	// execute initial harmonization
-	//$HarmonizationService->performHarmonization($uid, 'S');
+	$HarmonizationService->performHarmonization($uid, 'S');
 
 	//$cs = $HarmonizationService->connectEvents($uid, 5, 'CC');
 	//$es = $HarmonizationService->connectEvents($uid, 5, 'EC');
