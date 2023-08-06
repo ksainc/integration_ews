@@ -59,6 +59,8 @@ class RemoteCommonService {
 	/**
      * retrieve list of all folders starting with root folder from remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $base - Base Properties / D - Default / A - All / I - ID's
 	 * @param object $additional - Additional Properties object of NonEmptyArrayOfPathsToElementType
@@ -111,6 +113,8 @@ class RemoteCommonService {
 
 	/**
      * retrieve list of specific folders starting with root folder from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $type - Folder Type
@@ -172,6 +176,8 @@ class RemoteCommonService {
 	/**
      * retrieve all information for specific folder from remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
 	 * @param string $ftype - Folder ID Type (True - Distinguished / False - Normal)
@@ -227,6 +233,8 @@ class RemoteCommonService {
 
 	/**
      * create folder in remote storage
+	 * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
@@ -284,6 +292,8 @@ class RemoteCommonService {
 	/**
      * delete folder from remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $ids - Collection Id's List
 	 * @param string $type - 
@@ -319,6 +329,8 @@ class RemoteCommonService {
 
 	/**
      * retrieve list of changes for specific folder from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
@@ -419,6 +431,8 @@ class RemoteCommonService {
 	/**
      * retrieve all item ids in specific folder from remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
 	 * @param string $ftype - Folder ID Type (True - Distinguished / False - Normal)
@@ -477,6 +491,8 @@ class RemoteCommonService {
 
 	/**
      * retrieve information for specific item from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $uuid - Item UUID
@@ -577,6 +593,8 @@ class RemoteCommonService {
 
 	/**
      * retrieve all information for specific item by uuid from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $uuid - Item UUID
@@ -694,6 +712,8 @@ class RemoteCommonService {
 	/**
      * retrieve all information for specific item from remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param array $ioc - Collection of Id Objects
 	 * @param string $base - Base Properties / D - Default / A - All / I - ID's
@@ -782,6 +802,8 @@ class RemoteCommonService {
 	/**
      * create item in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
 	 * @param string $fid - Item Data
@@ -829,6 +851,8 @@ class RemoteCommonService {
 
 	/**
      * update item in remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
@@ -880,6 +904,8 @@ class RemoteCommonService {
 	/**
      * delete item in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $ids - Item ID's Array
 	 * @param string $fid - Item Data
@@ -915,6 +941,8 @@ class RemoteCommonService {
 
 	/**
      * retrieve item attachment(s) from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $ids - Attachement ID's (array)
@@ -952,6 +980,8 @@ class RemoteCommonService {
 
 	/**
      * create item attachment(s) from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param array $batch - Collection of FileAttachmentType Objects
@@ -994,6 +1024,8 @@ class RemoteCommonService {
 	/**
      * delete item attachment(s) from remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param array $batch - Collection of String Attachemnt Id(s)
 	 * 
@@ -1029,6 +1061,8 @@ class RemoteCommonService {
 
 	/**
      * retrieve time zone information from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $uuid - Item UUID
@@ -1068,6 +1102,8 @@ class RemoteCommonService {
 
 	/**
      * connect to event nofifications
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * 
@@ -1122,6 +1158,8 @@ class RemoteCommonService {
 	/**
      * disconnect from event nofifications
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * 
 	 * @return object Items Object on success / Null on failure
@@ -1153,6 +1191,8 @@ class RemoteCommonService {
 
 	/**
      * observe event nofifications
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EWSClient $DataStore - Storage Interface
 	 * 

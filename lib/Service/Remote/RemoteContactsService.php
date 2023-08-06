@@ -70,6 +70,8 @@ class RemoteContactsService {
 
 	/**
 	 * retrieve list of collections in remote storage
+     * 
+     * @since Release 1.0.0
 	 *
 	 * @return array of collections and properties
 	 */
@@ -91,6 +93,8 @@ class RemoteContactsService {
 
 	/**
      * retrieve properties for specific collection
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
 	 * 
@@ -121,6 +125,8 @@ class RemoteContactsService {
 	/**
      * create collection in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection Item ID
 	 * 
 	 * @return ContactCollectionObject
@@ -149,11 +155,13 @@ class RemoteContactsService {
     /**
      * delete collection in remote storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $cid - Collection ID
 	 * 
 	 * @return bool Ture - successfully destroyed / False - failed to destory
 	 */
-    public function deleteCollection(string $cid) : bool {
+    public function deleteCollection(string $cid): bool {
         
 		// construct command object
         $cc = new \OCA\EWS\Components\EWS\Type\FolderIdType($cid);
@@ -170,6 +178,8 @@ class RemoteContactsService {
 
     /**
 	 * retrieve alteration for specific collection
+     * 
+     * @since Release 1.0.0
 	 * 
 	 * @param string $cid - Collection Id
 	 * @param string $state - Collection State (Initial/Last)
@@ -187,6 +197,8 @@ class RemoteContactsService {
 
     /**
      * retrieve all collection items uuids from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
 	 * 
@@ -219,6 +231,8 @@ class RemoteContactsService {
 	/**
      * retrieve collection item in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $iid - Collection Item ID
 	 * 
 	 * @return ContactObject
@@ -249,6 +263,8 @@ class RemoteContactsService {
 	/**
      * find collection item by uuid in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $uuid -Collection Item UUID
 	 * 
@@ -275,6 +291,8 @@ class RemoteContactsService {
     
 	/**
      * create collection item in remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
      * @param ContactObject $so - Source Data
@@ -483,6 +501,8 @@ class RemoteContactsService {
 
      /**
      * update collection item in remote storage
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
@@ -908,13 +928,15 @@ class RemoteContactsService {
     /**
      * update collection item with uuid in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
      * @param string $cid - Collection Item UUID
 	 * 
 	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
 	 */
-	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid) : ?object {
+	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid): ?object {
 		// request modifications array
         $rm = array();
         // construct update command object
@@ -932,11 +954,13 @@ class RemoteContactsService {
     /**
      * delete collection item in remote storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $iid - Item ID
 	 * 
 	 * @return bool Ture - successfully destroyed / False - failed to destory
 	 */
-    public function deleteCollectionItem(string $iid) : bool {
+    public function deleteCollectionItem(string $iid): bool {
         // create object
         $o = new \OCA\EWS\Components\EWS\Type\ItemIdType($iid);
 
@@ -951,6 +975,8 @@ class RemoteContactsService {
 
     /**
      * retrieve collection item attachment from remote storage
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $aid - Attachment ID
 	 * 
@@ -1000,6 +1026,8 @@ class RemoteContactsService {
 
     /**
      * create collection item attachment in remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $aid - Affiliation ID
      * @param array $sc - Collection of ContactAttachmentObject(S)
@@ -1066,6 +1094,8 @@ class RemoteContactsService {
     /**
      * delete collection item attachment from remote storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $aid - Attachment ID
 	 * 
 	 * @return array
@@ -1084,261 +1114,13 @@ class RemoteContactsService {
     }
 
     /**
-     * construct collection item unindexed property update command
-     * 
-     * @param string $uri - property uri
-     * @param string $name - property name
-     * @param string $value - property value
-	 * 
-	 * @return object collection item property update command
-	 */
-    public function updateFieldUnindexed(string $uri, string $name, mixed $value) : object {
-        // create field update object
-        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
-        $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
-        // create field contact object
-        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
-        $o->Contact->$name = $value;
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item unindexed property delete command
-     * 
-     * @param string $uri - property uri
-	 * 
-	 * @return object collection item property delete command
-	 */
-    public function deleteFieldUnindexed(string $uri) : object {
-        // create field delete object
-        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
-        $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item indexed property update command
-     * 
-     * @param string $uri - property uri
-     * @param string $index - property index
-     * @param string $name - property name
-     * @param string $dictionary - property dictionary object
-     * @param string $entry - property entry object
-	 * 
-	 * @return object collection item property update command
-	 */
-    public function updateFieldIndexed(string $uri, string $index, string $name, mixed $dictionary, mixed $entry) : object {
-        // create field update object
-        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
-        $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
-        // create field contact object
-        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
-        $o->Contact->$name = $dictionary;
-        $o->Contact->$name->Entry = $entry;
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item indexed property delete command
-     * 
-     * @param string $tag - property tag
-     * @param string $type - property type
-     * @param string $value - property value
-	 * 
-	 * @return object collection item property delete command
-	 */
-    public function deleteFieldIndexed(string $uri, string $index) : object {
-        // create field delete object
-        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
-        $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item extended property create command
-     * 
-     * @param string $collection - property collection
-     * @param string $name - property name
-     * @param string $type - property type
-     * @param string $value - property value
-	 * 
-	 * @return object collection item property create command
-	 */
-    public function createFieldExtendedByName(string $collection, string $name, string $type, mixed $value) : object {
-        // create extended field object
-        $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
-            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                $collection,
-                null,
-                null,
-                $name,
-                null,
-                $type
-            ),
-            $value
-        );
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item extended property update command
-     * 
-     * @param string $collection - property collection
-     * @param string $name - property name
-     * @param string $type - property type
-     * @param string $value - property value
-	 * 
-	 * @return object collection item property update command
-	 */
-    public function updateFieldExtendedByName(string $collection, string $name, string $type, mixed $value) : object {
-        // create field update object
-        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
-        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-            $collection,
-            null,
-            null,
-            $name,
-            null,
-            $type
-        );
-        // create field contact object
-        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
-        $o->Contact->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
-            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                $collection,
-                null,
-                null,
-                $name,
-                null,
-                $type
-            ),
-            $value
-        );
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item extended property delete command
-     * 
-     * @param string $collection - property collection
-     * @param string $name - property name
-     * @param string $type - property type
-	 * 
-	 * @return object collection item property delete command
-	 */
-    public function deleteFieldExtendedByName(string $collection, string $name, string $type) : object {
-        // create field delete object
-        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
-        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-            $collection,
-            null,
-            null,
-            $name,
-            null,
-            $type
-        );
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item extended property create command
-     * 
-     * @param string $tag - property tag
-     * @param string $type - property type
-     * @param string $value - property value
-	 * 
-	 * @return object collection item property create command
-	 */
-    public function createFieldExtendedByTag(string $tag, string $type, mixed $value) : object {
-        // create extended field object
-        $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
-            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                null,
-                null,
-                null,
-                null,
-                $tag,
-                $type
-            ),
-            $value
-        );
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item extended property update command
-     * 
-     * @param string $tag - property tag
-     * @param string $type - property type
-     * @param string $value - property value
-	 * 
-	 * @return object collection item property update command
-	 */
-    public function updateFieldExtendedByTag(string $tag, string $type, mixed $value) : object {
-        // create field update object
-        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
-        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-            null,
-            null,
-            null,
-            null,
-            $tag,
-            $type
-        );
-        // create field contact object
-        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
-        $o->Contact->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
-            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                null,
-                null,
-                null,
-                null,
-                $tag,
-                $type
-            ),
-            $value
-        );
-        // return object
-        return $o;
-    }
-
-    /**
-     * construct collection item extended property delete command
-     * 
-     * @param string $tag - property tag
-     * @param string $type - property type
-	 * 
-	 * @return object collection item property delete command
-	 */
-    public function deleteFieldExtendedByTag(string $tag, string $type) : object {
-        // construct field delete object
-        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
-        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-            null,
-            null,
-            null,
-            null,
-            $tag,
-            $type
-        );
-        // return object
-        return $o;
-    }
-
-    /**
      * construct collection of default remote collection properties 
+     * 
+     * @since Release 1.0.0
 	 * 
 	 * @return object
 	 */
-    private function constructDefaultCollectionProperties() : object {
+    private function constructDefaultCollectionProperties(): object {
 
 		// construct properties array
 		if (!isset($this->DefaultCollectionProperties)) {
@@ -1359,10 +1141,12 @@ class RemoteContactsService {
 
     /**
      * construct collection of default remote object properties 
+     * 
+     * @since Release 1.0.0
 	 * 
 	 * @return object
 	 */
-    private function constructDefaultItemProperties() : object {
+    private function constructDefaultItemProperties(): object {
 
 		// construct properties array
 		if (!isset($this->DefaultItemProperties)) {
@@ -1399,13 +1183,285 @@ class RemoteContactsService {
 	}
     
     /**
+     * construct collection item unindexed property update command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $uri - property uri
+     * @param string $name - property name
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property update command
+	 */
+    public function updateFieldUnindexed(string $uri, string $name, mixed $value): object {
+        // create field update object
+        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
+        $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
+        // create field contact object
+        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
+        $o->Contact->$name = $value;
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item unindexed property delete command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $uri - property uri
+	 * 
+	 * @return object collection item property delete command
+	 */
+    public function deleteFieldUnindexed(string $uri): object {
+        // create field delete object
+        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
+        $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item indexed property update command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $uri - property uri
+     * @param string $index - property index
+     * @param string $name - property name
+     * @param string $dictionary - property dictionary object
+     * @param string $entry - property entry object
+	 * 
+	 * @return object collection item property update command
+	 */
+    public function updateFieldIndexed(string $uri, string $index, string $name, mixed $dictionary, mixed $entry): object {
+        // create field update object
+        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
+        $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
+        // create field contact object
+        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
+        $o->Contact->$name = $dictionary;
+        $o->Contact->$name->Entry = $entry;
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item indexed property delete command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $tag - property tag
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property delete command
+	 */
+    public function deleteFieldIndexed(string $uri, string $index): object {
+        // create field delete object
+        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
+        $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property create command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $collection - property collection
+     * @param string $name - property name
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property create command
+	 */
+    public function createFieldExtendedByName(string $collection, string $name, string $type, mixed $value): object {
+        // create extended field object
+        $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
+            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                $collection,
+                null,
+                null,
+                $name,
+                null,
+                $type
+            ),
+            $value
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property update command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $collection - property collection
+     * @param string $name - property name
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property update command
+	 */
+    public function updateFieldExtendedByName(string $collection, string $name, string $type, mixed $value): object {
+        // create field update object
+        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
+        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+            $collection,
+            null,
+            null,
+            $name,
+            null,
+            $type
+        );
+        // create field contact object
+        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
+        $o->Contact->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
+            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                $collection,
+                null,
+                null,
+                $name,
+                null,
+                $type
+            ),
+            $value
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property delete 
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $collection - property collection
+     * @param string $name - property name
+     * @param string $type - property type
+	 * 
+	 * @return object collection item property delete command
+	 */
+    public function deleteFieldExtendedByName(string $collection, string $name, string $type): object {
+        // create field delete object
+        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
+        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+            $collection,
+            null,
+            null,
+            $name,
+            null,
+            $type
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property create command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $tag - property tag
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property create command
+	 */
+    public function createFieldExtendedByTag(string $tag, string $type, mixed $value): object {
+        // create extended field object
+        $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
+            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                null,
+                null,
+                null,
+                null,
+                $tag,
+                $type
+            ),
+            $value
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property update command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $tag - property tag
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property update command
+	 */
+    public function updateFieldExtendedByTag(string $tag, string $type, mixed $value): object {
+        // create field update object
+        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
+        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+            null,
+            null,
+            null,
+            null,
+            $tag,
+            $type
+        );
+        // create field contact object
+        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
+        $o->Contact->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
+            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                null,
+                null,
+                null,
+                null,
+                $tag,
+                $type
+            ),
+            $value
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property delete command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $tag - property tag
+     * @param string $type - property type
+	 * 
+	 * @return object collection item property delete command
+	 */
+    public function deleteFieldExtendedByTag(string $tag, string $type): object {
+        // construct field delete object
+        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
+        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+            null,
+            null,
+            null,
+            null,
+            $tag,
+            $type
+        );
+        // return object
+        return $o;
+    }
+
+    /**
      * convert remote ContactItemType object to contact object
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param ContactItemType $data - item as vcard object
 	 * 
 	 * @return ContactObject item as contact object
 	 */
-	public function toContactObject(ContactItemType $data) : ContactObject {
+	public function toContactObject(ContactItemType $data): ContactObject {
 		// create object
 		$o = new ContactObject();
         // ID + State
@@ -1600,23 +1656,28 @@ class RemoteContactsService {
     }
 
     /**
-     * convert remote email type to local type
+     * convert remote email type to contact object type
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param sting $type - remote email type
 	 * 
-	 * @return string|null local email type
+	 * @return string|null contact object email type
 	 */
-    private function fromEmailType(string $type) : ?string {
+    private function fromEmailType(string $type): ?string {
 
-        $types = array(
+        // type conversion reference
+        $_tm = array(
 			'EmailAddress1' => 'WORK',
 			'EmailAddress2' => 'HOME',
 			'EmailAddress3' => 'OTHER'
 		);
-		if (isset($types[$type])) {
-			// return converted value
-			return $types[$type];
+        // evaluate if type value exists
+		if (isset($_tm[$type])) {
+			// return converted type value
+			return $_tm[$type];
 		} else {
+            // return default type value
 			return null;
 		}
 
@@ -1625,34 +1686,41 @@ class RemoteContactsService {
     /**
      * convert local email type to remote type
      * 
-	 * @param sting $type - local email type
+     * @since Release 1.0.0
+     * 
+	 * @param sting $type - contact object email type
 	 * 
 	 * @return string|null remote email type
 	 */
-    private function toEmailType(string $type) : string {
+    private function toEmailType(string $type): string {
 
-        $types = array(
+        // type conversion reference
+        $_tm = array(
 			'WORK' => 'EmailAddress1',
 			'HOME' => 'EmailAddress2',
 			'OTHER' => 'EmailAddress3'
 		);
-		if (isset($types[$type])) {
-			// return converted value
-			return $types[$type];
+        // evaluate if type value exists
+		if (isset($_tm[$type])) {
+			// return converted type value
+			return $_tm[$type];
 		} else {
+            // return default type value
 			return '';
 		}
 
     }
 
     /**
-     * convert remote telephone type to local type
+     * convert remote telephone type to contact object type
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param sting $type - remote telephone type
 	 * 
-	 * @return string|null local telephone type
+	 * @return string|null contact object telephone type
 	 */
-    private function fromTelType(string $type) : ?string {
+    private function fromTelType(string $type): ?string {
         switch ($type) {
             case 'BusinessPhone':
                 return 'WORK,VOICE,1';
@@ -1717,11 +1785,13 @@ class RemoteContactsService {
     /**
      * convert local telephone type to remote type
      * 
-	 * @param sting $type - local telephone type
+     * @since Release 1.0.0
+     * 
+	 * @param sting $type - contact object telephone type
 	 * 
 	 * @return string|null remote telephone type
 	 */
-    private function toTelType(string $type) : ?string {
+    private function toTelType(string $type): ?string {
         $parts = explode(",", $type);
         $part2 = false;
         $part3 = false;
@@ -1803,23 +1873,28 @@ class RemoteContactsService {
     }
 
     /**
-     * convert remote address type to local type
+     * convert remote address type to contact object type
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param sting $type - remote address type
 	 * 
-	 * @return string|null local address type
+	 * @return string|null contact object address type
 	 */
-    private function fromAddressType(string $type) : ?string {
+    private function fromAddressType(string $type): ?string {
 
-        $types = array(
+        // type conversion reference
+        $_tm = array(
 			'Business' => 'WORK',
 			'Home' => 'HOME',
 			'Other' => 'OTHER'
 		);
-		if (isset($types[$type])) {
-			// return converted value
-			return $types[$type];
+        // evaluate if type value exists
+		if (isset($_tm[$type])) {
+			// return converted type value
+			return $_tm[$type];
 		} else {
+            // return default type value
 			return null;
 		}
 
@@ -1828,21 +1903,26 @@ class RemoteContactsService {
     /**
      * convert local address type to remote type
      * 
-	 * @param sting $type - local address type
+     * @since Release 1.0.0
+     * 
+	 * @param sting $type - contact object address type
 	 * 
 	 * @return string|null remote address type
 	 */
-    private function toAddressType(string $type) : string {
+    private function toAddressType(string $type): string {
 
-        $types = array(
+        // type conversion reference
+        $_tm = array(
 			'WORK' => 'Business',
 			'HOME' => 'Home',
 			'OTHER' => 'Other'
 		);
-		if (isset($types[$type])) {
-			// return converted value
-			return $types[$type];
+        // evaluate if type value exists
+		if (isset($_tm[$type])) {
+			// return converted type value
+			return $_tm[$type];
 		} else {
+            // return default type value
 			return '';
 		}
 

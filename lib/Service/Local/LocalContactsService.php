@@ -485,7 +485,7 @@ class LocalContactsService {
 	 * 
 	 * @return VCard converted object
 	 */
-    public function fromContactObject(ContactObject $co) : VCard {
+    public function fromContactObject(ContactObject $co): VCard {
 
         // construct vcard object
         $vo = new VCard();

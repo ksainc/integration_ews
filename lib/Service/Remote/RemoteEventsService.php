@@ -80,6 +80,8 @@ class RemoteEventsService {
 
 	/**
 	 * retrieve list of collections in remote storage
+     * 
+     * @since Release 1.0.0
 	 *
 	 * @return array of collections and properties
 	 */
@@ -101,6 +103,8 @@ class RemoteEventsService {
 
 	/**
 	 * retrieve properties for specific collection
+     * 
+     * @since Release 1.0.0
 	 * 
 	 * @param string $cid - Collection Id
 	 * 
@@ -131,6 +135,8 @@ class RemoteEventsService {
 	/**
      * create collection in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection Item ID
 	 * 
 	 * @return EventCollectionObject
@@ -159,11 +165,13 @@ class RemoteEventsService {
 	/**
      * delete collection in remote storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $cid - Collection ID
 	 * 
 	 * @return bool Ture - successfully destroyed / False - failed to destory
 	 */
-    public function deleteCollection(string $cid) : bool {
+    public function deleteCollection(string $cid): bool {
         
 		// construct command object
         $ec = new \OCA\EWS\Components\EWS\Type\FolderIdType($cid);
@@ -180,6 +188,8 @@ class RemoteEventsService {
 
 	/**
 	 * retrieve alteration for specific collection
+     * 
+     * @since Release 1.0.0
 	 * 
 	 * @param string $cid - Collection Id
 	 * @param string $state - Collection State (Initial/Last)
@@ -197,6 +207,8 @@ class RemoteEventsService {
 
 	/**
      * retrieve all collection items uuids from remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
 	 * 
@@ -229,6 +241,8 @@ class RemoteEventsService {
 	/**
      * retrieve collection item in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $iid - Collection Item ID
 	 * 
 	 * @return ContactObject
@@ -258,6 +272,8 @@ class RemoteEventsService {
 	/**
      * find collection item by uuid in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $uuid -Collection Item UUID
 	 * 
@@ -285,6 +301,8 @@ class RemoteEventsService {
 
 	/**
      * create collection item in remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
      * @param EventObject $so - Source Data
@@ -616,6 +634,8 @@ class RemoteEventsService {
 
 	/**
      * update collection item in remote storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
@@ -1042,13 +1062,15 @@ class RemoteEventsService {
 	/**
      * update collection item with uuid in remote storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
      * @param string $cid - Collection Item UUID
 	 * 
 	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
 	 */
-	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid) : ?object {
+	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid): ?object {
 		// request modifications array
         $rm = array();
         // construct update command object
@@ -1067,11 +1089,13 @@ class RemoteEventsService {
     /**
      * delete collection item in remote storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $iid - Item ID
 	 * 
 	 * @return bool Ture - successfully destroyed / False - failed to destory
 	 */
-    public function deleteCollectionItem(string $iid) : bool {
+    public function deleteCollectionItem(string $iid): bool {
         // create object
         $o = new \OCA\EWS\Components\EWS\Type\ItemIdType($iid);
 
@@ -1086,6 +1110,8 @@ class RemoteEventsService {
 
 	/**
      * retrieve collection item attachment from local storage
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $aid - Attachment ID
 	 * 
@@ -1129,6 +1155,8 @@ class RemoteEventsService {
 
     /**
      * create collection item attachment in local storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $aid - Affiliation ID
      * @param array $sc - Collection of EventAttachmentObject(S)
@@ -1189,6 +1217,8 @@ class RemoteEventsService {
     /**
      * delete collection item attachment from local storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $aid - Attachment ID
 	 * 
 	 * @return bool true - successfully delete / False - failed to delete
@@ -1207,7 +1237,86 @@ class RemoteEventsService {
     }
 
 	/**
+     * construct collection of default remote collection properties 
+     * 
+     * @since Release 1.0.0
+	 * 
+	 * @return object
+	 */
+	private function constructDefaultCollectionProperties(): object {
+
+		// construct properties array
+		if (!isset($this->DefaultCollectionProperties)) {
+			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
+
+
+			$this->DefaultCollectionProperties = $p;
+		}
+
+		return $this->DefaultCollectionProperties;
+
+	}
+
+	/**
+     * construct collection of default remote object properties 
+     * 
+     * @since Release 1.0.0
+	 * 
+	 * @return object
+	 */
+	private function constructDefaultItemProperties(): object {
+
+		// construct properties array
+		if (!isset($this->DefaultItemProperties)) {
+			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:TimeZone');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Start');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:StartTimeZone');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:End');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:EndTimeZone');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Subject');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Location');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:LegacyFreeBusyStatus');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Importance');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Sensitivity');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Organizer');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:RequiredAttendees');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:OptionalAttendees');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderIsSet');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderMinutesBeforeStart');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Recurrence');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:ModifiedOccurrences');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:DeletedOccurrences');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
+
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:UniqueBody');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:AppointmentState');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Resources');
+
+			$this->DefaultItemProperties = $p;
+		}
+
+		return $this->DefaultItemProperties;
+
+	}
+
+	/**
      * construct collection item unindexed property update command
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $uri - property uri
      * @param string $name - property name
@@ -1215,7 +1324,7 @@ class RemoteEventsService {
 	 * 
 	 * @return object collection item property update command
 	 */
-    public function updateFieldUnindexed(string $uri, string $name, mixed $value) : object {
+    public function updateFieldUnindexed(string $uri, string $name, mixed $value): object {
         // create field update object
         $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
         $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
@@ -1229,11 +1338,13 @@ class RemoteEventsService {
     /**
      * construct collection item unindexed property delete command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $uri - property uri
 	 * 
 	 * @return object collection item property delete command
 	 */
-    public function deleteFieldUnindexed(string $uri) : object {
+    public function deleteFieldUnindexed(string $uri): object {
         // create field delete object
         $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
         $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
@@ -1244,6 +1355,8 @@ class RemoteEventsService {
     /**
      * construct collection item indexed property update command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $uri - property uri
      * @param string $index - property index
      * @param string $name - property name
@@ -1252,7 +1365,7 @@ class RemoteEventsService {
 	 * 
 	 * @return object collection item property update command
 	 */
-    public function updateFieldIndexed(string $uri, string $index, string $name, mixed $dictionary, mixed $entry) : object {
+    public function updateFieldIndexed(string $uri, string $index, string $name, mixed $dictionary, mixed $entry): object {
         // create field update object
         $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
         $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
@@ -1267,13 +1380,15 @@ class RemoteEventsService {
     /**
      * construct collection item indexed property delete command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $tag - property tag
      * @param string $type - property type
      * @param string $value - property value
 	 * 
 	 * @return object collection item property delete command
 	 */
-    public function deleteFieldIndexed(string $uri, string $index) : object {
+    public function deleteFieldIndexed(string $uri, string $index): object {
         // create field delete object
         $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
         $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
@@ -1284,6 +1399,8 @@ class RemoteEventsService {
     /**
      * construct collection item extended property create command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $collection - property collection
      * @param string $name - property name
      * @param string $type - property type
@@ -1291,7 +1408,7 @@ class RemoteEventsService {
 	 * 
 	 * @return object collection item property create command
 	 */
-    public function createFieldExtendedByName(string $collection, string $name, string $type, mixed $value) : object {
+    public function createFieldExtendedByName(string $collection, string $name, string $type, mixed $value): object {
         // create extended field object
         $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
             new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1311,6 +1428,8 @@ class RemoteEventsService {
     /**
      * construct collection item extended property update command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $collection - property collection
      * @param string $name - property name
      * @param string $type - property type
@@ -1318,7 +1437,7 @@ class RemoteEventsService {
 	 * 
 	 * @return object collection item property update command
 	 */
-    public function updateFieldExtendedByName(string $collection, string $name, string $type, mixed $value) : object {
+    public function updateFieldExtendedByName(string $collection, string $name, string $type, mixed $value): object {
         // create field update object
         $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
         $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1349,13 +1468,15 @@ class RemoteEventsService {
     /**
      * construct collection item extended property delete command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $collection - property collection
      * @param string $name - property name
      * @param string $type - property type
 	 * 
 	 * @return object collection item property delete command
 	 */
-    public function deleteFieldExtendedByName(string $collection, string $name, string $type) : object {
+    public function deleteFieldExtendedByName(string $collection, string $name, string $type): object {
         // create field delete object
         $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
         $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1373,13 +1494,15 @@ class RemoteEventsService {
     /**
      * construct collection item extended property create command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $tag - property tag
      * @param string $type - property type
      * @param string $value - property value
 	 * 
 	 * @return object collection item property create command
 	 */
-    public function createFieldExtendedByTag(string $tag, string $type, mixed $value) : object {
+    public function createFieldExtendedByTag(string $tag, string $type, mixed $value): object {
         // create extended field object
         $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
             new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1399,13 +1522,15 @@ class RemoteEventsService {
     /**
      * construct collection item extended property update command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $tag - property tag
      * @param string $type - property type
      * @param string $value - property value
 	 * 
 	 * @return object collection item property update command
 	 */
-    public function updateFieldExtendedByTag(string $tag, string $type, mixed $value) : object {
+    public function updateFieldExtendedByTag(string $tag, string $type, mixed $value): object {
         // create field update object
         $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
         $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1436,12 +1561,14 @@ class RemoteEventsService {
     /**
      * construct collection item extended property delete command
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $tag - property tag
      * @param string $type - property type
 	 * 
 	 * @return object collection item property delete command
 	 */
-    public function deleteFieldExtendedByTag(string $tag, string $type) : object {
+    public function deleteFieldExtendedByTag(string $tag, string $type): object {
         // construct field delete object
         $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
         $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1459,11 +1586,13 @@ class RemoteEventsService {
 	/**
      * construct collection item time zone property
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $tag - time zone name
 	 * 
 	 * @return object collection item time zone property
 	 */
-    public function constructTimeZone(string $name) : object {
+    public function constructTimeZone(string $name): object {
 		// retrive time zone properties
 		$zone = \OCA\EWS\Utile\TimeZoneEWS::find($name);
         // construct time zone object
@@ -1529,11 +1658,13 @@ class RemoteEventsService {
 	/**
      * convert remote CalendarItemType object to EventObject
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param CalendarItemType $data - item as CalendarItemType object
 	 * 
 	 * @return EventObject item as EventObject
 	 */
-	public function toEventObject(CalendarItemType $data) : EventObject {
+	public function toEventObject(CalendarItemType $data): EventObject {
 		// create object
 		$o = new EventObject();
 		// Origin
@@ -1826,7 +1957,7 @@ class RemoteEventsService {
      * 
      * @return DateTimeZone valid DateTimeZone object on success, or null on failure
      */
-	public function fromTimeZone(string $name) : ?DateTimeZone {
+	public function fromTimeZone(string $name): ?DateTimeZone {
 		
 		// convert EWS time zone name to DateTimeZone object
 		return \OCA\EWS\Utile\TimeZoneEWS::toDateTimeZone($name);
@@ -1842,15 +1973,27 @@ class RemoteEventsService {
      * 
      * @return string valid EWS time zone name on success, or null on failure
      */ 
-	public function toTimeZone(DateTimeZone $zone) : ?string {
+	public function toTimeZone(DateTimeZone $zone): ?string {
 
 		// convert DateTimeZone object to EWS time zone name
 		return \OCA\EWS\Utile\TimeZoneEWS::fromDateTimeZone($zone);
 
 	}
 
-	private function fromDaysOfWeek(string $data, bool $group = false ) : array {
-		$days = array(
+	/**
+     * convert remote days of the week to event object days of the week
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $days - remote days of the week values(s)
+	 * @param bool $group - flag to check if days are grouped
+	 * 
+	 * @return array event object days of the week values(s)
+	 */
+	private function fromDaysOfWeek(string $days, bool $group = false ): array {
+
+		// days conversion reference
+		$_tm = array(
 			'Monday' => 1,
 			'Tuesday' => 2,
 			'Wednesday' => 3,
@@ -1862,32 +2005,44 @@ class RemoteEventsService {
 			'Weekday' => 8,
 			'WeekendDay' => 9
 		);
-		// split data in to array
-		$data = explode(' ', $data);
-		// check if days match any group patterns
-		if ($group && count($data) == 1) {
+		// convert days to array
+		$days = explode(' ', $days);
+		// evaluate if days match any group patterns
+		if ($group && count($days) == 1) {
 			$groups = array(
 				'Day' => array(1,2,3,4,5,6,7),
 				'Weekday' => array(1,2,3,4,5),
 				'WeekendDay' => array(6,7)
 			);
-			if (isset($groups[$data[0]])) {
-				return $groups[$data[0]];
+			if (isset($groups[$days[0]])) {
+				return $groups[$days[0]];
 			}
 		}
-		// convert values
-		foreach ($data as $key => $entry) {
-			if (isset($days[$entry])) {
-				$data[$key] = $days[$entry];
+		// convert day values
+		foreach ($days as $key => $entry) {
+			if (isset($_tm[$entry])) {
+				$days[$key] = $_tm[$entry];
 			}
 		}
-		// return converted array
-		return $data;
+		// return converted days
+		return $days;
+
 	}
 
-	private function toDaysOfWeek(array $data, bool $group = false) : string {
+	/**
+     * convert event object days of the week to remote days of the week
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param array $days - event object days of the week values(s)
+	 * @param bool $group - flag to check if days can be grouped 
+	 * 
+	 * @return string remote days of the week values(s)
+	 */
+	private function toDaysOfWeek(array $days, bool $group = false): string {
 		
-		$days = array(
+		// days conversion reference
+		$_tm = array(
 			1 => 'Monday',
 			2 => 'Tuesday',
 			3 => 'Wednesday',
@@ -1899,70 +2054,114 @@ class RemoteEventsService {
 			8 => 'Weekday',
 			9 => 'WeekendDay'
 		);
-
-		// check if days match any group patterns
+		// evaluate if days match any group patterns
 		if ($group) {
 			$groups = array(
 				'Day' => array(1,2,3,4,5,6,7),
 				'Weekday' => array(1,2,3,4,5),
 				'WeekendDay' => array(6,7)
 			);
-			sort($data);
+			sort($days);
 			foreach ($groups as $key => $entry) {
-				if ($data == $entry) {
+				if ($days == $entry) {
 					return $key;
 				}
 			}
 		}
-
-        // convert values
-        foreach ($data as $key => $entry) {
-            if (isset($days[$entry])) {
-                $data[$key] = $days[$entry];
+        // convert day values
+        foreach ($days as $key => $entry) {
+            if (isset($_tm[$entry])) {
+                $days[$key] = $_tm[$entry];
             }
         }
-        // split data in to array
-        $data = implode(' ', $data);
-        // return converted string
-        return $data;
+        // convert days to string
+        $days = implode(' ', $days);
+        // return converted days
+        return $days;
+
 	}
 
-	private function fromDaysOfMonth(string $data) : array {
-		// split data in to array
-		$data = explode(' ', $data);
-		// return converted array
-		return $data;
+	/**
+     * convert remote days of the month to event object days of the month
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $days - remote days of the month values(s)
+	 * 
+	 * @return array event object days of the month values(s)
+	 */
+	private function fromDaysOfMonth(string $days): array {
+
+		// convert days to array
+		$days = explode(' ', $days);
+		// return converted days
+		return $days;
+
 	}
 
-	private function toDaysOfMonth(array $data) : string {
-        // combine data to string
-        $data = implode(' ', $data);
-        // return converted string
-        return $data;
+	/**
+     * convert event object days of the month to remote days of the month
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param array $days - event object days of the month values(s)
+	 * 
+	 * @return string remote days of the month values(s)
+	 */
+	private function toDaysOfMonth(array $days): string {
+
+        // convert days to string
+        $days = implode(' ', $days);
+        // return converted days
+        return $days;
+
 	}
 
-	private function fromWeekOfMonth(string $data) : array {
-		$weeks = array(
+	/**
+     * convert remote week of the month to event object week of the month
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $weeks - remote week of the month values(s)
+	 * 
+	 * @return array event object week of the month values(s)
+	 */
+	private function fromWeekOfMonth(string $weeks): array {
+
+		// weeks conversion reference
+		$_tm = array(
 			'First' => 1,
 			'Second' => 2,
 			'Third' => 3,
 			'Fourth' => 4,
 			'Last' => -1
 		);
-		// split data in to array
-		$data = explode(' ', $data);
-		// convert values
-		foreach ($data as $key => $entry) {
-			if (isset($weeks[$entry])) {
-				$data[$key] = $weeks[$entry];
+		// convert weeks to array
+		$weeks = explode(' ', $weeks);
+		// convert week values
+		foreach ($weeks as $key => $entry) {
+			if (isset($_tm[$entry])) {
+				$weeks[$key] = $_tm[$entry];
 			}
 		}
-		// return converted array
-		return $data;
+		// return converted weeks
+		return $weeks;
+
 	}
 
-	private function toWeekOfMonth(array $data) : string {
-		$weeks = array(
+	/**
+     * convert event object week of the month to remote week of the month
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param array $weeks - event object week of the month values(s)
+	 * 
+	 * @return string remote week of the month values(s)
+	 */
+	private function toWeekOfMonth(array $weeks): string {
+
+		// weeks conversion reference
+		$_tm = array(
 			1 => 'First',
 			2 => 'Second',
 			3 => 'Third',
@@ -1970,20 +2169,32 @@ class RemoteEventsService {
 			-1 => 'Last',
 			-2 => 'Fourth'
 		);
-		// convert values
-        foreach ($data as $key => $entry) {
-            if (isset($weeks[$entry])) {
-                $data[$key] = $weeks[$entry];
+		// convert week values
+        foreach ($weeks as $key => $entry) {
+            if (isset($_tm[$entry])) {
+                $weeks[$key] = $_tm[$entry];
             }
         }
-        // split data in to array
-        $data = implode(',', $data);
-        // return converted string
-        return $data;
+        // convert weeks to string
+        $weeks = implode(',', $weeks);
+        // return converted weeks
+        return $weeks;
+
 	}
 
-	private function fromMonthOfYear(string $data) : array {
-		$months = array(
+	/**
+     * convert remote month of the year to event object month of the year
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $months - remote month of the year values(s)
+	 * 
+	 * @return array event object month of the year values(s)
+	 */
+	private function fromMonthOfYear(string $months): array {
+
+		// months conversion reference
+		$_tm = array(
 			'January' => 1,
 			'February' => 2,
 			'March' => 3,
@@ -1997,20 +2208,32 @@ class RemoteEventsService {
 			'November' => 11,
 			'December' => 12
 		);
-		// split data in to array
-		$data = explode(' ', $data);
-		// convert values
-		foreach ($data as $key => $entry) {
-			if (isset($months[$entry])) {
-				$data[$key] = $months[$entry];
+		// convert months to array
+		$months = explode(' ', $months);
+		// convert month values
+		foreach ($months as $key => $entry) {
+			if (isset($_tm[$entry])) {
+				$months[$key] = $_tm[$entry];
 			}
 		}
-		// return converted array
-		return $data;
+		// return converted months
+		return $months;
+
 	}
 
-	private function toMonthOfYear(array $data) : string {
-		$months = array(
+	/**
+     * convert event object month of the year to remote month of the year
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param array $weeks - event object month of the year values(s)
+	 * 
+	 * @return string remote month of the year values(s)
+	 */
+	private function toMonthOfYear(array $months): string {
+
+		// months conversion reference
+		$_tm = array(
 			1 => 'January',
 			2 => 'February',
 			3 => 'March',
@@ -2024,86 +2247,145 @@ class RemoteEventsService {
 			11 => 'November',
 			12 => 'December'
 		);
-		// convert values
-        foreach ($data as $key => $entry) {
-            if (isset($months[$entry])) {
-                $data[$key] = $months[$entry];
+		// convert month values
+        foreach ($months as $key => $entry) {
+            if (isset($_tm[$entry])) {
+                $months[$key] = $_tm[$entry];
             }
         }
-        // split data in to array
-        $data = implode(',', $data);
-        // return converted string
-        return $data;
+        // convert months to string
+        $months = implode(',', $months);
+        // return converted months
+        return $months;
+
 	}
 
-	private function fromSensitivity(?string $level) : ?int {
+	/**
+     * convert remote sensitivity to event object sensitivity
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $level - remote sensitivity value
+	 * 
+	 * @return int event object sensitivity value
+	 */
+	private function fromSensitivity(?string $level): int {
 		
+		// sensitivity conversion reference
 		$levels = array(
 			'Normal' => 0,
 			'Personal' => 1,
 			'Private' => 2,
 			'Confidential' => 3
 		);
+		// evaluate if sensitivity value exists
 		if (isset($levels[$level])) {
-			// return converted value
+			// return converted sensitivity value
 			return $levels[$level];
 		} else {
+			// return default sensitivity value
 			return 0;
 		}
 		
 	}
 
-	private function toSensitivity(?int $level) : ?string {
+	/**
+     * convert event object sensitivity to remote sensitivity
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param int $level - event object sensitivity value
+	 * 
+	 * @return string remote sensitivity value
+	 */
+	private function toSensitivity(?int $level): string {
 		
+		// sensitivity conversion reference
 		$levels = array(
 			0 => 'Normal',
 			1 => 'Personal',
 			2 => 'Private',
 			3 => 'Confidential'
 		);
+		// evaluate if sensitivity value exists
 		if (isset($levels[$level])) {
-			// return converted value
+			// return converted sensitivity value
 			return $levels[$level];
 		} else {
+			// return default sensitivity value
 			return 'Normal';
 		}
 
 	}
 
-	private function fromImportance(?string $level) : ?int {
+	/**
+     * convert remote importance to event object priority
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $level - remote importance value
+	 * 
+	 * @return int event object priority value
+	 */
+	private function fromImportance(?string $level): int {
 		
+		// importance conversion reference
 		$levels = array(
 			'Low' => 0,
 			'Normal' => 1,
 			'High' => 2
 		);
+		// evaluate if importance value exists
 		if (isset($levels[$level])) {
-			// return converted value
+			// return converted priority value
 			return $levels[$level];
 		} else {
+			// return default priority value
 			return 1;
 		}
 		
 	}
 
-	private function toImportance(?int $level) : ?string {
-		
+	/**
+     * convert event object priority to remote importance
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param int $level - event object priority value
+	 * 
+	 * @return string remote importance value
+	 */
+	private function toImportance(?int $level): string {
+
+		// priority conversion reference
 		$levels = array(
 			0 => 'Low',
 			1 => 'Normal',
 			2 => 'High'
 		);
+		// evaluate if priority value exists
 		if (isset($levels[$level])) {
-			// return converted value
+			// return converted importance value
 			return $levels[$level];
 		} else {
+			// return default importance value
 			return 'Normal';
 		}
 
 	}
 
-	private function fromAttendeeResponse(?string $response) : ?string {
+	/**
+     * convert remote attendee response to event object response
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $response - remote attendee response value
+	 * 
+	 * @return string event object attendee response value
+	 */
+	private function fromAttendeeResponse(?string $response): string {
 		
+		// response conversion reference
 		$responses = array(
 			'Accept' => 'A',
 			'Decline' => 'D',
@@ -2112,17 +2394,29 @@ class RemoteEventsService {
 			'Unknown' => 'U',
 			'NoResponseReceived' => 'N'
 		);
+		// evaluate if response value exists
 		if (isset($responses[$response])) {
-			// return converted value
+			// return converted response value
 			return $responses[$response];
 		} else {
+			// return default response value
 			return 'N';
 		}
 		
 	}
 
-	private function toAttendeeResponse(?string $response) : ?string {
+	/**
+     * convert event object attendee response to remote attendee response
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param string $response - event object attendee response value
+	 * 
+	 * @return string remote attendee response value
+	 */
+	private function toAttendeeResponse(?string $response): string {
 		
+		// response conversion reference
 		$responses = array(
 			'A' => 'Accept',
 			'D' => 'Decline',
@@ -2131,75 +2425,15 @@ class RemoteEventsService {
 			'U' => 'Unknown',
 			'N' => 'NoResponseReceived'
 		);
+		// evaluate if response value exists
 		if (isset($responses[$response])) {
-			// return converted value
+			// return converted response value
 			return $responses[$response];
 		} else {
+			// return default response value
 			return 'NoResponseReceived';
 		}
 
 	}
 
-	private function constructDefaultCollectionProperties() : object {
-
-		// construct properties array
-		if (!isset($this->DefaultCollectionProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
-
-
-			$this->DefaultCollectionProperties = $p;
-		}
-
-		return $this->DefaultCollectionProperties;
-
-	}
-
-	private function constructDefaultItemProperties() : object {
-
-		// construct properties array
-		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:TimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Start');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:StartTimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:End');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:EndTimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Subject');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Location');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:LegacyFreeBusyStatus');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Importance');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Sensitivity');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Organizer');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:RequiredAttendees');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:OptionalAttendees');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderIsSet');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderMinutesBeforeStart');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Recurrence');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:ModifiedOccurrences');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:DeletedOccurrences');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:UniqueBody');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:AppointmentState');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Resources');
-
-			$this->DefaultItemProperties = $p;
-		}
-
-		return $this->DefaultItemProperties;
-
-	}
 }

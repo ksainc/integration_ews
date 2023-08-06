@@ -72,6 +72,8 @@ class LocalEventsService {
 	/**
      * retrieve information for specific collection from local storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $uid - User ID
 	 * 
 	 * @return array of collections
@@ -92,6 +94,8 @@ class LocalEventsService {
 	
     /**
      * retrieve properties for specific collection from local storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection Id
 	 * 
@@ -117,6 +121,8 @@ class LocalEventsService {
 
 	/**
      * create collection in local storage
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $uid - User ID
 	 * @param string $cid - Collection URI
@@ -147,6 +153,8 @@ class LocalEventsService {
     /**
      * delete collection from local storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $mode - True for permanently / False - for Recoverable
 	 * 
@@ -171,6 +179,8 @@ class LocalEventsService {
     /**
      * retrieve changes for specific collection from local storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection Id
      * @param string $state - Collection Id
 	 * 
@@ -187,6 +197,8 @@ class LocalEventsService {
 	
     /**
      * find collection item by uuid in local storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
      * @param string $uuid - Item UUID
@@ -231,6 +243,8 @@ class LocalEventsService {
     /**
      * retrieve collection item from local storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Item ID
 	 * 
@@ -273,6 +287,8 @@ class LocalEventsService {
     /**
      * create collection item in local storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param EventObject $eo - Item Data
 	 * 
@@ -314,6 +330,8 @@ class LocalEventsService {
 
     /**
      * update collection item in local storage
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Item ID
@@ -359,6 +377,8 @@ class LocalEventsService {
     /**
      * delete collection item from local storage
      * 
+     * @since Release 1.0.0
+     * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Item ID
 	 * 
@@ -382,6 +402,8 @@ class LocalEventsService {
 
     /**
      * retrieve collection item attachment from local storage
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $uid - User ID
      * @param string $batch - Collection of Id's
@@ -426,6 +448,8 @@ class LocalEventsService {
 
     /**
      * create collection item attachment in local storage
+     * 
+     * @since Release 1.0.0
      * 
      * @param string $uid - User ID
      * @param string $fn - Folder Name to save attachments
@@ -494,6 +518,8 @@ class LocalEventsService {
     /**
      * delete collection item attachment from local storage
      * 
+     * @since Release 1.0.0
+     * 
      * @param string $aid - Attachment ID
 	 * 
 	 * @return bool true - successfully delete / False - failed to delete
@@ -512,6 +538,8 @@ class LocalEventsService {
 
     /**
      * convert vevent object to event object
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param VEvent $vo - source object
 	 * 
@@ -778,10 +806,13 @@ class LocalEventsService {
         
 		// return event object
 		return $eo;
+        
     }
 
     /**
      * Convert event object to vevent object
+     * 
+     * @since Release 1.0.0
      * 
 	 * @param EventObject $vo - source object
 	 * 
@@ -1057,9 +1088,19 @@ class LocalEventsService {
 
     }
 
-    private function fromFrequency(?string $frequency) : ?string {
+    /**
+     * convert local frequency to event object occurrence precision
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $frequency - local frequency value
+	 * 
+	 * @return int event object occurrence precision value
+	 */
+    private function fromFrequency(?string $frequency): string {
 		
-		$frequencies = array(
+        // frequency conversion reference
+		$_tm = array(
 			'DAILY' => 'D',
 			'WEEKLY' => 'W',
 			'MONTHLY' => 'M',
@@ -1068,18 +1109,30 @@ class LocalEventsService {
 			'MINUTELY' => 'I',
             'SECONDLY' => 'S',
 		);
-		if (isset($frequencies[$frequency])) {
-			// return converted value
-			return $frequencies[$frequency];
+        // evaluate if frequency value exists
+		if (isset($_tm[$frequency])) {
+			// return converted occurrence precision value
+			return $_tm[$frequency];
 		} else {
+            // return default occurrence precision value
 			return 'D';
 		}
 		
 	}
 
-	private function toFrequency(?string $frequency) : ?string {
+    /**
+     * convert event object occurrence precision to local frequency
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param int $precision - event object occurrence precision value
+	 * 
+	 * @return string local frequency value
+	 */
+	private function toFrequency(?string $precision): string {
 
-		$frequencies = array(
+        // occurrence precision conversion reference
+		$_tm = array(
 			'D' => 'DAILY',
 			'W' => 'WEEKLY',
 			'M' => 'MONTHLY',
@@ -1088,18 +1141,30 @@ class LocalEventsService {
 			'I' => 'MINUTELY',
             'S' => 'SECONDLY',
 		);
-		if (isset($frequencies[$frequency])) {
-			// return converted value
-			return $frequencies[$frequency];
+        // evaluate if occurrence precision value exists
+		if (isset($_tm[$precision])) {
+			// return converted frequency value
+			return $_tm[$precision];
 		} else {
+            // return default frequency value
 			return 'DAILY';
 		}
 
 	}
 
-    private function fromByDay(array $data) : ?array {
-        // conversion array
-        $days = array(
+    /**
+     * convert local by day to event object days of the week
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param array $days - local by day values(s)
+	 * 
+	 * @return array event object days of the week values(s)
+	 */
+    private function fromByDay(array $days): array {
+        
+        // days conversion reference
+        $_tm = array(
             'MO' => 1,
             'TU' => 2,
             'WE' => 3,
@@ -1108,21 +1173,29 @@ class LocalEventsService {
             'SA' => 6,
             'SU' => 7
         );
-        // split data in to array
-        // $data = explode(',', $data);
-        // convert values
-        foreach ($data as $key => $value) {
-            if (isset($days[$value])) {
-                $data[$key] = $days[$value];
+        // convert day values
+        foreach ($days as $key => $value) {
+            if (isset($_tm[$value])) {
+                $days[$key] = $_tm[$value];
             }
         }
-        // return converted array
-        return $data;
+        // return converted days
+        return $days;
     }
 
-    private function toByDay(array $data) : ?string {
-        // conversion array
-        $days = array(
+    /**
+     * convert event object days of the week to local by day
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param array $days - event object days of the week values(s)
+	 * 
+	 * @return string local by day values(s)
+	 */
+    private function toByDay(array $days): string {
+
+        // days conversion reference
+        $_tm = array(
             1 => 'MO',
             2 => 'TU',
             3 => 'WE',
@@ -1131,166 +1204,285 @@ class LocalEventsService {
             6 => 'SA',
             7 => 'SU'
         );
-        // convert values
-        foreach ($data as $key => $value) {
-            if (isset($days[$value])) {
-                $data[$key] = $days[$value];
+        // convert day values
+        foreach ($days as $key => $value) {
+            if (isset($_tm[$value])) {
+                $days[$key] = $_tm[$value];
             }
         }
-        // split data in to array
-        $data = implode(',', $data);
-        // return converted string
-        return $data;
+        // convert days to string
+        $days = implode(',', $days);
+        // return converted days
+        return $days;
+
     }
 
-    private function fromClass(string $level) : ?int {
+    /**
+     * convert local class to event object sensitivity
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $level - local class value
+	 * 
+	 * @return int|null event object sensitivity value
+	 */
+    private function fromClass(?string $level): int {
 		
-		$levels = array(
+        // class conversion reference
+		$_tm = array(
 			'PUBLIC' => 0,
 			'PRIVATE' => 2,
 			'CONFIDENTIAL' => 3
 		);
-		if (isset($levels[$level])) {
-			// return converted value
-			return $levels[$level];
+        // evaluate if class value exists
+		if (isset($_tm[$level])) {
+			// return converted sensitivity value
+			return $_tm[$level];
 		} else {
-			return null;
+            // return default sensitivity value
+			return 0;
 		}
 		
 	}
 
-	private function toClass(int $level) : ?string {
-		$levels = array(
+    /**
+     * convert event object sensitivity to local class
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param int $level - event object sensitivity value
+	 * 
+	 * @return string|null local class value
+	 */
+	private function toClass(?int $level): string {
+
+        // sensitivity conversion reference
+		$_tm = array(
 			0 => 'PUBLIC',
 			1 => 'PRIVATE',
 			2 => 'PRIVATE',
 			3 => 'CONFIDENTIAL'
 		);
-		if (isset($levels[$level])) {
-			// return converted value
-			return $levels[$level];
+        // evaluate if sensitivity value exists
+		if (isset($_tm[$level])) {
+			// return converted class value
+			return $_tm[$level];
 		} else {
-			return null;
+            // return default class value
+			return 'PUBLIC';
 		}
 	}
 
-    private function fromAttendeeRole(string $role) : ?string {
+    /**
+     * convert local attendee role to event object attendee attendance
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $role - local attendee role value
+	 * 
+	 * @return int event object attendee attendance value
+	 */
+    private function fromAttendeeRole(?string $role): string {
 		
-		$roles = array(
+        // role conversion reference
+		$_tm = array(
 			'REQ-PARTICIPANT' => 'R',
 			'OPT-PARTICIPANT' => 'O',
 			'NON-PARTICIPANT' => 'N',
             'CHAIR' => 'C'
 		);
-		if (isset($roles[$role])) {
-			// return converted value
-			return $roles[$role];
+        // evaluate if role value exists
+		if (isset($_tm[$role])) {
+			// return converted attendance value
+			return $_tm[$role];
 		} else {
+            // return default attendance value
 			return 'R';
 		}
 		
 	}
 
-	private function toAttendeeRole(string $role) : ?string {
+    /**
+     * convert event object attendee attendance to local attendee role
+     *  
+     * @since Release 1.0.0
+     * 
+	 * @param string $attendance - event object attendee attendance value
+	 * 
+	 * @return string local attendee role value
+	 */
+	private function toAttendeeRole(?string $attendance): string {
 
-		$roles = array(
+        // attendance conversion reference
+		$_tm = array(
 			'R' => 'REQ-PARTICIPANT',
 			'O' => 'OPT-PARTICIPANT',
 			'N' => 'NON-PARTICIPANT',
 			'C' => 'CHAIR'
 		);
-		if (isset($roles[$role])) {
-			// return converted value
-			return $roles[$role];
+        // evaluate if attendance value exists
+		if (isset($_tm[$attendance])) {
+			// return converted role value
+			return $_tm[$attendance];
 		} else {
+            // return default role value
 			return 'REQ-PARTICIPANT';
 		}
 
 	}
 
-    private function fromAttendeeStatus(?string $status) : ?string {
+    /**
+     * convert local attendee status to event object attendee status
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $status - local attendee status value
+	 * 
+	 * @return int event object attendee status value
+	 */
+    private function fromAttendeeStatus(?string $status): string {
 		
-		$statuss = array(
+        // status conversion reference
+		$_tm = array(
 			'ACCEPTED' => 'A',
 			'DECLINED' => 'D',
 			'TENTATIVE' => 'T',
             'DELEGATED' => 'R',
 			'NEEDS-ACTION' => 'N'
 		);
-		if (isset($statuss[$status])) {
-			// return converted value
-			return $statuss[$status];
+        // evaluate if status value exists
+		if (isset($_tm[$status])) {
+			// return converted status value
+			return $_tm[$status];
 		} else {
+            // return default status value
 			return 'N';
 		}
 		
 	}
 
-	private function toAttendeeStatus(string $status) : ?string {
+    /**
+     * convert event object attendee status to local attendee status
+     *  
+     * @since Release 1.0.0
+     * 
+	 * @param string $status - event object attendee status value
+	 * 
+	 * @return string local attendee status value
+	 */
+	private function toAttendeeStatus(?string $status): string {
 
-		$statuss = array(
+        // status conversion reference
+		$_tm = array(
 			'A' => 'ACCEPTED',
 			'D' => 'DECLINED',
 			'T' => 'TENTATIVE',
 			'R' => 'DELEGATED',
 			'N' => 'NEEDS-ACTION'
 		);
-		if (isset($statuss[$status])) {
-			// return converted value
-			return $statuss[$status];
+        // evaluate if status value exists
+		if (isset($_tm[$status])) {
+			// return converted status value
+			return $_tm[$status];
 		} else {
+            // return default status value
 			return 'NEEDS-ACTION';
 		}
 
 	}
 
-    private function fromAlarmAction(string $action) : ?string {
+    /**
+     * convert local alarm action to event object alarm action type
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $action - local alarm action value
+	 * 
+	 * @return int event object alarm action type value
+	 */
+    private function fromAlarmAction(?string $action): string {
 		
-		$actions = array(
+        // action conversion reference
+		$_tm = array(
 			'DISPLAY' => 'D',
 			'EMAIL' => 'E',
 			'AUDIO' => 'A'
 		);
-		if (isset($actions[$action])) {
-			// return converted value
-			return $actions[$action];
+        // evaluate if action value exists
+		if (isset($_tm[$action])) {
+			// return converted action value
+			return $_tm[$action];
 		} else {
+            // return default action value
 			return 'D';
 		}
 		
 	}
 
-	private function toAlarmAction(string $action) : ?string {
+    /**
+     * convert event object alarm type to local alram action
+     *  
+     * @since Release 1.0.0
+     * 
+	 * @param string $type - event object action type value
+	 * 
+	 * @return string local alarm action value
+	 */
+	private function toAlarmAction(?string $type): string {
 
-		$actions = array(
+        // action conversion reference
+		$_tm = array(
 			'D' => 'DISPLAY',
 			'E' => 'EMAIL',
 			'A' => 'AUDIO'
 		);
-		if (isset($actions[$action])) {
-			// return converted value
-			return $actions[$action];
+        // evaluate if action value exists
+		if (isset($_tm[$type])) {
+			// return converted action value
+			return $_tm[$type];
 		} else {
+            // return default action value
 			return 'NEEDS-ACTION';
 		}
 
 	}
 
-    private function fromDurationPeriod(string $period) : ?DateInterval {
+    /**
+     * convert local duration period to event object date interval
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $period - local duration period value
+	 * 
+	 * @return DateInterval event object date interval object
+	 */
+    private function fromDurationPeriod(string $period): DateInterval {
 		
+        // evaluate if period is negative
 		if (str_contains($period, '-P')) {
             $period = trim($period, '-');
             $period = new DateInterval($period);
             $period->invert = 1;
+            // return date interval object
             return $period;
         }
         else {
+            // return date interval object
             return new DateInterval($period);
         }
 		
 	}
 
-	private function toDurationPeriod(DateInterval $period) : ?string {
+    /**
+     * convert event object date interval to local duration period
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param DateInterval $period - event object date interval object
+	 * 
+	 * @return string local duration period value
+	 */
+	private function toDurationPeriod(DateInterval $period): string {
 
 		if ($period->y > 0) { return $period->format("%rP%yY%mM%dDT%hH%iM"); }
         elseif ($period->m > 0) { return $period->format("%rP%mM%dDT%hH%iM"); }
@@ -1299,4 +1491,5 @@ class LocalEventsService {
         else { return $period->format("%rPT%iM"); }
 
 	}
+
 }
