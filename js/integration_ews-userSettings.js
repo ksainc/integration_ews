@@ -11303,7 +11303,6 @@ var render = function render() {
     attrs: {
       id: "ews-server",
       type: "text",
-      readonly: _vm.readonly,
       placeholder: _vm.t("integration_ews", "Server Address"),
       autocomplete: "off",
       autocorrect: "off",
@@ -11334,7 +11333,6 @@ var render = function render() {
     attrs: {
       id: "ews-account-id",
       type: "text",
-      readonly: _vm.readonly,
       placeholder: _vm.t("integration_ews", "Authentication ID for your EWS Account"),
       autocomplete: "off",
       autocorrect: "off",
@@ -11365,7 +11363,6 @@ var render = function render() {
     attrs: {
       id: "ews-account-secret",
       type: "password",
-      readonly: _vm.readonly,
       placeholder: _vm.t("integration_ews", "Authentication secret for your EWS Account"),
       autocomplete: "off",
       autocorrect: "off",

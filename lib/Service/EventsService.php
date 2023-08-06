@@ -117,6 +117,8 @@ class EventsService {
 		$correlations = $this->CorrelationsService->findByType($this->Settings->UserId, 'EC');
 		// iterate through correlation items
 		foreach ($correlations as $correlation) {
+			// construct UUID's place holder
+			$this->RemoteUUIDs = [];
 			// set local and remote collection id's
 			$caid = (string) $correlation->getid();
 			$lcid = $correlation->getloid();
@@ -273,7 +275,7 @@ class EventsService {
 			// Make sure to store this for the next sync.
 			$correlation->setrstate($rCollectionChanges->SyncToken);
 			$this->CorrelationsService->update($correlation);
-
+			// destroy UUID's place holder
 			unset($this->RemoteUUIDs);
 
 		}

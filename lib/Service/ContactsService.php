@@ -107,6 +107,8 @@ class ContactsService {
 		$correlations = $this->CorrelationsService->findByType($this->Settings->UserId, 'CC');
 		// iterate through correlation items
 		foreach ($correlations as $correlation) {
+			// construct UUID's place holder
+			$this->RemoteUUIDs = [];
 			// set local and remote collection id's
 			$caid = (string) $correlation->getid();
 			$lcid = $correlation->getloid();
@@ -263,7 +265,7 @@ class ContactsService {
 			// update and deposit correlation remote state
 			$correlation->setrstate($rCollectionChanges->SyncToken);
 			$this->CorrelationsService->update($correlation);
-
+			// destroy UUID's place holder
 			unset($this->RemoteUUIDs);
 
 		}
