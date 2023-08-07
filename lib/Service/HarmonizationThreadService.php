@@ -58,7 +58,7 @@ class HarmonizationThreadService {
 	public function launch(string $uid): int {
 		
 		// construct command
-		$command = 'php ' . 
+		$command = 'php --define apc.enable_cli=1 ' . 
 			dirname(__DIR__) . '/Tasks/HarmonizationThread.php ' . 
 			'-u' . $uid .
 			' > /dev/null 2>&1 & echo $!;';
