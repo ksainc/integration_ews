@@ -10,15 +10,11 @@ Before proceeding further please make sure you read the following sections, Requ
 
 After the app is installed and enabled in Nextcloud you should have a new section call "Connected Accounts" under "Personal Settings", if you don't see it refresh the browser window.
 
-```
-Insert Initial Screen Image
-```
+![EWS Integration](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Initial%20Screen.png?raw=true 'Initial Configuration')
 
 On the initial screen you will be asked for the account information (hostname, username, password) for the remote system. After filling in the required information, press the "Connect" button. The app will then attempt an initial connection to the remote system, if successful, it will retrieve a list of all available calendars and contacts folders from the remote system, and display them below the authentication section.
 
-```
-Insert Connected Screen Image
-```
+![EWS Integration](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Connected%20Screen.png?raw=true 'Correlation Configuration')
 
 Once your accounts is connected and the remote calendars and contacts folders are listed similar to the image above. The next step is to create some correlations (associations/relations/links) between the local and remote, calendar or contacts collections by clicking the link icon beside the remote collection name and selecting the local calendar or contacts address book to associate with and click save. PLEASE READ THE WARNING BELOW BEFORE CLICK SAVE
 
