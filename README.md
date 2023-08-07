@@ -74,6 +74,8 @@ The following is a very long list of things that work and limitations.
 
 About 95% of the properties between Nextcloud and EWS are transferable and supported for both Contacts and Calendars, some properties are limited due to the limitations of both systems.
 
+Please note that at the moment the app only supports basic and NTLM authentication. 
+
 ### Contacts
 
 The following is a list of contacts properties that translate and are transfered to between both systems.
@@ -137,3 +139,7 @@ Calendars
 | Recurrence  - Yearly Relative | Limited | EWS Limitation  
 Limited to single month of the year |
 | Recurrence  - End | Supported |  |
+
+## Future Features
+- Add Oauth2 Support
+- Add Mail integration
