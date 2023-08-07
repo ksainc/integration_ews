@@ -1155,9 +1155,9 @@ class EventsService {
 		$eo->Sensitivity = '1';
 		$eo->addTag('First Tag');
 		$eo->addTag('Second Tag');
-		$eo->addAttendee('homer.simpson@test.com', 'Homer Simpson', 'R', 'T');
-		$eo->addAttendee('marge.simpson@test.com', 'Marge Simpson', 'R', 'A');
-		$eo->addAttendee('bart.simpson@test.com', 'Bart Simpson', 'O', 'D');
+		$eo->addAttendee('homer@simpsons.fake', 'Homer Simpson', 'R', 'T');
+		$eo->addAttendee('marge@simpsons.fake', 'Marge Simpson', 'R', 'A');
+		$eo->addAttendee('bart@simpsons.fake', 'Bart Simpson', 'O', 'D');
 		$di = new \DateInterval('PT1H');
 		$di->invert = 1;
 		$eo->addNotification('D', 'R', $di);

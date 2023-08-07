@@ -1082,7 +1082,119 @@ class ContactsService {
 		$rcc = $this->RemoteContactsService->fetchCollectionChanges($rcid, '');
 
 		$co = new ContactObject();
-		$co->Label = 'Homer J. Simpson';
-		//$co-> = '';
+		$co->Name->Last = "Simpson";
+		$co->Name->First = 'Homer';
+        $co->Name->Other = 'J';
+        $co->Name->Prefix = 'Mr';
+        $co->Name->Suffix = 'Dooh';
+		$co->Aliases = 'Pieman';
+		$co->Gender = 'M';
+		$co->BirthDay = new \Datetime('May 12, 1956');
+		$co->AnniversaryDay = new \Datetime('April 19, 1987');
+		$co->addAddress(
+			'HOME',
+			'742 Evergreen Terrace',
+			'Springfield',
+			'Oregon',
+			'97477',
+			'United States'
+		);
+		$co->addAddress(
+			'WORK',
+			'1 Atomic Lane',
+			'Springfield',
+			'Oregon',
+			'97408',
+			'United States'
+		);
+		$co->addPhone(
+			'HOME',
+			null,
+			'(939) 555-0113'
+		);
+		$co->addPhone(
+			'WORK',
+			null,
+			'(939) 555-7334'
+		);
+		$co->addEmail(
+			'HOME',
+			'homer@simpsons.fake'
+		);
+		$co->addEmail(
+			'WORK',
+			'hsimpson@springfieldpower.fake'
+		);
+
+		$co->Occupation->Organization = 'Springfield Power Company';
+		$co->Occupation->Title = 'Chief Safety Officer';
+		$co->Occupation->Role = 'Safety Inspector';
+		$co->addTag('Simpson Family');
+
+		// generate new uuid for local
+		$co->UUID = \OCA\EWS\Utile\UUID::v4();
+		$co->Label = 'NC Homer J. Simpson';
+		
+		// create local contact
+		$lo = $this->LocalContactsService->createCollectionItem($lcid, $co);
+		// retrieve local contact
+		$lo = $this->LocalContactsService->fetchCollectionItem($lcid, $lo->ID);
+		// update local contact
+		$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $co);
+
+		// generate new uuid for local
+		$co->UUID = \OCA\EWS\Utile\UUID::v4();
+		$co->Label = 'EWS Homer J. Simpson';
+		// create remote contact
+		$ro = $this->RemoteContactsService->createCollectionItem($rcid, $co);
+		// retrieve remote contact
+		$ro = $this->RemoteContactsService->fetchCollectionItem($ro->ID);
+		// update remote contact
+		// delete all previous attachment(s) in remote store
+		// work around for missing update command in ews
+		$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
+		$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $co);
+
+		$co = new ContactObject();
+		$co->Name->Last = "Simpson";
+		$co->Name->First = 'Marjorie';
+        $co->Name->Other = 'Jacqueline "Marge"';
+        $co->Name->Prefix = 'Mrs';
+        $co->Name->Suffix = 'MD';
+		$co->Aliases = 'Queen';
+		$co->Gender = 'F';
+		$co->BirthDay = new \Datetime('March 19, 1958');
+		$co->AnniversaryDay = new \Datetime('April 19, 1987');
+		$co->addAddress(
+			'HOME',
+			'742 Evergreen Terrace',
+			'Springfield',
+			'Oregon',
+			'97477',
+			'United States'
+		);
+		$co->addPhone(
+			'HOME',
+			null,
+			'(939) 555-0113'
+		);
+		$co->addEmail(
+			'HOME',
+			'marge@simpsons.fake'
+		);
+		$co->addTag('Simpson Family');
+
+		// generate new uuid for local
+		$co->UUID = \OCA\EWS\Utile\UUID::v4();
+		$co->Label = 'NC Marge Simpson';
+		// create local contact
+		$lo = $this->LocalContactsService->createCollectionItem($lcid, $co);
+
+		// generate new uuid for local
+		$co->UUID = \OCA\EWS\Utile\UUID::v4();
+		$co->Label = 'EWS Marge Simpson';
+		// create remote contact
+		$ro = $this->RemoteContactsService->createCollectionItem($rcid, $co);
+
 	}
 }
