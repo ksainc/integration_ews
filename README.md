@@ -2,9 +2,7 @@
 
 EWS (Exchange Web Services) integration allows you to automatically bidirectionally synchronize your Nextcloud calendars and contacts with an external EWS protocal capable system like Microsoft Exchange, Kerio Connect, etc
 
-```
 ![EWS Integration](https://github.com/ksainc/integration_ews/blob/62a4ae5081526009e310ea9e9734809a769697cf/img/EWS%20Notification%20Screen.png?raw=true 'Notifications')
-```
 
 ## How to use
 
