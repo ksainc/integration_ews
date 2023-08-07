@@ -137,7 +137,7 @@ class ContactsService {
 				continue;
 			}
 			// retrieve list of local changed objects
-			$lCollectionChanges = $this->LocalContactsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlstate());
+			$lCollectionChanges = $this->LocalContactsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlostate());
 			// process local created objects
 			foreach ($lCollectionChanges['added'] as $iid) {
 				// process create
@@ -198,11 +198,11 @@ class ContactsService {
 				}
 			}
 			// update and deposit correlation local state
-			$correlation->setlstate($lCollectionChanges['syncToken']);
+			$correlation->setlostate($lCollectionChanges['syncToken']);
 			$this->CorrelationsService->update($correlation);
 
 			// retrieve list of remote changed object
-			$rCollectionChanges = $this->RemoteContactsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrstate());
+			$rCollectionChanges = $this->RemoteContactsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrostate());
 			// process remote created objects
 			foreach ($rCollectionChanges->Create as $changed) {
 				// process create
@@ -263,7 +263,7 @@ class ContactsService {
 				}
 			}
 			// update and deposit correlation remote state
-			$correlation->setrstate($rCollectionChanges->SyncToken);
+			$correlation->setrostate($rCollectionChanges->SyncToken);
 			$this->CorrelationsService->update($correlation);
 			// destroy UUID's place holder
 			unset($this->RemoteUUIDs);
@@ -424,7 +424,7 @@ class ContactsService {
 		// if correlation exists
 		// compare local state to correlation state and stop processing if they match to prevent sync loop
 		if ($ci instanceof \OCA\EWS\Db\Correlation && 
-			$ci->getlstate() == $lo->State) {
+			$ci->getlostate() == $lo->State) {
 			// return status of action
 			return $status;
 		}
@@ -483,10 +483,10 @@ class ContactsService {
 		// create object correlation if none was found
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->update($ci);
 		}
@@ -496,10 +496,10 @@ class ContactsService {
 			$ci->setuid($uid); // User ID
 			$ci->setaid($caid); //Affiliation ID
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->create($ci);
 		}
@@ -541,7 +541,7 @@ class ContactsService {
 		// if correlation exists
 		// compare local state to correlation state and stop processing if they match to prevent sync loop
 		if ($ci instanceof \OCA\EWS\Db\Correlation && 
-			$ci->getlstate() == $lo->State) {
+			$ci->getlostate() == $lo->State) {
 			// return status of action
 			return $status;
 		}
@@ -598,7 +598,7 @@ class ContactsService {
 			// compare remote object state to correlation state
 			// if states DO NOT MATCH use selected mode to resolve conflict
 			elseif ($ci instanceof \OCA\EWS\Db\Correlation && 
-					$ro->State != $ci->getrstate()) {
+					$ro->State != $ci->getrostate()) {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
@@ -627,7 +627,7 @@ class ContactsService {
 			// compare remote object state to correlation state
 			// if states DO MATCH update remote object
 			elseif ($ci instanceof \OCA\EWS\Db\Correlation && 
-					$ro->State == $ci->getrstate()) {
+					$ro->State == $ci->getrostate()) {
 				// delete all previous attachment(s) in remote store
 				// work around for missing update command in ews
 				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -647,10 +647,10 @@ class ContactsService {
 		// create object correlation if none was found
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->update($ci);
 		}
@@ -660,10 +660,10 @@ class ContactsService {
 			$ci->setuid($uid); // User ID
 			$ci->setaid($caid); //Affiliation ID
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->create($ci);
 		}
@@ -736,7 +736,7 @@ class ContactsService {
 		// if correlation exists
 		// compare update state to correlation state and stop processing if they match to prevent sync loop
 		if ($ci instanceof \OCA\EWS\Db\Correlation && 
-			$ci->getrstate() == $ro->State) {
+			$ci->getrostate() == $ro->State) {
 			// return status of action
 			return $status;
 		}
@@ -791,10 +791,10 @@ class ContactsService {
 		// create object correlation if none was found
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->update($ci);
 		}
@@ -804,10 +804,10 @@ class ContactsService {
 			$ci->setuid($uid); // User ID
 			$ci->setaid($caid); //Affiliation ID
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->create($ci);
 		}
@@ -848,7 +848,7 @@ class ContactsService {
 		$ci = $this->CorrelationsService->findByRemoteId($uid, 'CO', $roid, $rcid);
 		// if correlation exists, compare update state to correlation state and stop processing if they match
 		if ($ci instanceof \OCA\EWS\Db\Correlation && 
-			$ci->getrstate() == $ro->State) {
+			$ci->getrostate() == $ro->State) {
 			// return status of action
 			return $status;
 		}
@@ -895,7 +895,7 @@ class ContactsService {
 			// compare local object state to correlation state
 			// if states DO NOT MATCH use selected mode to resolve conflict
 			elseif ($ci instanceof \OCA\EWS\Db\Correlation && 
-					$lo->State != $ci->getlstate()) {
+					$lo->State != $ci->getlostate()) {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
@@ -924,7 +924,7 @@ class ContactsService {
 			// compare local object state to correlation state
 			// if states DO MATCH update local object
 			elseif ($ci instanceof \OCA\EWS\Db\Correlation && 
-					$lo->State == $ci->getlstate()) {
+					$lo->State == $ci->getlostate()) {
 				// update local object
 				$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 				// assign status
@@ -946,10 +946,10 @@ class ContactsService {
 		// create object correlation if none was found
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->update($ci);
 		}
@@ -959,10 +959,10 @@ class ContactsService {
 			$ci->setuid($uid); // User ID
 			$ci->setaid($caid); //Affiliation ID
 			$ci->setloid($lo->ID); // Local ID
-			$ci->setlstate($lo->State); // Local State
+			$ci->setlostate($lo->State); // Local State
 			$ci->setlcid($lcid); // Local Collection ID
 			$ci->setroid($ro->ID); // Remote ID
-			$ci->setrstate($ro->State); // Remote State
+			$ci->setrostate($ro->State); // Remote State
 			$ci->setrcid($rcid); // Remote Collection ID
 			$this->CorrelationsService->create($ci);
 		}

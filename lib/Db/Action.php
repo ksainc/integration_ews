@@ -43,14 +43,14 @@ use OCP\AppFramework\Db\Entity;
  * @method setlcid(string $lcid): void
  * @method getloid(): string
  * @method setloid(string $loid): void
- * @method getlstate(): string
- * @method setlstate(string $lstate): void
+ * @method getlostate(): string
+ * @method setlostate(string $lostate): void
  * @method getrcid(): string
  * @method setrcid(string $rcid): void
  * @method getroid(): string
  * @method setroid(string $roid): void
- * @method getrstate(): string
- * @method setrstate(string $rstate): void
+ * @method getrostate(): string
+ * @method setrostate(string $rostate): void
  * @method getcreatedon(): string
  * @method setcreatedon(string $createdon): void
  */
@@ -61,10 +61,10 @@ class Action extends Entity implements JsonSerializable {
 	protected string $origin = '';
 	protected ?string $loid = null;
 	protected ?string $lcid = null;
-	protected ?string $lstate = null;
+	protected ?string $lostate = null;
 	protected ?string $roid = null;
 	protected ?string $rcid = null;
-	protected ?string $rstate = null;
+	protected ?string $rostate = null;
 	protected ?string $createdon = null;
 
 	public function jsonSerialize(): array {
@@ -75,10 +75,10 @@ class Action extends Entity implements JsonSerializable {
 			'origin' => $this->origin,
 			'lcid' => $this->lcid,
 			'loid' => $this->loid,
-			'lstate' => $this->lstate,
+			'lostate' => $this->lostate,
 			'rcid' => $this->rcid,
 			'roid' => $this->roid,
-			'rstate' => $this->rstate,
+			'rostate' => $this->rostate,
 			'createdon' => $this->createdon
 		];
 	}

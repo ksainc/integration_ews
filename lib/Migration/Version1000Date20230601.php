@@ -75,7 +75,7 @@ class Version1000Date20230601 extends SimpleMigrationStep {
 				'notnull' => false
 			]);
 			// local object state
-			$table->addColumn('lstate', Types::STRING, [
+			$table->addColumn('lostate', Types::STRING, [
 				'length' => 64,
 				'notnull' => false
 			]);
@@ -90,7 +90,7 @@ class Version1000Date20230601 extends SimpleMigrationStep {
 				'notnull' => false
 			]);
 			// remote object state
-			$table->addColumn('rstate', Types::STRING, [
+			$table->addColumn('rostate', Types::STRING, [
 				'length' => 64,
 				'notnull' => false
 			]);

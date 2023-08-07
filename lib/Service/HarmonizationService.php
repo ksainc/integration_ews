@@ -313,7 +313,7 @@ class HarmonizationService {
 					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
 					// work around to filter out harmonization generated events
 					// evaluate corrollation, if dose not exists or state does not match, create action
-					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrstate() != $ostate) {
+					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
 						// construct action entry
 						$a = new Action();
 						$a->setuid($uid);
@@ -322,7 +322,7 @@ class HarmonizationService {
 						$a->setorigin('R');
 						$a->setrcid($cid);
 						$a->setroid($oid);
-						$a->setrstate($ostate);
+						$a->setrostate($ostate);
 						$a->setcreatedon($entry->TimeStamp);
 						// deposit action entry
 						$this->ActionManager->insert($a);
@@ -351,7 +351,7 @@ class HarmonizationService {
 					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
 					// work around to filter out harmonization generated events
 					// evaluate corrollation, if dose not exists or state does not match, create action
-					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrstate() != $ostate) {
+					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
 						// construct action entry
 						$a = new Action();
 						$a->setuid($uid);
@@ -360,7 +360,7 @@ class HarmonizationService {
 						$a->setorigin('R');
 						$a->setrcid($cid);
 						$a->setroid($oid);
-						$a->setrstate($ostate);
+						$a->setrostate($ostate);
 						$a->setcreatedon($entry->TimeStamp);
 						// deposit action entry
 						$this->ActionManager->insert($a);
@@ -398,7 +398,7 @@ class HarmonizationService {
 						$a->setorigin('R');
 						$a->setrcid($cid);
 						$a->setroid($oid);
-						$a->setrstate($ostate);
+						$a->setrostate($ostate);
 						$a->setcreatedon($entry->TimeStamp);
 						// deposit action entry
 						$this->ActionManager->insert($a);

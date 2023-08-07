@@ -65,7 +65,7 @@ class CalendarObjectMovedListener implements IEventListener {
 					$a->setorigin('L');
 					$a->setlcid($ec['id']);
 					$a->setloid(str_replace('-deleted', '', $eo['uri']));
-					$a->setlstate(trim($eo['etag'],'"'));
+					$a->setlostate(trim($eo['etag'],'"'));
 					// deposit action entry
 					$this->ActionManager->insert($a);
 				}

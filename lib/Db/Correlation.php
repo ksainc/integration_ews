@@ -39,14 +39,14 @@ use OCP\AppFramework\Db\Entity;
  * @method setaid(string $aid): void
  * @method getloid(): string
  * @method setloid(string $loid): void
- * @method getlstate(): string
- * @method setlstate(string $token): void
+ * @method getlostate(): string
+ * @method setlostate(string $token): void
  * @method getlcid(): string
  * @method setlcid(string $lcid): void
  * @method getroid(): string
  * @method setroid(string $roid): void
- * @method getrstate(): string
- * @method setrstate(string $token): void
+ * @method getrostate(): string
+ * @method setrostate(string $token): void
  * @method getrcid(): string
  * @method setrcid(string $rcid): void
  */
@@ -58,12 +58,12 @@ class Correlation extends Entity implements JsonSerializable {
 	protected ?string $lpid = null;
 	protected string $loid = '';
 	protected ?string $lcid = null;
-	protected ?string $lstate = null;
+	protected ?string $lostate = null;
 	protected string $rid = '';
 	protected ?string $rpid = null;
 	protected string $roid = '';
 	protected ?string $rcid = null;
-	protected ?string $rstate = null;
+	protected ?string $rostate = null;
 		
 	public function jsonSerialize(): array {
 		return [
@@ -72,10 +72,10 @@ class Correlation extends Entity implements JsonSerializable {
 			'aid' => $this->aid,
 			'loid' => $this->loid,
 			'lcid' => $this->lcid,
-			'lstate' => $this->lstate,
+			'lostate' => $this->lostate,
 			'roid' => $this->roid,
 			'rcid' => $this->rcid,
-			'rstate' => $this->rstate,
+			'rostate' => $this->rostate,
 			
 		];
 	}

@@ -68,7 +68,7 @@ class CardUpdatedListener implements IEventListener {
 					$ci = $this->CorrelationsService->findByLocalId($uid, 'CO', $oid, $cid);
 					// evaluate corrollation, if dose not exists or state does not match, create action
 					// work around to filter out harmonization generated events
-					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getlstate() != $ostate) {
+					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getlostate() != $ostate) {
 						// construct action entry
 						$a = new Action();
 						$a->setuid($uid);
@@ -77,7 +77,7 @@ class CardUpdatedListener implements IEventListener {
 						$a->setorigin('L');
 						$a->setlcid($cid);
 						$a->setloid($oid);
-						$a->setlstate($ostate);
+						$a->setlostate($ostate);
 						$a->setcreatedon(date(DATE_W3C));
 						// deposit action entry
 						$this->ActionManager->insert($a);
