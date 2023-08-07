@@ -71,6 +71,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels connect click event
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @param string $server			server domain or ip
 	 * @param string $account_id		users login name
@@ -97,6 +99,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels disconnect click event
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @return DataResponse
 	 */
@@ -115,6 +119,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels synchronize click event
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @return DataResponse
 	 */
@@ -133,6 +139,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels test click event
+	 * 
+	 * @NoAdminRequired
 	 * 
 	 * @param string $action	test action to perform
 	 *
@@ -153,6 +161,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handles remote collections fetch requests
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @return DataResponse
 	 */
@@ -176,6 +186,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels local collections fetch requests
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @return DataResponse
 	 */
@@ -198,6 +210,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels correlations fetch requests
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @return DataResponse
 	 */
@@ -220,6 +234,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handels save correlations requests
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @param array $values key/value pairs to save
 	 * 
@@ -240,6 +256,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handles save preferences requests
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @param array $values key/value pairs to save
 	 * 
@@ -264,6 +282,8 @@ class UserConfigurationController extends Controller {
 
 	/**
 	 * handles save preferences requests
+	 * 
+	 * @NoAdminRequired
 	 *
 	 * @param array $values key/value pairs to save
 	 * 
