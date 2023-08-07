@@ -143,11 +143,11 @@
 					<br>
 					<div>
 						<label>
-							{{ t('integration_ews', 'Synchronize every') }}
+							{{ t('integration_ews', 'Synchronize ') }}
 						</label>
 						<NcSelect v-model="state.contacts_frequency"
 							:reduce="item => item.id"
-							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: '1 min', id: '1'}, {label: '5 min', id: '5'}, {label: '15 min', id: '15'}, {label: '30 min', id: '30'}, {label: '60 min', id: '60'}]" />
+							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
 						<label>
 							{{ t('integration_ews', 'and if there is a conflict') }}
 						</label>
@@ -217,11 +217,11 @@
 					<br>
 					<div>
 						<label>
-							{{ t('integration_ews', 'Synchronize every') }}
+							{{ t('integration_ews', 'Synchronize ') }}
 						</label>
 						<NcSelect v-model="state.events_frequency"
 							:reduce="item => item.id"
-							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: '1 min', id: '1'}, {label: '5 min', id: '5'}, {label: '15 min', id: '15'}, {label: '30 min', id: '30'}, {label: '60 min', id: '60'}]" />
+							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
 						<label>
 							{{ t('integration_ews', 'and if there is a conflict') }}
 						</label>

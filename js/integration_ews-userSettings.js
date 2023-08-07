@@ -11451,7 +11451,7 @@ var render = function render() {
         }
       }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t")]);
     })], 2)], 1);
-  }), 0) : _vm.availableRemoteContactCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No contacts collections where found in the connected account.")) + "\n\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading contacts collections from the connected account.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize every")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }), 0) : _vm.availableRemoteContactCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No contacts collections where found in the connected account.")) + "\n\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading contacts collections from the connected account.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11463,20 +11463,8 @@ var render = function render() {
         label: "Manually",
         id: "0"
       }, {
-        label: "1 min",
-        id: "1"
-      }, {
-        label: "5 min",
+        label: "Automatically",
         id: "5"
-      }, {
-        label: "15 min",
-        id: "15"
-      }, {
-        label: "30 min",
-        id: "30"
-      }, {
-        label: "60 min",
-        id: "60"
       }]
     },
     model: {
@@ -11552,7 +11540,7 @@ var render = function render() {
         }
       }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t")]);
     })], 2)], 1);
-  }), 0) : _vm.availableRemoteEventCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No events collections where found in the connected account.")) + "\n\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading events collections from the connected account.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize every")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }), 0) : _vm.availableRemoteEventCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No events collections where found in the connected account.")) + "\n\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading events collections from the connected account.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11564,20 +11552,8 @@ var render = function render() {
         label: "Manually",
         id: "0"
       }, {
-        label: "1 min",
-        id: "1"
-      }, {
-        label: "5 min",
+        label: "Automatically",
         id: "5"
-      }, {
-        label: "15 min",
-        id: "15"
-      }, {
-        label: "30 min",
-        id: "30"
-      }, {
-        label: "60 min",
-        id: "60"
       }]
     },
     model: {
