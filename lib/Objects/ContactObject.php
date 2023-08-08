@@ -53,6 +53,8 @@ class ContactObject {
     private array $IMPP = [];
     private ?string $TimeZone = null;
     private ?string $Geolocation = null;
+    private ?string $Manager = null;
+    private ?string $Assistant = null;
     private ?ContactOccupationObject $Occupation = null;
     private ?array $Relation = [];
     private array $Tags = [];

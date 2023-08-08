@@ -307,27 +307,40 @@ class RemoteContactsService {
         if (!empty($so->Label)) {
             $ro->DisplayName = $so->Label;
         }
-        // Name
+        // Names
         if (isset($so->Name)) {
+            // Last Name
             if (!empty($so->Name->Last)) {
                 $ro->Surname = $so->Name->Last;
             }
+            // First Name
             if (!empty($so->Name->First)) {
                 $ro->GivenName = $so->Name->First;
             }
+            // Other Name
             if (!empty($so->Name->Other)) {
                 $ro->MiddleName = $so->Name->Other;
             }
+            // Prefix
             if (!empty($so->Name->Prefix)) {
                 $ro->ExtendedProperty[] = $this->createFieldExtendedByTag('0x3A45', 'String', $so->Name->Prefix);
             }
+            // Suffix
             if (!empty($so->Name->Suffix)) {
                 $ro->Generation = $so->Name->Suffix;
             }
-        }
-        // Aliases
-        if (!empty($so->Aliases)) {
-            $ro->NickName = $so->Aliases;
+            // Phonetic Last
+            if (!empty($so->Name->PhoneticLast)) {
+                $ro->PhoneticLastName = $so->Name->PhoneticLast;
+            }
+            // Phonetic First
+            if (!empty($so->Name->PhoneticFirst)) {
+                $ro->PhoneticFirstName = $so->Name->PhoneticFirst;
+            }
+            // Aliases
+            if (!empty($so->Name->Aliases)) {
+                $ro->NickName = $so->Name->Aliases;
+            }
         }
         // Birth Day
         if (!empty($so->BirthDay)) {
@@ -409,6 +422,14 @@ class RemoteContactsService {
         // Geolocation
         if (!empty($so->Geolocation)) {
             // TODO: Add Geolocation Code
+        }
+        // Manager Name
+        if (!empty($so->Manager)) {
+            $ro->Manager = $so->Manager;
+        }
+        // Assistant Name
+        if (!empty($so->Assistant)) {
+            $ro->AssistantName = $so->Assistant;
         }
         // Occupation
         if (isset($so->Occupation)) {
@@ -523,50 +544,64 @@ class RemoteContactsService {
         else {
             $rd[] = $this->deleteFieldUnindexed('contacts:DisplayName');
         }
-        // Name
+        // Names
         if (isset($so->Name)) {
-            // Name - Last
+            // Last Name
             if (!empty($so->Name->Last)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:Surname', 'Surname', $so->Name->Last);
             }
             else {
                 $rd[] = $this->deleteFieldUnindexed('contacts:Surname');
             }
-            // Name - First
+            // First Name
             if (!empty($so->Name->First)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:GivenName', 'GivenName', $so->Name->First);
             }
             else {
                 $rd[] = $this->deleteFieldUnindexed('contacts:GivenName');
             }
-            // Name - Other
+            // Other Name
             if (!empty($so->Name->Other)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:MiddleName', 'MiddleName', $so->Name->Other);
             }
             else {
                 $rd[] = $this->deleteFieldUnindexed('contacts:MiddleName');
             }
-            // Name - Prefix
+            // Prefix
             if (!empty($so->Name->Prefix)) {
                 $rm[] = $this->updateFieldExtendedByTag('0x3A45', 'String', $so->Name->Prefix);
             }
             else {
                 $rd[] = $this->deleteFieldExtendedByTag('0x3A45', 'String');
             }
-            // Name - Suffix
+            // Suffix
             if (!empty($so->Name->Suffix)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:Generation', 'Generation', $so->Name->Suffix);
             }
             else {
                 $rd[] = $this->deleteFieldUnindexed('contacts:Generation');
             }
-        }
-        // Aliases
-        if (!empty($so->Aliases)) {
-            $rm[] = $this->updateFieldUnindexed('contacts:Nickname', 'Nickname', $so->Aliases);
-        }
-        else {
-            $rd[] = $this->deleteFieldUnindexed('contacts:Nickname');
+            // Phonetic Last
+            if (!empty($so->Name->PhoneticLast)) {
+                $rm[] = $this->updateFieldUnindexed('contacts:PhoneticLastName', 'PhoneticLastName', $so->Name->PhoneticLast);
+            }
+            else {
+                $rd[] = $this->deleteFieldUnindexed('contacts:PhoneticLastName');
+            }
+            // Phonetic First
+            if (!empty($so->Name->PhoneticFirst)) {
+                $rm[] = $this->updateFieldUnindexed('contacts:PhoneticFirstName', 'PhoneticFirstName', $so->Name->PhoneticFirst);
+            }
+            else {
+                $rd[] = $this->deleteFieldUnindexed('contacts:PhoneticFirstName');
+            }
+            // Aliases
+            if (!empty($so->Name->Aliases)) {
+                $rm[] = $this->updateFieldUnindexed('contacts:Nickname', 'Nickname', $so->Name->Aliases);
+            }
+            else {
+                $rd[] = $this->deleteFieldUnindexed('contacts:Nickname');
+            }
         }
         // Birth Day
         if (!empty($so->BirthDay)) {
@@ -841,6 +876,20 @@ class RemoteContactsService {
         // Geolocation
         if (!empty($so->Geolocation)) {
             // TODO: Add Geolocation Code
+        }
+        // Manager Name
+        if (!empty($so->Manager)) {
+            $rm[] = $this->updateFieldUnindexed('contacts:Manager', 'Manager', $so->Manager);
+        }
+        else {
+            $rd[] = $this->deleteFieldUnindexed('contacts:Manager');
+        }
+        // Assistant Name
+        if (!empty($so->Assistant)) {
+            $rm[] = $this->updateFieldUnindexed('contacts:AssistantName', 'AssistantName', $so->Assistant);
+        }
+        else {
+            $rd[] = $this->deleteFieldUnindexed('contacts:AssistantName');
         }
         // Occupation
         if (isset($so->Occupation)) {
@@ -1462,6 +1511,7 @@ class RemoteContactsService {
 	 * @return ContactObject item as contact object
 	 */
 	public function toContactObject(ContactItemType $data): ContactObject {
+
 		// create object
 		$o = new ContactObject();
         // ID + State
@@ -1495,10 +1545,17 @@ class RemoteContactsService {
             $o->Name->Other = $data->CompleteName->MiddleName;
             $o->Name->Prefix = $data->CompleteName->Title;
             $o->Name->Suffix = $data->CompleteName->Suffix;
+            $o->Name->PhoneticLast = $data->CompleteName->YomiLastName;
+            $o->Name->PhoneticFirst = $data->CompleteName->YomiLastName;
+            $co->Name->Aliases = $data->CompleteName->Nickname;
         }
-        // Aliases
-        if (isset($data->CompleteName->Nickname)) {
-            $o->Aliases = $data->CompleteName->Nickname;
+        // Phonetic Last Name
+        if (!empty($data->PhoneticLastName)) {
+            $o->Name->PhoneticLast =  new DateTime($data->PhoneticLastName);
+        }
+        // Phonetic First Name
+        if (!empty($data->PhoneticFirstName)) {
+            $o->Name->PhoneticFirst =  new DateTime($data->PhoneticFirstName);
         }
         // Birth Day
         if (!empty($data->Birthday)) {
@@ -1558,6 +1615,14 @@ class RemoteContactsService {
                     $entry->_
                 );
             }
+        }
+        // Manager Name
+        if (!empty($data->Manager)) {
+            $o->Name->Manager =  new DateTime($data->Manager);
+        }
+        // Assistant Name
+        if (!empty($data->AssistantName)) {
+            $o->Name->Assistant =  new DateTime($data->AssistantName);
         }
         // Occupation Organization
         if (!empty($data->CompanyName)) {

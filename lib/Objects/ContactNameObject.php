@@ -32,18 +32,28 @@ class ContactNameObject {
 	public ?string $Other;
     public ?string $Prefix;
     public ?string $Suffix;
+    public ?string $PhoneticLast;
+    public ?string $PhoneticFirst;
+	public ?string $PhoneticOther;
+    public ?string $Aliases;
 	
 	public function __construct(
         ?string $last = null,
         ?string $first = null,
         ?string $other = null,
-        ?string $prefix =null,
-        ?string $suffix =null
+        ?string $prefix = null,
+        ?string $suffix = null,
+        ?string $phoneticlast = null,
+        ?string $phoneticfirst = null,
+        ?string $aliases = null,
     ) {
         $this->Last = $last;
         $this->First = $first;
         $this->Other = $other;
         $this->Prefix = $prefix;
         $this->Suffix = $suffix;
+        $this->PhoneticLast = $phoneticlast;
+        $this->PhoneticFirst = $phoneticfirst;
+        $this->Aliases = $aliases;
 	}
 }

@@ -332,11 +332,19 @@ class LocalContactsService {
             $co->Name->Other = trim($p[2]);
             $co->Name->Prefix = trim($p[3]);
             $co->Name->Suffix = trim($p[4]);
+            $co->Name->PhoneticLast = trim($p[6]);
+            $co->Name->PhoneticFirst = trim($p[7]);
+            $co->Name->Aliases = trim($p[5]);
             unset($p);
         }
         // Aliases
         if (isset($vo->NICKNAME)) {
-            $co->Aliases = trim($vo->NICKNAME->getValue());
+            if (empty($co->Name->Aliases)) {
+                $co->Name->Aliases .= trim($vo->NICKNAME->getValue());
+            }
+            else {
+                $co->Name->Aliases .= ' ' . trim($vo->NICKNAME->getValue());
+            }
         }
         // Photo
         if (isset($vo->PHOTO)) {
@@ -427,6 +435,14 @@ class LocalContactsService {
         if (isset($vo->GEO)) {
             $co->Geolocation = trim($vo->GEO->getValue());
         }
+        // Manager
+		if (isset($vo->{'X-MANAGERSNAME'})) {
+			$co->Manager = trim($vo->{'X-MANAGERSNAME'}->getValue());
+		}
+        // Assistant
+		if (isset($vo->{'X-ASSISTANTNAME'})) {
+			$co->Assistant = trim($vo->{'X-ASSISTANTNAME'}->getValue());
+		}
         // Occupation Organization
         if (isset($vo->ORG)) {
 			$co->Occupation->Organization = trim($vo->ORG->getValue());
@@ -443,6 +459,7 @@ class LocalContactsService {
 		if (isset($vo->LOGO)) {
 			$co->Occupation->Logo = trim($vo->LOGO->getValue());
 		}
+                
         // Relation
         if (isset($vo->RELATED)) {
             $co->addRelation(
@@ -508,15 +525,11 @@ class LocalContactsService {
                     $co->Name->First,
                     $co->Name->Other,
                     $co->Name->Prefix,
-                    $co->Name->Suffix
+                    $co->Name->Suffix,
+                    $co->Name->PhoneticLast,
+                    $co->Name->PhoneticFirst,
+                    $co->Name->Aliases
             ));
-        }
-        // Aliases
-        if (isset($co->Aliases)) {
-            $vo->add(
-                'NICKNAME',
-                $co->Aliases
-            );
         }
         // Photo
         if (isset($co->Photo)) {
@@ -635,6 +648,20 @@ class LocalContactsService {
                 $co->Geolocation
             );
         }
+        // Manager Name
+		if (!empty($co->Manager)) {
+            $vo->add(
+                'X-MANAGERSNAME',
+                $co->Manager
+            );
+		}
+        // Assistant Name
+		if (!empty($co->Assistant)) {
+            $vo->add(
+                'X-ASSISTANTNAME',
+                $co->Assistant
+            );
+		}
         // Occupation Organization
         if (isset($co->Occupation->Organization)) {
             $vo->add(
