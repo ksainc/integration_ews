@@ -583,17 +583,17 @@ class RemoteContactsService {
             }
             // Phonetic Last
             if (!empty($so->Name->PhoneticLast)) {
-                $rm[] = $this->updateFieldUnindexed('contacts:PhoneticLastName', 'PhoneticLastName', $so->Name->PhoneticLast);
+                $rm[] = $this->updateFieldExtendedByTag('0x802D', 'String', $so->Name->PhoneticLast);
             }
             else {
-                $rd[] = $this->deleteFieldUnindexed('contacts:PhoneticLastName');
+                $rd[] = $this->deleteFieldExtendedByTag('0x802D', 'String');
             }
             // Phonetic First
             if (!empty($so->Name->PhoneticFirst)) {
-                $rm[] = $this->updateFieldUnindexed('contacts:PhoneticFirstName', 'PhoneticFirstName', $so->Name->PhoneticFirst);
+                $rm[] = $this->updateFieldExtendedByTag('0x802C', 'String', $so->Name->PhoneticFirst);
             }
             else {
-                $rd[] = $this->deleteFieldUnindexed('contacts:PhoneticFirstName');
+                $rd[] = $this->deleteFieldExtendedByTag('0x802C', 'String');
             }
             // Aliases
             if (!empty($so->Name->Aliases)) {
@@ -1227,6 +1227,33 @@ class RemoteContactsService {
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Profession');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
             $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:HasPicture');
+            // Name Prefix
+            $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                null,
+                null,
+                null,
+                null,
+                '0x3A45',
+                'String'
+            );
+            // Yomi/Phonetic Last Name
+            $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                null,
+                null,
+                null,
+                null,
+                '0x802D',
+                'String'
+            );
+            // Yomi/Phonetic Last Name
+            $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                null,
+                null,
+                null,
+                null,
+                '0x802C',
+                'String'
+            );
 
 			$this->DefaultItemProperties = $p;
 		}
@@ -1551,7 +1578,7 @@ class RemoteContactsService {
             $o->Name->Suffix = $data->CompleteName->Suffix;
             $o->Name->PhoneticLast = $data->CompleteName->YomiLastName;
             $o->Name->PhoneticFirst = $data->CompleteName->YomiLastName;
-            $co->Name->Aliases = $data->CompleteName->Nickname;
+            $o->Name->Aliases = $data->CompleteName->Nickname;
         }
         // Phonetic Last Name
         if (!empty($data->PhoneticLastName)) {
@@ -1622,11 +1649,11 @@ class RemoteContactsService {
         }
         // Manager Name
         if (!empty($data->Manager)) {
-            $o->Name->Manager =  new DateTime($data->Manager);
+            $o->Name->Manager =  $data->Manager;
         }
         // Assistant Name
         if (!empty($data->AssistantName)) {
-            $o->Name->Assistant =  new DateTime($data->AssistantName);
+            $o->Name->Assistant =  $data->AssistantName;
         }
         // Occupation Organization
         if (!empty($data->CompanyName)) {
@@ -1705,16 +1732,22 @@ class RemoteContactsService {
         if (isset($data->ExtendedProperty)) {
             foreach ($data->ExtendedProperty as $entry) {
                 switch ($entry->ExtendedFieldURI->PropertyName) {
-                    case 'DAV:uid':
+                    case 'DAV:uid': // UUID
                         $o->UID = $entry->Value;
                         break;
                 }
                 switch ($entry->ExtendedFieldURI->PropertyTag) {
-                    case '0x3007':
+                    case '0x3007': // Created Date/Time
                         $o->CreatedOn = new DateTime($entry->Value);
                         break;
-                    case '0x3008':
+                    case '0x3008': // Modified Date/Time
                         $o->ModifiedOn = new DateTime($entry->Value);
+                        break;
+                    case '0x3A45': // Yomi / Name Prefix
+                        break;
+                    case '0x802D': // Yomi / Phonetic Last Name
+                        break;
+                    case '0x802C': // Yomi / Phonetic First Name
                         break;
                 }
             }
