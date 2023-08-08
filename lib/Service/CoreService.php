@@ -39,6 +39,7 @@ use OCA\DAV\CalDAV\CalDavBackend;
 
 use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Components\EWS\EWSClient;
+use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
 use OCA\EWS\Service\EventsService;
@@ -72,6 +73,10 @@ class CoreService {
 	 * @var string|null
 	 */
 	private $userId;
+	/**
+	 * @var ActionMapper
+	 */
+	private $ActionMapper;
 	/**
 	 * @var CorrelationsService
 	 */
@@ -110,6 +115,7 @@ class CoreService {
 								IConfig $config,
 								IJobList $TaskService,
 								INotificationManager $notificationManager,
+								ActionMapper $ActionMapper,
 								CorrelationsService $CorrelationsService,
 								HarmonizationThreadService $HarmonizationThreadService,
 								LocalContactsService $LocalContactsService,
@@ -125,6 +131,7 @@ class CoreService {
 		$this->config = $config;
 		$this->TaskService = $TaskService;
 		$this->notificationManager = $notificationManager;
+		$this->ActionMapper = $ActionMapper;
 		$this->CorrelationsService = $CorrelationsService;
 		$this->HarmonizationThreadService = $HarmonizationThreadService;
 		$this->LocalContactsService = $LocalContactsService;
@@ -204,6 +211,8 @@ class CoreService {
 		$this->HarmonizationThreadService->terminate($uid);
 		// delete correlations
 		$this->CorrelationsService->deleteByUserId($uid);
+		// delete actions
+		$this->ActionMapper->deleteByUserId($uid);
 		// delete settings and preferences
 		$settings = $this->config->getUserKeys($uid, Application::APP_ID);
 		foreach ($settings as $entry) {

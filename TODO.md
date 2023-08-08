@@ -1,8 +1,8 @@
 const { useListeners } = require("vue")
 
 // Major
-AccountService - Add Class and move functions
-
+EWSClient - Rewrite
+SettingsService - Add Class and move functions
 
 // Minor
 Notifications - improve notification apperance
