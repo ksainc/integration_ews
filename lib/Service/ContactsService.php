@@ -108,7 +108,7 @@ class ContactsService {
 		// iterate through correlation items
 		foreach ($correlations as $correlation) {
 			// construct UUID's place holder
-			$this->RemoteUUIDs = [];
+			$this->RemoteUUIDs = null;
 			// set local and remote collection id's
 			$caid = (string) $correlation->getid();
 			$lcid = $correlation->getloid();
