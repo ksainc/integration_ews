@@ -123,6 +123,7 @@ try {
 	*/
 
 	// initilize required services
+	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 	$HarmonizationThreadService = \OC::$server->get(\OCA\EWS\Service\HarmonizationThreadService::class);
@@ -136,8 +137,8 @@ try {
 	}
 
 	// retrieve and assign defaults
-	$executionDuration = $HarmonizationService->getThreadDuration();
-	$executionPause = $HarmonizationService->getThreadPause();
+	$executionDuration = $ConfigurationService->getHarmonizationThreadDuration();
+	$executionPause = $ConfigurationService->getHarmonizationThreadPause();
 	// no longer required since we listen to events feeds
 	//$harmonizePause = 120;
 	//$harmonizeStart = 0;

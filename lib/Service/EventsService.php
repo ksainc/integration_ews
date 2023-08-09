@@ -73,7 +73,7 @@ class EventsService {
 	/**
 	 * @var Object
 	 */
-	public $Settings;
+	public $Configuration;
 	/**
 	 * @var array
 	 */
@@ -106,15 +106,15 @@ class EventsService {
 	public function performHarmonization() : object {
 		// assign data stores
 		$this->LocalEventsService->DataStore = $this->LocalStore;
-		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Settings->UserId);
+		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;
 		// assign timezones
-		$this->LocalEventsService->UserTimeZone = $this->Settings->UserTimeZone;
-		$this->RemoteEventsService->UserTimeZone = $this->Settings->UserTimeZone;
+		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
+		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
 		// construct statistics object
 		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
 		// retrieve list of correlations
-		$correlations = $this->CorrelationsService->findByType($this->Settings->UserId, 'EC');
+		$correlations = $this->CorrelationsService->findByType($this->Configuration->UserId, 'EC');
 		// iterate through correlation items
 		foreach ($correlations as $correlation) {
 			// construct UUID's place holder
@@ -125,25 +125,25 @@ class EventsService {
 			$rcid = $correlation->getroid();
 			// delete and skip collection correlation if remote id or local id is missing
 			if (empty($lcid) || empty($rcid)){
-				$this->CorrelationsService->deleteByAffiliationId($this->Settings->UserId, $caid);
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
 				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Settings->UserId . ' due to missing Remote ID or Local ID');
+				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote ID or Local ID');
 				continue;
 			}
 			// delete and skip collection correlation if local collection is missing
 			$lcollection = $this->LocalEventsService->fetchCollection($lcid);
 			if (!isset($lcollection) || ($lcollection->Id != $lcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Settings->UserId, $caid);
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
 				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Settings->UserId . ' due to missing Local Collection');
+				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Local Collection');
 				continue;
 			}
 			// delete and skip collection correlation if remote collection is missing
 			$rcollection = $this->RemoteEventsService->fetchCollection($rcid);
 			if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Settings->UserId, $caid);
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
 				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Settings->UserId . ' due to missing Remote Collection');
+				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
 				continue;
 			}
 			// retrieve list of local changed objects
@@ -152,7 +152,7 @@ class EventsService {
 			foreach ($lCollectionChanges['added'] as $iid) {
 				// process create
 				$as = $this->harmonizeLocalAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$lcid, 
 					$iid, 
 					$rcid, 
@@ -175,7 +175,7 @@ class EventsService {
 			foreach ($lCollectionChanges['modified'] as $iid) {
 				// process create
 				$as = $this->harmonizeLocalAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$lcid, 
 					$iid, 
 					$rcid, 
@@ -198,7 +198,7 @@ class EventsService {
 			foreach ($lCollectionChanges['deleted'] as $iid) {
 				// process delete
 				$as = $this->harmonizeLocalDelete(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$lcid, 
 					$iid
 				);
@@ -217,7 +217,7 @@ class EventsService {
 			foreach ($rCollectionChanges->Create as $changed) {
 				// process create
 				$as = $this->harmonizeRemoteAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$rcid, 
 					$changed->CalendarItem->ItemId->Id, 
 					$lcid, 
@@ -240,7 +240,7 @@ class EventsService {
 			foreach ($rCollectionChanges->Update as $changed) {
 				// process update
 				$as = $this->harmonizeRemoteAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$rcid, 
 					$changed->CalendarItem->ItemId->Id, 
 					$lcid, 
@@ -263,7 +263,7 @@ class EventsService {
 			foreach ($rCollectionChanges->Delete as $changed) {
 				// process delete
 				$as = $this->harmonizeRemoteDelete(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$rcid, 
 					$changed->ItemId->Id
 				);
@@ -299,7 +299,7 @@ class EventsService {
 		// construct statistics object
 		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
 		// retrieve list of actions
-		$actions = $this->ActionsManager->findByType($this->Settings->UserId, 'EO');
+		$actions = $this->ActionsManager->findByType($this->Configuration->UserId, 'EO');
 		// iterate through correlation items
 		foreach ($actions as $action) {
 			// evaluate action, if action was created before last harmonization ignore it and delete it.
@@ -311,7 +311,7 @@ class EventsService {
 			// evaluate, action origin
 			if ($action->getorigin() == "L") {
 				// retrieve collection corrollation
-				$cc = $this->CorrelationsService->findByLocalId($this->Settings->UserId, 'EC', $action->getlcid());
+				$cc = $this->CorrelationsService->findByLocalId($this->Configuration->UserId, 'EC', $action->getlcid());
 				// evaluate corrollation, if corrollation exists for the local collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
@@ -319,7 +319,7 @@ class EventsService {
 						case 'C':
 						case 'U':
 							$as = $this->harmonizeLocalAltered(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getloid(),
 								$action->getloid(),
 								$cc->getroid(),
@@ -340,7 +340,7 @@ class EventsService {
 							break;
 						case 'D':
 							$as = $this->harmonizeLocalDelete(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getloid(),
 								$action->getloid()
 							);
@@ -354,7 +354,7 @@ class EventsService {
 			}
 			elseif ($action->getorigin() == "R") {
 				// retrieve collection corrollation
-				$cc = $this->CorrelationsService->findByRemoteId($this->Settings->UserId, 'EC', $action->getrcid());
+				$cc = $this->CorrelationsService->findByRemoteId($this->Configuration->UserId, 'EC', $action->getrcid());
 				// evaluate corrollation, if corrollation exists for the remote collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
@@ -362,7 +362,7 @@ class EventsService {
 						case 'C':
 						case 'U':
 							$as = $this->harmonizeRemoteAltered(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getroid(),
 								$action->getroid(),
 								$cc->getloid(),
@@ -383,7 +383,7 @@ class EventsService {
 							break;
 						case 'D':
 							$as = $this->harmonizeRemoteDelete(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getroid(),
 								$action->getroid()
 							);
@@ -474,8 +474,8 @@ class EventsService {
 			// update remote object if
 			// local wins mode selected
 			// chronology wins mode selected and local object is newer
-			if ($this->Settings->EventsPrevalence == 'L' || 
-			($this->Settings->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+			if ($this->Configuration->EventsPrevalence == 'L' || 
+			($this->Configuration->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 				// delete all previous attachment(s) in remote store
 				// work around for missing update command in ews
 				$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -487,8 +487,8 @@ class EventsService {
 			// update local object if
 			// remote wins mode selected
 			// chronology wins mode selected and remote object is newer
-			if ($this->Settings->EventsPrevalence == 'R' || 
-			($this->Settings->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+			if ($this->Configuration->EventsPrevalence == 'R' || 
+			($this->Configuration->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 				// update local object
 				$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $ro);
 				// assign status
@@ -591,8 +591,8 @@ class EventsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->EventsPrevalence == 'L' || 
-					($this->Settings->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'L' || 
+					($this->Configuration->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -604,8 +604,8 @@ class EventsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->EventsPrevalence == 'R' || 
-					($this->Settings->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'R' || 
+					($this->Configuration->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -620,8 +620,8 @@ class EventsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->EventsPrevalence == 'L' || 
-				   ($this->Settings->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'L' || 
+				   ($this->Configuration->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -633,8 +633,8 @@ class EventsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->EventsPrevalence == 'R' || 
-				   ($this->Settings->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'R' || 
+				   ($this->Configuration->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -773,8 +773,8 @@ class EventsService {
 			// update local object if
 			// remote wins mode selected
 			// chronology wins mode selected and remote object is newer
-			if ($this->Settings->EventsPrevalence == 'R' || 
-			   ($this->Settings->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+			if ($this->Configuration->EventsPrevalence == 'R' || 
+			   ($this->Configuration->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 				// update local object
 				$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $ro);
 				// assign status
@@ -783,8 +783,8 @@ class EventsService {
 			// update remote object if
 			// local wins mode selected
 			// chronology wins mode selected and local object is newer
-			if ($this->Settings->EventsPrevalence == 'L' || 
-			   ($this->Settings->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+			if ($this->Configuration->EventsPrevalence == 'L' || 
+			   ($this->Configuration->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 				// delete all previous attachment(s) in remote store
 				// work around for missing update command in ews
 				$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -888,8 +888,8 @@ class EventsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->EventsPrevalence == 'R' || 
-					($this->Settings->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'R' || 
+					($this->Configuration->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -898,8 +898,8 @@ class EventsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->EventsPrevalence == 'L' || 
-					($this->Settings->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'L' || 
+					($this->Configuration->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -917,8 +917,8 @@ class EventsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->EventsPrevalence == 'R' || 
-				   ($this->Settings->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'R' || 
+				   ($this->Configuration->EventsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -927,8 +927,8 @@ class EventsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->EventsPrevalence == 'L' || 
-				   ($this->Settings->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->EventsPrevalence == 'L' || 
+				   ($this->Configuration->EventsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -1031,17 +1031,17 @@ class EventsService {
 	public function performTest($action) : void {
 		// assign data stores
 		$this->LocalEventsService->DataStore = $this->LocalStore;
-		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Settings->UserId);
+		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;
 		// assign timezones
-		$this->LocalEventsService->UserTimeZone = $this->Settings->UserTimeZone;
-		$this->RemoteEventsService->UserTimeZone = $this->Settings->UserTimeZone;
+		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
+		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
 
 		/*
 		*	Test Basic Collection Functions
 		*/
 		// retrieve local event collections
-		$lc = $this->LocalEventsService->listCollections($this->Settings->UserId);
+		$lc = $this->LocalEventsService->listCollections($this->Configuration->UserId);
 		foreach ($lc as $entry) {
 			if ($entry['name'] == 'EWS Test') {
 				$lcid = $entry['id'];
@@ -1070,7 +1070,7 @@ class EventsService {
 
 		// create local collection
 		if (!isset($lcid)) {
-			$lco = $this->LocalEventsService->createCollection($this->Settings->UserId, 'ews-test', 'EWS Test', true);
+			$lco = $this->LocalEventsService->createCollection($this->Configuration->UserId, 'ews-test', 'EWS Test', true);
 			$lcid = $lco->Id;
 		}
 		// create remote collection
@@ -1079,12 +1079,12 @@ class EventsService {
 			$rcid = $rco->Id;
 		}
 		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($this->Settings->UserId, $lcid, $rcid);
+		$ci = $this->CorrelationsService->find($this->Configuration->UserId, $lcid, $rcid);
 		// create correlation if none was found
 		if (!isset($ci)) {
 			$ci = new \OCA\EWS\Db\Correlation();
 			$ci->settype('EC'); // Correlation Type
-			$ci->setuid($this->Settings->UserId); // User ID
+			$ci->setuid($this->Configuration->UserId); // User ID
 			$ci->setloid($lcid); // Local ID
 			$ci->setroid($rcid); // Remote ID
 			$this->CorrelationsService->create($ci);
@@ -1106,8 +1106,8 @@ class EventsService {
 		$eo->Origin = 'L';
 		$eo->Notes = 'Don\'t forget to bring a present';
 		$eo->StartsOn = (new DateTime('NOW')); 
-		$eo->StartsTZ = $this->Settings->UserTimeZone;
-		$eo->StartsOn->setTimezone($this->Settings->UserTimeZone);
+		$eo->StartsTZ = $this->Configuration->UserTimeZone;
+		$eo->StartsOn->setTimezone($this->Configuration->UserTimeZone);
 		$eo->StartsOn->modify('next saturday')->setTime(20, 0, 0, 0); // set event start next saturday at 10:00
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+2 hour'); // set event end on same day one hour later
 		$eo->EndsTZ = (clone $eo->StartsTZ);
@@ -1146,8 +1146,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Bart done it again';
-		$eo->StartsOn = (new DateTime('now', $this->Settings->UserTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $this->Settings->UserTimeZone;
+		$eo->StartsOn = (new DateTime('now', $this->Configuration->UserTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
+		$eo->StartsTZ = $this->Configuration->UserTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';
@@ -1198,8 +1198,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Every other day for 4 iterations';
-		$eo->StartsOn = (new DateTime('now', $this->Settings->UserTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $this->Settings->UserTimeZone;
+		$eo->StartsOn = (new DateTime('now', $this->Configuration->UserTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
+		$eo->StartsTZ = $this->Configuration->UserTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';
@@ -1234,8 +1234,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Every other week on Tuesday and Thursday until 4 Weeks from start';
-		$eo->StartsOn = (new DateTime('now', $this->Settings->UserTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
-		$eo->StartsTZ = $this->Settings->UserTimeZone;
+		$eo->StartsOn = (new DateTime('now', $this->Configuration->UserTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
+		$eo->StartsTZ = $this->Configuration->UserTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';

@@ -68,7 +68,7 @@ class ContactsService {
 	/**
 	 * @var Object
 	 */
-	public $Settings;
+	public $Configuration;
 	/**
 	 * @var array
 	 */
@@ -104,7 +104,7 @@ class ContactsService {
 		// construct statistics object
 		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
 		// retrieve list of correlations
-		$correlations = $this->CorrelationsService->findByType($this->Settings->UserId, 'CC');
+		$correlations = $this->CorrelationsService->findByType($this->Configuration->UserId, 'CC');
 		// iterate through correlation items
 		foreach ($correlations as $correlation) {
 			// construct UUID's place holder
@@ -115,25 +115,25 @@ class ContactsService {
 			$rcid = $correlation->getroid();
 			// delete and skip collection correlation if remote id or local id is missing
 			if (empty($lcid) || empty($rcid)){
-				$this->CorrelationsService->deleteByAffiliationId($this->Settings->UserId, $caid);
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
 				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Settings->UserId . ' due to missing Remote ID or Local ID');
+				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote ID or Local ID');
 				continue;
 			}
 			// delete and skip collection correlation if local collection is missing
 			$lcollection = $this->LocalContactsService->fetchCollection($lcid);
 			if (!isset($lcollection) || ($lcollection->Id != $lcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Settings->UserId, $caid);
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
 				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Settings->UserId . ' due to missing Local Collection');
+				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Local Collection');
 				continue;
 			}
 			// delete and skip collection correlation if remote collection is missing
 			$rcollection = $this->RemoteContactsService->fetchCollection($rcid);
 			if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Settings->UserId, $caid);
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
 				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Settings->UserId . ' due to missing Remote Collection');
+				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
 				continue;
 			}
 			// retrieve list of local changed objects
@@ -142,7 +142,7 @@ class ContactsService {
 			foreach ($lCollectionChanges['added'] as $iid) {
 				// process create
 				$as = $this->harmonizeLocalAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$lcid, 
 					$iid, 
 					$rcid, 
@@ -165,7 +165,7 @@ class ContactsService {
 			foreach ($lCollectionChanges['modified'] as $iid) {
 				// process create
 				$as = $this->harmonizeLocalAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$lcid, 
 					$iid, 
 					$rcid, 
@@ -188,7 +188,7 @@ class ContactsService {
 			foreach ($lCollectionChanges['deleted'] as $iid) {
 				// process delete
 				$as = $this->harmonizeLocalDelete(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$lcid, 
 					$iid
 				);
@@ -207,7 +207,7 @@ class ContactsService {
 			foreach ($rCollectionChanges->Create as $changed) {
 				// process create
 				$as = $this->harmonizeRemoteAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$rcid, 
 					$changed->Contact->ItemId->Id, 
 					$lcid, 
@@ -230,7 +230,7 @@ class ContactsService {
 			foreach ($rCollectionChanges->Update as $changed) {
 				// process update
 				$as = $this->harmonizeRemoteAltered(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$rcid, 
 					$changed->Contact->ItemId->Id, 
 					$lcid, 
@@ -253,7 +253,7 @@ class ContactsService {
 			foreach ($rCollectionChanges->Delete as $changed) {
 				// process delete
 				$as = $this->harmonizeRemoteDelete(
-					$this->Settings->UserId, 
+					$this->Configuration->UserId, 
 					$rcid, 
 					$changed->ItemId->Id
 				);
@@ -289,7 +289,7 @@ class ContactsService {
 		// construct statistics object
 		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
 		// retrieve list of actions
-		$actions = $this->ActionsManager->findByType($this->Settings->UserId, 'CO');
+		$actions = $this->ActionsManager->findByType($this->Configuration->UserId, 'CO');
 		// iterate through correlation items
 		foreach ($actions as $action) {
 			// evaluate action, if action was created before last harmonization ignore it and delete it.
@@ -301,7 +301,7 @@ class ContactsService {
 			// evaluate, action origin
 			if ($action->getorigin() == "L") {
 				// retrieve collection corrollation
-				$cc = $this->CorrelationsService->findByLocalId($this->Settings->UserId, 'CC', $action->getlcid());
+				$cc = $this->CorrelationsService->findByLocalId($this->Configuration->UserId, 'CC', $action->getlcid());
 				// evaluate corrollation, if corrollation exists for the local collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
@@ -309,7 +309,7 @@ class ContactsService {
 						case 'C':
 						case 'U':
 							$as = $this->harmonizeLocalAltered(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getloid(),
 								$action->getloid(),
 								$cc->getroid(),
@@ -330,7 +330,7 @@ class ContactsService {
 							break;
 						case 'D':
 							$as = $this->harmonizeLocalDelete(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getloid(),
 								$action->getloid()
 							);
@@ -341,7 +341,7 @@ class ContactsService {
 			}
 			elseif ($action->getorigin() == "R") {
 				// retrieve collection corrollation
-				$cc = $this->CorrelationsService->findByRemoteId($this->Settings->UserId, 'CC', $action->getrcid());
+				$cc = $this->CorrelationsService->findByRemoteId($this->Configuration->UserId, 'CC', $action->getrcid());
 				// evaluate corrollation, if corrollation exists for the remote collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
@@ -349,7 +349,7 @@ class ContactsService {
 						case 'C':
 						case 'U':
 							$as = $this->harmonizeRemoteAltered(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getroid(),
 								$action->getroid(),
 								$cc->getloid(),
@@ -370,7 +370,7 @@ class ContactsService {
 							break;
 						case 'D':
 							$as = $this->harmonizeRemoteDelete(
-								$this->Settings->UserId,
+								$this->Configuration->UserId,
 								$cc->getroid(),
 								$action->getroid()
 							);
@@ -453,8 +453,8 @@ class ContactsService {
 			// update remote object if
 			// local wins mode selected
 			// chronology wins mode selected and local object is newer
-			if ($this->Settings->ContactsPrevalence == 'L' || 
-			($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+			if ($this->Configuration->ContactsPrevalence == 'L' || 
+			($this->Configuration->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 				// delete all previous attachment(s) in remote store
 				// work around for missing update command in ews
 				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -466,8 +466,8 @@ class ContactsService {
 			// update local object if
 			// remote wins mode selected
 			// chronology wins mode selected and remote object is newer
-			if ($this->Settings->ContactsPrevalence == 'R' || 
-			($this->Settings->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+			if ($this->Configuration->ContactsPrevalence == 'R' || 
+			($this->Configuration->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 				// update local object
 				$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 				// assign status
@@ -573,8 +573,8 @@ class ContactsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->ContactsPrevalence == 'L' || 
-				($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'L' || 
+				($this->Configuration->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -586,8 +586,8 @@ class ContactsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->ContactsPrevalence == 'R' || 
-				($this->Settings->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'R' || 
+				($this->Configuration->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -602,8 +602,8 @@ class ContactsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->ContactsPrevalence == 'L' || 
-				   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'L' || 
+				   ($this->Configuration->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -615,8 +615,8 @@ class ContactsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->ContactsPrevalence == 'R' || 
-				   ($this->Settings->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'R' || 
+				   ($this->Configuration->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -755,8 +755,8 @@ class ContactsService {
 			// update local object if
 			// remote wins mode selected
 			// chronology wins mode selected and remote object is newer
-			if ($this->Settings->ContactsPrevalence == 'R' || 
-			   ($this->Settings->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+			if ($this->Configuration->ContactsPrevalence == 'R' || 
+			   ($this->Configuration->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 				// update local object
 				$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 				// assign status
@@ -765,8 +765,8 @@ class ContactsService {
 			// update remote object if
 			// local wins mode selected
 			// chronology wins mode selected and local object is newer
-			if ($this->Settings->ContactsPrevalence == 'L' || 
-			   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+			if ($this->Configuration->ContactsPrevalence == 'L' || 
+			   ($this->Configuration->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 				// delete all previous attachment(s) in remote store
 				// work around for missing update command in ews
 				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -870,8 +870,8 @@ class ContactsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->ContactsPrevalence == 'R' || 
-				   ($this->Settings->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'R' || 
+				   ($this->Configuration->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -880,8 +880,8 @@ class ContactsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->ContactsPrevalence == 'L' || 
-				   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'L' || 
+				   ($this->Configuration->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -899,8 +899,8 @@ class ContactsService {
 				// update local object if
 				// remote wins mode selected
 				// chronology wins mode selected and remote object is newer
-				if ($this->Settings->ContactsPrevalence == 'R' || 
-				   ($this->Settings->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'R' || 
+				   ($this->Configuration->ContactsPrevalence == 'C' && ($ro->ModifiedOn > $lo->ModifiedOn))) {
 					// update local object
 					$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $ro);
 					// assign status
@@ -909,8 +909,8 @@ class ContactsService {
 				// update remote object if
 				// local wins mode selected
 				// chronology wins mode selected and local object is newer
-				if ($this->Settings->ContactsPrevalence == 'L' || 
-				   ($this->Settings->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
+				if ($this->Configuration->ContactsPrevalence == 'L' || 
+				   ($this->Configuration->ContactsPrevalence == 'C' && ($lo->ModifiedOn > $ro->ModifiedOn))) {
 					// delete all previous attachment(s) in remote store
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
@@ -1020,7 +1020,7 @@ class ContactsService {
 		*	Test Basic Collection Functions
 		*/
 		// retrieve local contact collections
-		$lc = $this->LocalContactsService->listCollections($this->Settings->UserId);
+		$lc = $this->LocalContactsService->listCollections($this->Configuration->UserId);
 		foreach ($lc as $entry) {
 			if ($entry['name'] == 'EWS Test') {
 				$lcid = $entry['id'];
@@ -1049,7 +1049,7 @@ class ContactsService {
 
 		// create local collection
 		if (!isset($lcid)) {
-			$lco = $this->LocalContactsService->createCollection($this->Settings->UserId, 'ews-test', 'EWS Test', true);
+			$lco = $this->LocalContactsService->createCollection($this->Configuration->UserId, 'ews-test', 'EWS Test', true);
 			$lcid = $lco->Id;
 		}
 		
@@ -1060,12 +1060,12 @@ class ContactsService {
 		}
 
 		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($this->Settings->UserId, $lcid, $rcid);
+		$ci = $this->CorrelationsService->find($this->Configuration->UserId, $lcid, $rcid);
 		// create correlation if none was found
 		if (!isset($ci)) {
 			$ci = new \OCA\EWS\Db\Correlation();
 			$ci->settype('CC'); // Correlation Type
-			$ci->setuid($this->Settings->UserId); // User ID
+			$ci->setuid($this->Configuration->UserId); // User ID
 			$ci->setloid($lcid); // Local ID
 			$ci->setroid($rcid); // Remote ID
 			$this->CorrelationsService->create($ci);

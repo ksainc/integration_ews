@@ -25,20 +25,15 @@ declare(strict_types=1);
 
 namespace OCA\EWS\Settings;
 
-use OCP\IConfig;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\Settings\ISettings;
 
 use OCA\EWS\AppInfo\Application;
-use OCA\EWS\Service\CoreService;
+use OCA\EWS\Service\ConfigurationService;
 
 class UserSettings implements ISettings {
 
-	/**
-	 * @var IConfig
-	 */
-	private $config;
 	/**
 	 * @var IInitialState
 	 */
@@ -48,14 +43,9 @@ class UserSettings implements ISettings {
 	 */
 	private $userId;
 
-	public function __construct(
-								IConfig $config,
-								IInitialState $initialStateService,
-								CoreService $CoreService,
-								string $userId) {
-		$this->config = $config;
+	public function __construct(IInitialState $initialStateService, ConfigurationService $ConfigurationService, string $userId) {
 		$this->initialStateService = $initialStateService;
-		$this->CoreService = $CoreService;
+		$this->ConfigurationService = $ConfigurationService;
 		$this->userId = $userId;
 	}
 
@@ -64,10 +54,11 @@ class UserSettings implements ISettings {
 	 */
 	public function getForm(): TemplateResponse {
 		
-		// Get user configuration
-		$configuration = $this->CoreService->fetchPreferences($this->userId);
+		// retrieve user configuration
+		$configuration = $this->ConfigurationService->retrieveUser($this->userId);
 		
 		$this->initialStateService->provideInitialState('user-configuration', $configuration);
+
 		return new TemplateResponse(Application::APP_ID, 'userSettings');
 	}
 

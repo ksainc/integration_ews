@@ -28,7 +28,6 @@ namespace OCA\EWS\Service;
 use DateTime;
 use Exception;
 use Throwable;
-use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 use OCA\DAV\CardDAV\CardDavBackend;
 use OCA\DAV\CalDAV\CalDavBackend;
@@ -37,6 +36,7 @@ use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Components\EWS\EWSClient;
 use OCA\EWS\Db\Action;
 use OCA\EWS\Db\ActionMapper;
+use OCA\EWS\Service\ConfigurationService;
 use OCA\EWS\Service\CoreService;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
@@ -57,13 +57,13 @@ class HarmonizationService {
 	 */
 	private $logger;
 	/**
-	 * @var IConfig
-	 */
-	private $config;
-	/**
 	 * @var INotificationManager
 	 */
 	private $notificationManager;
+	/**
+	 * @var ConfigurationService
+	 */
+	private $ConfigurationService;
 	/**
 	 * @var CoreService
 	 */
@@ -104,8 +104,8 @@ class HarmonizationService {
 
 	public function __construct (string $appName,
 								LoggerInterface $logger,
-								IConfig $config,
 								ActionMapper $ActionManager,
+								ConfigurationService $ConfigurationService,
 								CoreService $CoreService,
 								CorrelationsService $CorrelationsService,
 								LocalContactsService $LocalContactsService,
@@ -118,7 +118,7 @@ class HarmonizationService {
 								CardDavBackend $LocalContactsStore,
 								CalDavBackend $LocalEventsStore) {
 		$this->logger = $logger;
-		$this->config = $config;
+		$this->ConfigurationService = $ConfigurationService;
 		$this->CoreService = $CoreService;
 		$this->CorrelationsService = $CorrelationsService;
 		$this->LocalContactsService = $LocalContactsService;
@@ -149,7 +149,7 @@ class HarmonizationService {
 		$this->logger->info('Statred Harmonization of Collections for ' . $uid);
 
 		// retrieve harmonization status
-		$status = $this->getStatus($uid);
+		$status = $this->ConfigurationService->getHarmonizationStatus($uid);
 		// evaluate, if harmonization is executing
 		if ($status->State === 1) {
 			if (is_numeric($status->Started) && (time() - intval($status->Started)) < self::EXECUSIONTIMEOUT) {
@@ -159,19 +159,19 @@ class HarmonizationService {
 		unset($status);
 
 		// update harmonization status, state and start time
-		$this->setStatus($uid, 1, time(), null);
+		$this->ConfigurationService->setHarmonizationStatus($uid, 1, time(), null);
 		
 		try {
-			// retrieve preferences
-			$settings = $this->CoreService->fetchPreferences($uid);
-			$settings = new \OCA\EWS\Objects\SettingsObject($settings);
+			// retrieve Configuration
+			$Configuration = $this->ConfigurationService->retrieveUser($uid);
+			$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
 			// create remote store client
 			$RemoteStore = $this->CoreService->createClient($uid);
 			// contacts harmonization
-			if (($mode === 'S' && $settings->ContactsFrequency > 0) ||
-				($mode === 'M' && $settings->ContactsFrequency > -1)) {
+			if (($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
+				($mode === 'M' && $Configuration->ContactsHarmonize > -1)) {
 				$this->ContactsService->RemoteStore = $RemoteStore;;
-				$this->ContactsService->Settings = $settings;
+				$this->ContactsService->Configuration = $Configuration;
 				// execute contacts harmonization loop
 				do {
 					// harmonize contacts collections
@@ -183,10 +183,10 @@ class HarmonizationService {
 				} while ($statistics->total() > 0);
 			}
 			// events harmonization
-			if (($mode === 'S' && $settings->EventsFrequency > 0) ||
-				($mode === 'M' && $settings->EventsFrequency > -1)) {
+			if (($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
+				($mode === 'M' && $Configuration->EventsHarmonize > -1)) {
 				$this->EventsService->RemoteStore = $RemoteStore;
-				$this->EventsService->Settings = $settings;
+				$this->EventsService->Configuration = $Configuration;
 				// execute events harmonization loop
 				do {
 					// harmonize events collections
@@ -203,7 +203,7 @@ class HarmonizationService {
 			
 		}
 		// update harmonization status, state and end time
-		$this->setStatus($uid, 0, null, time());
+		$this->ConfigurationService->setHarmonizationStatus($uid, 0, null, time());
 
 		$this->logger->info('Finished Harmonization of Collections for ' . $uid);
 	}
@@ -220,19 +220,19 @@ class HarmonizationService {
 	public function performActions (string $uid): void {
 
 		// retrieve harmonization status
-		$status = $this->getStatus($uid);
+		$status = $this->ConfigurationService->getHarmonizationStatus($uid);
 		$ttl = $status->Started;
 
 		try {
-			// retrieve preferences
-			$settings = $this->CoreService->fetchPreferences($uid);
-			$settings = new \OCA\EWS\Objects\SettingsObject($settings);
+			// retrieve Configuration
+			$Configuration = $this->ConfigurationService->retrieveUser($uid);
+			$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
 			// create remote store client
 			$RemoteStore = $this->CoreService->createClient($uid);
 			// contacts harmonization
-			if ($settings->ContactsFrequency > -1) {
+			if ($Configuration->ContactsHarmonize > -1) {
 				$this->ContactsService->RemoteStore = $RemoteStore;
-				$this->ContactsService->Settings = $settings;
+				$this->ContactsService->Configuration = $Configuration;
 				// harmonize contact collections
 				$statistics = $this->ContactsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
@@ -241,9 +241,9 @@ class HarmonizationService {
 				}
 			}
 			// events harmonization
-			if ($settings->EventsFrequency > -1) {
+			if ($Configuration->EventsHarmonize > -1) {
 				$this->EventsService->RemoteStore = $RemoteStore;
-				$this->EventsService->Settings = $settings;
+				$this->EventsService->Configuration = $Configuration;
 				// harmonize event collections
 				$statistics = $this->EventsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
@@ -417,167 +417,6 @@ class HarmonizationService {
 
 		// return response
 		return (object) ['Id' => $id, 'Token' => $token];
-
-	}
-	
-	/**
-	 * Gets harmonization mode
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @return string harmonization mode (default P - passive)
-	 */
-	public function getMode(): string {
-
-		// retrieve harmonization mode
-		$mode = $this->config->getAppValue(Application::APP_ID, 'harmonization_mode');
-		
-		// return thread id
-		if (!empty($mode)) {
-			return $mode;
-		}
-		else {
-			return 'P';
-		}
-
-	}
-
-	/**
-	 * Sets harmonization mode
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $mode		harmonization mode (A - Active / P - Passive)
-	 * 
-	 * @return void
-	 */
-	public function setMode(string $mode): void {
-		
-		// set harmonization mode
-		$this->config->setAppValue(Application::APP_ID, 'harmonization_mode', $mode);
-
-	}
-
-	/**
-	 * Gets harmonization status
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid	nextcloud user id
-	 * 
-	 * @return object
-	 */
-	public function getStatus(string $uid): object {
-
-		// construct status object
-		$hs = (object) ['State' => null, 'Started' => null, 'Ended' => null];
-		// retrieve status values
-		$hs->State = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_state');
-		$hs->Started = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_start');
-		$hs->Ended = (int) $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_end');
-		// return status object
-		return $hs;
-
-	}
-
-	/**
-	 * Sets harmonization status
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid		nextcloud user id
-	 * @param int $state		harmonization state (1 - running, 0 - not running)
-	 * @param int $start		harmonization start epoch time stamp
-	 * @param int $end			harmonization end epoch time stamp
-	 * 
-	 * @return void
-	 */
-	public function setStatus(string $uid, int $state, ?int $start, ?int $end): void {
-		
-		// update harmonization values
-		$this->config->setUserValue($uid, Application::APP_ID, 'account_harmonization_state', $state);
-		if (isset($start)) {
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_harmonization_start', $start);
-		}
-		if (isset($end)) {
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_harmonization_end', $end);
-		}
-
-	}
-
-	/**
-	 * Gets harmonization thread run duration interval
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @return string harmonization thread run duration interval (default 3600 seconds)
-	 */
-	public function getThreadDuration(): int {
-
-		// retrieve value
-		$interval = $this->config->getAppValue(Application::APP_ID, 'harmonization_thread_duration');
-		
-		// return value or default
-		if (is_numeric($interval)) {
-			return intval($interval);
-		}
-		else {
-			return 3600;
-		}
-
-	}
-
-	/**
-	 * Sets harmonization thread pause interval
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $interval		harmonization thread pause interval in seconds
-	 * 
-	 * @return void
-	 */
-	public function setThreadDuration(int $interval): void {
-		
-		// set value
-		$this->config->setAppValue(Application::APP_ID, 'harmonization_thread_duration', $mode);
-
-	}
-
-	/**
-	 * Gets harmonization thread pause interval
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @return string harmonization thread pause interval (default 5 seconds)
-	 */
-	public function getThreadPause(): int {
-
-		// retrieve value
-		$interval = $this->config->getAppValue(Application::APP_ID, 'harmonization_thread_pause');
-		
-		// return value or default
-		if (is_numeric($interval)) {
-			return intval($interval);
-		}
-		else {
-			return 15;
-		}
-
-	}
-
-	/**
-	 * Sets harmonization thread pause interval
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $interval		harmonization thread pause interval in seconds
-	 * 
-	 * @return void
-	 */
-	public function setThreadPause(int $interval): void {
-		
-		// set value
-		$this->config->setAppValue(Application::APP_ID, 'harmonization_thread_pause', $mode);
 
 	}
 

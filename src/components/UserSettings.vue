@@ -145,7 +145,7 @@
 						<label>
 							{{ t('integration_ews', 'Synchronize ') }}
 						</label>
-						<NcSelect v-model="state.contacts_frequency"
+						<NcSelect v-model="state.contacts_harmonize"
 							:reduce="item => item.id"
 							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
 						<label>
@@ -219,7 +219,7 @@
 						<label>
 							{{ t('integration_ews', 'Synchronize ') }}
 						</label>
-						<NcSelect v-model="state.events_frequency"
+						<NcSelect v-model="state.events_harmonize"
 							:reduce="item => item.id"
 							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
 						<label>
@@ -415,11 +415,11 @@ export default {
 		onSaveClick() {
 			this.depositPreferences({
 				contacts_prevalence: this.state.contacts_prevalence,
-				contacts_frequency: this.state.contacts_frequency,
+				contacts_harmonize: this.state.contacts_harmonize,
 				contacts_actions_local: this.state.contacts_actions_local,
 				contacts_actions_remote: this.state.contacts_actions_remote,
 				events_prevalence: this.state.events_prevalence,
-				events_frequency: this.state.events_frequency,
+				events_harmonize: this.state.events_harmonize,
 				events_actions_local: this.state.events_actions_local,
 				events_actions_remote: this.state.events_actions_remote,
 			})

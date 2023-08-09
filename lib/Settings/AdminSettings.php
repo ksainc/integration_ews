@@ -25,29 +25,23 @@ declare(strict_types=1);
 
 namespace OCA\EWS\Settings;
 
-use OCP\IConfig;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\Settings\ISettings;
 
 use OCA\EWS\AppInfo\Application;
-use OCA\EWS\Service\HarmonizationService;
+use OCA\EWS\Service\ConfigurationService;
 
 class AdminSettings implements ISettings {
 
-	/**
-	 * @var IConfig
-	 */
-	private $config;
 	/**
 	 * @var IInitialState
 	 */
 	private $initialStateService;
 
-	public function __construct(IConfig $config, IInitialState $initialStateService, HarmonizationService $HarmonizationService) {
-		$this->config = $config;
+	public function __construct(IInitialState $initialStateService, ConfigurationService $ConfigurationService) {
 		$this->initialStateService = $initialStateService;
-		$this->HarmonizationService = $HarmonizationService;
+		$this->ConfigurationService = $ConfigurationService;
 	}
 
 	/**
@@ -55,13 +49,11 @@ class AdminSettings implements ISettings {
 	 */
 	public function getForm(): TemplateResponse {
 		
-		$configuration = [
-			'harmonization_mode' => $this->HarmonizationService->getMode(),
-			'harmonization_thread_duration' => $this->HarmonizationService->getThreadDuration(),
-			'harmonization_thread_pause' => $this->HarmonizationService->getThreadPause()
-		];
-
+		// retrieve user configuration
+		$configuration = $this->ConfigurationService->retrieveSystem();
+		
 		$this->initialStateService->provideInitialState('admin-configuration', $configuration);
+
 		return new TemplateResponse(Application::APP_ID, 'adminSettings');
 	}
 

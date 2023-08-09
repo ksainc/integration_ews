@@ -25,10 +25,10 @@
 
 namespace OCA\EWS\Service;
 
-use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 
 use OCA\EWS\AppInfo\Application;
+use OCA\EWS\Service\ConfigurationService;
 
 class HarmonizationThreadService {
 
@@ -37,13 +37,13 @@ class HarmonizationThreadService {
 	 */
 	private $logger;
 	/**
-	 * @var IConfig
+	 * @var ConfigurationService
 	 */
-	private $config;
+	private $ConfigurationService;
 
-	public function __construct(string $appName, IConfig $config, LoggerInterface $logger) {
-		$this->config = $config;
+	public function __construct(LoggerInterface $logger, ConfigurationService $ConfigurationService) {
 		$this->logger = $logger;
+		$this->ConfigurationService = $ConfigurationService;
 	}
 
 	/**
@@ -170,7 +170,7 @@ class HarmonizationThreadService {
 	public function getId(string $uid): int {
 
 		// retrieve thread id
-		$tid = $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_tid');
+		$tid = $this->ConfigurationService->getHarmonizationThreadId($uid);
 		// return thread id
 		if (is_numeric($tid)) {
 			return intval($tid);
@@ -194,7 +194,7 @@ class HarmonizationThreadService {
 	public function setId(string $uid, int $tid): void {
 		
 		// update harmonization thread id
-		$this->config->setUserValue($uid, Application::APP_ID, 'account_harmonization_tid', (string) $tid);
+		$this->ConfigurationService->setHarmonizationThreadId($uid, $tid);
 
 	}
 
@@ -210,7 +210,7 @@ class HarmonizationThreadService {
 	public function getHeartBeat(string $uid): ?int {
 
 		// retrieve thread heart beat
-		$thb = $this->config->getUserValue($uid, Application::APP_ID, 'account_harmonization_thb');
+		$thb = $this->ConfigurationService->getHarmonizationThreadHeartBeat($uid);
 		// return thread heart beat
 		if (is_numeric($thb)) {
 			return (int) $thb;
@@ -234,7 +234,7 @@ class HarmonizationThreadService {
 	public function setHeartBeat(string $uid, int $thb): void {
 		
 		// update harmonization thread id
-		$this->config->setUserValue($uid, Application::APP_ID, 'account_harmonization_thb', $thb);
+		$this->ConfigurationService->setHarmonizationThreadHeartBeat($uid, $thb);
 
 	}
 

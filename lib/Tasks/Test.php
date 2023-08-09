@@ -74,10 +74,13 @@ try {
 	OC_App::loadApps();
 
 	// initilize required services
+	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 	$HarmonizationThreadService = \OC::$server->get(\OCA\EWS\Service\HarmonizationThreadService::class);
 
+	// retrieve user configuration
+	$configuration = $ConfigurationService->retrieveUser($uid);
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');
 

@@ -28,25 +28,25 @@ namespace OCA\EWS\Controller;
 use Exception;
 use Throwable;
 
-use OCP\IConfig;
 use OCP\IRequest;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 
 use OCA\EWS\AppInfo\Application;
+use OCA\EWS\Service\ConfigurationService;
 use OCA\EWS\Service\CoreService;
 use OCA\EWS\Service\HarmonizationService;
 
 class UserConfigurationController extends Controller {
 
 	/**
-	 * @var IConfig
-	 */
-	private $config;
-	/**
 	 * @var string|null
 	 */
 	private $userId;
+	/**
+	 * @var ConfigurationService
+	 */
+	private $ConfigurationService;
 	/**
 	 * @var CoreService
 	 */
@@ -58,12 +58,12 @@ class UserConfigurationController extends Controller {
 	
 	public function __construct(string $appName,
 								IRequest $request,
-								IConfig $config,
+								ConfigurationService $ConfigurationService,
 								CoreService $CoreService,
 								HarmonizationService $HarmonizationService,
 								string $userId) {
 		parent::__construct($appName, $request);
-		$this->config = $config;
+		$this->ConfigurationService = $ConfigurationService;
 		$this->CoreService = $CoreService;
 		$this->HarmonizationService = $HarmonizationService;
 		$this->userId = $userId;
@@ -269,8 +269,8 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// retrieve correlations
-		$rs = $this->CoreService->fetchPreferences($this->userId);
+		// retrieve user configuration
+		$rs = $this->ConfigurationService->retrieveUser($this->userId);
 		// return response
 		if (is_array($rs)) {
 			return new DataResponse($rs);
@@ -295,8 +295,8 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// execute command
-		$rs = $this->CoreService->depositPreferences($this->userId, $values);
+		// deposit user configuration
+		$this->ConfigurationService->depositUser($this->userId, $values);
 		// return response
 		return new DataResponse(true);
 

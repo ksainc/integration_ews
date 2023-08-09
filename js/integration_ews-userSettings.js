@@ -10938,11 +10938,11 @@ __webpack_require__.r(__webpack_exports__);
     onSaveClick: function onSaveClick() {
       this.depositPreferences({
         contacts_prevalence: this.state.contacts_prevalence,
-        contacts_frequency: this.state.contacts_frequency,
+        contacts_harmonize: this.state.contacts_harmonize,
         contacts_actions_local: this.state.contacts_actions_local,
         contacts_actions_remote: this.state.contacts_actions_remote,
         events_prevalence: this.state.events_prevalence,
-        events_frequency: this.state.events_frequency,
+        events_harmonize: this.state.events_harmonize,
         events_actions_local: this.state.events_actions_local,
         events_actions_remote: this.state.events_actions_remote
       });
@@ -11468,11 +11468,11 @@ var render = function render() {
       }]
     },
     model: {
-      value: _vm.state.contacts_frequency,
+      value: _vm.state.contacts_harmonize,
       callback: function callback($$v) {
-        _vm.$set(_vm.state, "contacts_frequency", $$v);
+        _vm.$set(_vm.state, "contacts_harmonize", $$v);
       },
-      expression: "state.contacts_frequency"
+      expression: "state.contacts_harmonize"
     }
   }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
@@ -11557,11 +11557,11 @@ var render = function render() {
       }]
     },
     model: {
-      value: _vm.state.events_frequency,
+      value: _vm.state.events_harmonize,
       callback: function callback($$v) {
-        _vm.$set(_vm.state, "events_frequency", $$v);
+        _vm.$set(_vm.state, "events_harmonize", $$v);
       },
-      expression: "state.events_frequency"
+      expression: "state.events_harmonize"
     }
   }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {

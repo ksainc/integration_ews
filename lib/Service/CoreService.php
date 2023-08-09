@@ -30,7 +30,6 @@ use DateTime;
 use Exception;
 use Throwable;
 use OCP\IL10N;
-use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 use OCP\Notification\IManager as INotificationManager;
 use OCP\BackgroundJob\IJobList;
@@ -40,6 +39,7 @@ use OCA\DAV\CalDAV\CalDavBackend;
 use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Components\EWS\EWSClient;
 use OCA\EWS\Db\ActionMapper;
+use OCA\EWS\Service\ConfigurationService;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
 use OCA\EWS\Service\EventsService;
@@ -58,10 +58,6 @@ class CoreService {
 	 */
 	private $logger;
 	/**
-	 * @var IConfig
-	 */
-	private $config;
-	/**
 	 * @var IJobList
 	 */
 	private IJobList $TaskService;
@@ -77,6 +73,10 @@ class CoreService {
 	 * @var ActionMapper
 	 */
 	private $ActionMapper;
+	/**
+	 * @var ConfigurationService
+	 */
+	private $ConfigurationService;
 	/**
 	 * @var CorrelationsService
 	 */
@@ -112,10 +112,10 @@ class CoreService {
 
 	public function __construct (string $appName,
 								LoggerInterface $logger,
-								IConfig $config,
 								IJobList $TaskService,
 								INotificationManager $notificationManager,
 								ActionMapper $ActionMapper,
+								ConfigurationService $ConfigurationService,
 								CorrelationsService $CorrelationsService,
 								HarmonizationThreadService $HarmonizationThreadService,
 								LocalContactsService $LocalContactsService,
@@ -128,10 +128,10 @@ class CoreService {
 								CardDavBackend $LocalContactsStore,
 								CalDavBackend $LocalEventsStore) {
 		$this->logger = $logger;
-		$this->config = $config;
 		$this->TaskService = $TaskService;
 		$this->notificationManager = $notificationManager;
 		$this->ActionMapper = $ActionMapper;
+		$this->ConfigurationService = $ConfigurationService;
 		$this->CorrelationsService = $CorrelationsService;
 		$this->HarmonizationThreadService = $HarmonizationThreadService;
 		$this->LocalContactsService = $LocalContactsService;
@@ -173,17 +173,16 @@ class CoreService {
 				$match
 			);
 
-			// deposit default settings and preferences
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_provider', $account_provider);
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_id', $account_id);
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_secret', $account_secret);
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_protocol', $match[2][0]);
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_connected', 1);
-			$this->config->setUserValue($uid, Application::APP_ID, 'account_synchronizing', 0);
-			$this->config->setUserValue($uid, Application::APP_ID, 'contacts_prevalence', 'R');
-			$this->config->setUserValue($uid, Application::APP_ID, 'contacts_frequency', '5');
-			$this->config->setUserValue($uid, Application::APP_ID, 'events_prevalence', 'R');
-			$this->config->setUserValue($uid, Application::APP_ID, 'events_frequency', '5');
+			// retrieve default configuration
+			$uc = $this->ConfigurationService->retrieveUser($uid);
+			// update configuration
+			$uc['account_provider'] = $account_provider;
+			$uc['account_id'] = $account_id;
+			$uc['account_secret'] = $account_secret;
+			$uc['account_protocol'] = $match[2][0];
+			$uc['account_connected'] = '1';
+			// deposit configuration to datastore
+			$uc = $this->ConfigurationService->retrieveUser($uid);
 
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
@@ -272,51 +271,6 @@ class CoreService {
 		$response['EventCollections'] = $ec;
 		// return response
 		return $response;
-
-	}
-
-	/**
-	 * Retrieves all user preferances
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid	nextcloud user id
-	 * 
-	 * @return array of key/value pairs, of preferances
-	 */
-	public function fetchPreferences(string $uid): array {
-
-		$parameters = [];
-		// retrieve user settings and preferences
-		$keys = $this->config->getUserKeys($uid, Application::APP_ID);
-		foreach ($keys as $entry) {
-			$parameters[$entry] = $this->config->getUserValue($uid, Application::APP_ID, $entry);
-		}
-		$parameters['user_id'] = $uid;
-		$parameters['user_timezone'] = $this->config->getUserValue($uid, 'core', 'timezone');
-		if (isset($parameters['account_secret'])) {
-			$parameters['account_secret'] = null;
-		}
-
-		return $parameters;
-
-	}
-
-	/**
-	 * Deposit all user preferances
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid		nextcloud user id
-	 * @param array $parameters	collection of key/value pairs, of preferances
-	 * 
-	 * @return array of key/value pairs, of attributes
-	 */
-	public function depositPreferences(string $uid, array $parameters): void {
-
-		foreach ($parameters as $key => $value) {
-			$this->config->setUserValue($uid, Application::APP_ID, $key, $value);
-		}
 
 	}
 
@@ -447,12 +401,9 @@ class CoreService {
 
 		if (!$this->RemoteStore instanceof EWSClient) {
 			// retrieve connection information
-			$account_provider = $this->config->getUserValue($uid, Application::APP_ID, 'account_provider');
-			$account_id = $this->config->getUserValue($uid, Application::APP_ID, 'account_id');
-			$account_secret = $this->config->getUserValue($uid, Application::APP_ID, 'account_secret');
-			$account_protocol = $this->config->getUserValue($uid, Application::APP_ID, 'account_protocol');
+			$ac = $this->ConfigurationService->retrieveAuthentication($uid);
 			// construct remote data store client
-			$this->RemoteStore = new EWSClient($account_provider, $account_id, $account_secret, $account_protocol);
+			$this->RemoteStore = new EWSClient($ac['account_provider'], $ac['account_id'], $ac['account_secret'], $ac['account_protocol']);
 		}
 
 		return $this->RemoteStore;
@@ -506,7 +457,7 @@ class CoreService {
 
 		try {
 			// retrieve preferences
-			$settings = $this->fetchPreferences($uid);
+			$settings = $this->ConfigurationService->retrieveUser($uid);
 			$settings = new \OCA\EWS\Objects\SettingsObject($settings);
 			// create remote store client
 			$RemoteStore = $this->createClient($uid);

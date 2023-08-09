@@ -29,6 +29,7 @@ use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 
+use OCA\EWS\Service\ConfigurationService;
 use OCA\EWS\Service\HarmonizationService;
 use OCA\EWS\Service\HarmonizationThreadService;
 
@@ -37,6 +38,10 @@ class HarmonizationLauncher extends TimedJob {
 	 * @var LoggerInterface
 	 */
 	private $logger;
+    /**
+	 * @var ConfigurationService
+	 */
+	private $ConfigurationService;
     /**
 	 * @var HarmonizationService
 	 */
@@ -49,11 +54,13 @@ class HarmonizationLauncher extends TimedJob {
     public function __construct(
         ITimeFactory $time, 
         LoggerInterface $logger, 
+        ConfigurationService $ConfigurationService,
         HarmonizationService $HarmonizationService,
         HarmonizationThreadService $HarmonizationThreadService
     ) {
         parent::__construct($time);
         $this->logger = $logger;
+        $this->ConfigurationService = $ConfigurationService;
         $this->HarmonizationService = $HarmonizationService;
         $this->HarmonizationThreadService = $HarmonizationThreadService;
 
@@ -66,7 +73,7 @@ class HarmonizationLauncher extends TimedJob {
         $uid = $arguments['uid'];
         // evaluate harmonization mode
         // active mode
-        if ($this->HarmonizationService->getMode() == 'A') {
+        if ($this->ConfigurationService->getHarmonizationMode() == 'A') {
             // retrieve thread id
             $tid = $this->HarmonizationThreadService->getId($uid);
             // evaluate if thread is live and launch new thred if needed

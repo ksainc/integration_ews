@@ -25,28 +25,25 @@ declare(strict_types=1);
 
 namespace OCA\EWS\Controller;
 
-use Exception;
-use Throwable;
-
-use OCP\IConfig;
 use OCP\IRequest;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 
 use OCA\EWS\AppInfo\Application;
+use OCA\EWS\Service\ConfigurationService;
 
 class AdminConfigurationController extends Controller {
 
 	/**
-	 * @var IConfig
+	 * @var ConfigurationService
 	 */
-	private $config;
+	private $ConfigurationService;
 
-	public function __construct($appName, IRequest $request, IConfig $config) {
+	public function __construct($appName, IRequest $request, ConfigurationService $ConfigurationService) {
 
 		parent::__construct($appName, $request);
 
-		$this->config = $config;
+		$this->ConfigurationService = $ConfigurationService;
 		
 	}
 
@@ -58,9 +55,9 @@ class AdminConfigurationController extends Controller {
 	 * @return DataResponse
 	 */
 	public function depositConfiguration(array $values): DataResponse {
-		foreach ($values as $key => $value) {
-			$this->config->setAppValue(Application::APP_ID, $key, $value);
-		}
+		
+		$this->ConfigurationService->depositSystem($values);
+
 		return new DataResponse(true);
 	}
 }
