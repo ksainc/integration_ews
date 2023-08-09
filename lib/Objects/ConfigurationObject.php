@@ -30,9 +30,9 @@ use DateTimeZone;
 
 class ConfigurationObject {
 
-	public ?DateTimeZone $SystemTimeZone;
-	public string $UserId;						// nextcloud user id
-	public ?DateTimeZone $UserTimeZone; 		// nextcloud user timezone
+	public ?DateTimeZone $SystemTimeZone = null;
+	public string $UserId = '';						// nextcloud user id
+	public ?DateTimeZone $UserTimeZone = null; 		// nextcloud user timezone
 	public int $ContactsHarmonize = -1;			// contacts harmonize
 	public string $ContactsPrevalence = '';		// contacts prevalence
 	public string $ContactsPresentation = '';
