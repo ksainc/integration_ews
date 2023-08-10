@@ -73,6 +73,8 @@ class Application extends App implements IBootstrap {
 
         // retrieve harmonization mode
         $mode = \OC::$server->getConfig()->getAppValue(Application::APP_ID, 'harmonization_mode');
+        $contacts = \OC::$server->getConfig()->getAppValue('contacts', 'enabled');
+        $calendar = \OC::$server->getConfig()->getAppValue('calendar', 'enabled');
 
         // register notifications
         $manager = $this->getContainer()->get(INotificationManager::class);
@@ -80,19 +82,28 @@ class Application extends App implements IBootstrap {
         // register event handlers
         $dispatcher = $this->getContainer()->get(IEventDispatcher::class);
         $dispatcher->addServiceListener(UserDeletedEvent::class, UserDeletedListener::class);
-        $dispatcher->addServiceListener(AddressBookDeletedEvent::class, AddressBookDeletedListener::class);
-        $dispatcher->addServiceListener(CalendarDeletedEvent::class, CalendarDeletedListener::class);
-        // evaluate harmonization mode, and only register if set to active
-        if ($mode == 'A') {
-            $dispatcher->addServiceListener(CalendarObjectCreatedEvent::class, CalendarObjectCreatedListener::class);
-            $dispatcher->addServiceListener(CalendarObjectUpdatedEvent::class, CalendarObjectUpdatedListener::class);
-            $dispatcher->addServiceListener(CalendarObjectDeletedEvent::class, CalendarObjectDeletedListener::class);
-            $dispatcher->addServiceListener(CalendarObjectMovedEvent::class, CalendarObjectMovedListener::class);
-            $dispatcher->addServiceListener(CalendarObjectMovedToTrashEvent::class, CalendarObjectMovedToTrashListener::class);
-            $dispatcher->addServiceListener(CalendarObjectRestoredEvent::class, CalendarObjectRestoredListener::class);
-            $dispatcher->addServiceListener(CardCreatedEvent::class, CardCreatedListener::class);
-            $dispatcher->addServiceListener(CardUpdatedEvent::class, CardUpdatedListener::class);
-            $dispatcher->addServiceListener(CardDeletedEvent::class, CardDeletedListener::class);
+
+        if ($contacts == 'yes') {
+            $dispatcher->addServiceListener(AddressBookDeletedEvent::class, AddressBookDeletedListener::class);
+            // evaluate harmonization mode, and only register if set to active
+            if ($mode == 'A') {
+                $dispatcher->addServiceListener(CardCreatedEvent::class, CardCreatedListener::class);
+                $dispatcher->addServiceListener(CardUpdatedEvent::class, CardUpdatedListener::class);
+                $dispatcher->addServiceListener(CardDeletedEvent::class, CardDeletedListener::class);
+            }
+        }
+        
+        if ($calendar == 'yes') {
+            $dispatcher->addServiceListener(CalendarDeletedEvent::class, CalendarDeletedListener::class);
+            // evaluate harmonization mode, and only register if set to active
+            if ($mode == 'A') {
+                $dispatcher->addServiceListener(CalendarObjectCreatedEvent::class, CalendarObjectCreatedListener::class);
+                $dispatcher->addServiceListener(CalendarObjectUpdatedEvent::class, CalendarObjectUpdatedListener::class);
+                $dispatcher->addServiceListener(CalendarObjectDeletedEvent::class, CalendarObjectDeletedListener::class);
+                $dispatcher->addServiceListener(CalendarObjectMovedEvent::class, CalendarObjectMovedListener::class);
+                $dispatcher->addServiceListener(CalendarObjectMovedToTrashEvent::class, CalendarObjectMovedToTrashListener::class);
+                $dispatcher->addServiceListener(CalendarObjectRestoredEvent::class, CalendarObjectRestoredListener::class);
+            }
         }
     }
 
