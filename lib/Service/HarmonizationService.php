@@ -168,8 +168,9 @@ class HarmonizationService {
 			// create remote store client
 			$RemoteStore = $this->CoreService->createClient($uid);
 			// contacts harmonization
-			if (($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
-				($mode === 'M' && $Configuration->ContactsHarmonize > -1)) {
+			if ($this->ConfigurationService->isContactsAppAvailable() &&
+				(($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
+				($mode === 'M' && $Configuration->ContactsHarmonize > -1))) {
 				$this->ContactsService->RemoteStore = $RemoteStore;;
 				$this->ContactsService->Configuration = $Configuration;
 				// execute contacts harmonization loop
@@ -183,8 +184,9 @@ class HarmonizationService {
 				} while ($statistics->total() > 0);
 			}
 			// events harmonization
-			if (($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
-				($mode === 'M' && $Configuration->EventsHarmonize > -1)) {
+			if ($this->ConfigurationService->isCalendarAppAvailable() &&
+				(($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
+				($mode === 'M' && $Configuration->EventsHarmonize > -1))) {
 				$this->EventsService->RemoteStore = $RemoteStore;
 				$this->EventsService->Configuration = $Configuration;
 				// execute events harmonization loop
@@ -230,7 +232,7 @@ class HarmonizationService {
 			// create remote store client
 			$RemoteStore = $this->CoreService->createClient($uid);
 			// contacts harmonization
-			if ($Configuration->ContactsHarmonize > -1) {
+			if ($this->ConfigurationService->isContactsAppAvailable() && $Configuration->ContactsHarmonize > -1) {
 				$this->ContactsService->RemoteStore = $RemoteStore;
 				$this->ContactsService->Configuration = $Configuration;
 				// harmonize contact collections
@@ -241,7 +243,7 @@ class HarmonizationService {
 				}
 			}
 			// events harmonization
-			if ($Configuration->EventsHarmonize > -1) {
+			if ($this->ConfigurationService->isCalendarAppAvailable() && $Configuration->EventsHarmonize > -1) {
 				$this->EventsService->RemoteStore = $RemoteStore;
 				$this->EventsService->Configuration = $Configuration;
 				// harmonize event collections

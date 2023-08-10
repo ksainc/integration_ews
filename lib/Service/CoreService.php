@@ -234,13 +234,15 @@ class CoreService {
 		// assign local data store
 		$this->LocalContactsService->DataStore = $this->LocalContactsStore;
 		$this->LocalEventsService->DataStore = $this->LocalEventsStore;
-		// retrieve local collections
-		$cc = $this->LocalContactsService->listCollections($uid);
-		$ec = $this->LocalEventsService->listCollections($uid);
 		// construct response object
-		$response = array();
-		$response['ContactCollections'] = $cc;
-		$response['EventCollections'] = $ec;
+		$response = ['ContactCollections' => [], 'EventCollections' => []];
+		// retrieve local collections
+		if ($this->ConfigurationService->isContactsAppAvailable()) {
+			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid);;
+		}
+		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid);
+		}
 		// return response
 		return $response;
 
@@ -262,13 +264,16 @@ class CoreService {
 		// assign remote data store and settings
 		$this->RemoteContactsService->DataStore = $RemoteStore;
 		$this->RemoteEventsService->DataStore = $RemoteStore;
-		// retrieve remote collections
-		$cc = $this->RemoteContactsService->listCollections();
-		$ec = $this->RemoteEventsService->listCollections();
+		
 		// construct response object
-		$response = array();
-		$response['ContactCollections'] = $cc;
-		$response['EventCollections'] = $ec;
+		$response = ['ContactCollections' => [], 'EventCollections' => []];
+		// retrieve local collections
+		if ($this->ConfigurationService->isContactsAppAvailable()) {
+			$response['ContactCollections'] = $this->RemoteContactsService->listCollections();
+		}
+		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+			$response['EventCollections'] = $this->RemoteEventsService->listCollections();
+		}
 		// return response
 		return $response;
 
@@ -285,14 +290,15 @@ class CoreService {
 	 */
 	public function fetchCorrelations(string $uid): array {
 
-		// retrieve correlations
-		$cc = $this->CorrelationsService->findByType($uid, 'CC');
-		$ec = $this->CorrelationsService->findByType($uid, 'EC');
-
 		// construct response object
-		$response = array();
-		$response['ContactCorrelations'] = $cc;
-		$response['EventCorrelations'] = $ec;
+		$response = ['ContactCorrelations' => [], 'EventCorrelations' => []];
+		// retrieve local collections
+		if ($this->ConfigurationService->isContactsAppAvailable()) {
+			$response['ContactCorrelations'] = $this->CorrelationsService->findByType($uid, 'CC');
+		}
+		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+			$response['EventCorrelations'] = $this->CorrelationsService->findByType($uid, 'EC');
+		}
 		// return response
 		return $response;
 
@@ -314,74 +320,78 @@ class CoreService {
 		// terminate harmonization thread, in case the user changed any correlations
 		$this->HarmonizationThreadService->terminate($uid);
 		// deposit contacts correlations
-		foreach ($cc as $entry) {
-			if (!empty($entry['action'])) {
-				try {
-					switch ($entry['action']) {
-						case 'D':
-							$cc = $this->CorrelationsService->fetch($entry['id']);
-							if ($this->UserId == $entry['uid']) {
-								$this->CorrelationsService->deleteByCollectionId($cc->getuid(), $cc->getloid(), $cc->getroid());
-								$this->CorrelationsService->delete($cc);
-							}
-							break;
-						case 'C':
-							$cc = new \OCA\EWS\Db\Correlation();
-							$cc->settype('CC'); // Correlation Type
-							$cc->setuid($uid); // User ID
-							$cc->setloid($entry['loid']); // Local ID
-							$cc->setroid($entry['roid']); // Remote ID
-							$this->CorrelationsService->create($cc);
-							break;
-						case 'U':
-							$cc = $this->CorrelationsService->fetch($entry['id']);
-							if ($this->UserId == $entry['uid']) {
+		if ($this->ConfigurationService->isContactsAppAvailable()) {
+			foreach ($cc as $entry) {
+				if (!empty($entry['action'])) {
+					try {
+						switch ($entry['action']) {
+							case 'D':
+								$cc = $this->CorrelationsService->fetch($entry['id']);
+								if ($this->UserId == $entry['uid']) {
+									$this->CorrelationsService->deleteByCollectionId($cc->getuid(), $cc->getloid(), $cc->getroid());
+									$this->CorrelationsService->delete($cc);
+								}
+								break;
+							case 'C':
+								$cc = new \OCA\EWS\Db\Correlation();
 								$cc->settype('CC'); // Correlation Type
+								$cc->setuid($uid); // User ID
 								$cc->setloid($entry['loid']); // Local ID
 								$cc->setroid($entry['roid']); // Remote ID
-								$this->CorrelationsService->update($cc);
-							}
-							break;
+								$this->CorrelationsService->create($cc);
+								break;
+							case 'U':
+								$cc = $this->CorrelationsService->fetch($entry['id']);
+								if ($this->UserId == $entry['uid']) {
+									$cc->settype('CC'); // Correlation Type
+									$cc->setloid($entry['loid']); // Local ID
+									$cc->setroid($entry['roid']); // Remote ID
+									$this->CorrelationsService->update($cc);
+								}
+								break;
+						}
 					}
-				}
-				catch (Exception $e) {
-					
+					catch (Exception $e) {
+						
+					}
 				}
 			}
 		}
 		// deposit events correlations
-		foreach ($ec as $entry) {
-			if (!empty($entry['action'])) {
-				try {
-					switch ($entry['action']) {
-						case 'D':
-							$cc = $this->CorrelationsService->fetch($entry['id']);
-							if ($this->UserId == $entry['uid']) {
-								$this->CorrelationsService->deleteByCollectionId($cc->getuid(), $cc->getloid(), $cc->getroid());
-								$this->CorrelationsService->delete($cc);
-							}
-							break;
-						case 'C':
-							$cc = new \OCA\EWS\Db\Correlation();
-							$cc->settype('EC'); // Correlation Type
-							$cc->setuid($uid); // User ID
-							$cc->setloid($entry['loid']); // Local ID
-							$cc->setroid($entry['roid']); // Remote ID
-							$this->CorrelationsService->create($cc);
-							break;
-						case 'U':
-							$cc = $this->CorrelationsService->fetch($entry['id']);
-							if ($this->UserId == $entry['uid']) {
+		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+			foreach ($ec as $entry) {
+				if (!empty($entry['action'])) {
+					try {
+						switch ($entry['action']) {
+							case 'D':
+								$cc = $this->CorrelationsService->fetch($entry['id']);
+								if ($this->UserId == $entry['uid']) {
+									$this->CorrelationsService->deleteByCollectionId($cc->getuid(), $cc->getloid(), $cc->getroid());
+									$this->CorrelationsService->delete($cc);
+								}
+								break;
+							case 'C':
+								$cc = new \OCA\EWS\Db\Correlation();
 								$cc->settype('EC'); // Correlation Type
+								$cc->setuid($uid); // User ID
 								$cc->setloid($entry['loid']); // Local ID
 								$cc->setroid($entry['roid']); // Remote ID
-								$this->CorrelationsService->update($cc);
-							}
-							break;
+								$this->CorrelationsService->create($cc);
+								break;
+							case 'U':
+								$cc = $this->CorrelationsService->fetch($entry['id']);
+								if ($this->UserId == $entry['uid']) {
+									$cc->settype('EC'); // Correlation Type
+									$cc->setloid($entry['loid']); // Local ID
+									$cc->setroid($entry['roid']); // Remote ID
+									$this->CorrelationsService->update($cc);
+								}
+								break;
+						}
 					}
-				}
-				catch (Exception $e) {
-					
+					catch (Exception $e) {
+						
+					}
 				}
 			}
 		}

@@ -118,10 +118,12 @@ class ConfigurationService {
 		// evaluate if we are looking for specific parameters
 		if (!isset($keys) || count($keys) == 0) {
 			$keys = array_keys(self::_USER);
-			// retrieve other user preferences
-			$parameters['system_timezone'] = $this->_ds->getUserValue($uid, 'core', 'timezone');
+			// retrieve other parameters
 			$parameters['user_id'] = $uid;
 			$parameters['user_timezone'] = $this->_ds->getUserValue($uid, 'calendar', 'timezone');
+			$parameters['system_timezone'] = $this->_ds->getUserValue($uid, 'core', 'timezone');
+			$parameters['system_calendar'] = $this->isCalendarAppAvailable();
+			$parameters['system_contacts'] = $this->isContactsAppAvailable();
 		}
 		// retrieve system configuration values
 		foreach ($keys as $entry) {
@@ -675,6 +677,48 @@ class ConfigurationService {
 		
 		// update harmonization thread id
 		$this->depositUserValue($uid, 'account_harmonization_thb', $thb);
+
+	}
+
+	/**
+	 * retrieve contacts app status
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return bool
+	 */
+	public function isContactsAppAvailable(): bool {
+
+		// retrieve contacts app status
+		$status = $this->_ds->getAppValue('contacts', 'enabled');
+		// evaluate status
+		if ($status == 'yes') {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * retrieve calendar app status
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return bool
+	 */
+	public function isCalendarAppAvailable(): bool {
+
+		// retrieve calendar app status
+		$status = $this->_ds->getAppValue('calendar', 'enabled');
+		// evaluate status
+		if ($status == 'yes') {
+			return true;
+		}
+		else {
+			return false;
+		}
 
 	}
 }

@@ -11412,11 +11412,11 @@ var render = function render() {
     staticClass: "ews-correlations-contacts"
   }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Contacts")))]), _vm._v(" "), _c("div", {
     staticClass: "settings-hint"
-  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote contacts folder(s) you wish to synchronize by pressing the link button next to the contact folder name and selecting the local contacts address book to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.availableRemoteContactCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteContactCollections, function (ritem) {
+  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote contacts folder(s) you wish to synchronize by pressing the link button next to the contact folder name and selecting the local contacts address book to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.state.system_contacts == 1 ? _c("div", [_vm.availableRemoteContactCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteContactCollections, function (ritem) {
     return _c("li", {
       key: ritem.id,
       staticClass: "ews-collectionlist-item"
-    }, [_c("ContactIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(ritem.name) + " (" + _vm._s(ritem.count) + " Contacts)\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcActions", {
+    }, [_c("ContactIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(ritem.name) + " (" + _vm._s(ritem.count) + " Contacts)\n\t\t\t\t\t\t\t")]), _vm._v(" "), _c("NcActions", {
       scopedSlots: _vm._u([{
         key: "icon",
         fn: function fn() {
@@ -11437,7 +11437,7 @@ var render = function render() {
         },
         proxy: true
       }], null, true)
-    }, [_vm._v("\n\t\t\t\t\t\t\t\tClear\n\t\t\t\t\t\t\t")]), _vm._v(" "), _vm._l(_vm.availableLocalContactCollections, function (litem) {
+    }, [_vm._v("\n\t\t\t\t\t\t\t\t\tClear\n\t\t\t\t\t\t\t\t")]), _vm._v(" "), _vm._l(_vm.availableLocalContactCollections, function (litem) {
       return _c("NcActionRadio", {
         key: litem.id,
         attrs: {
@@ -11449,9 +11449,9 @@ var render = function render() {
             return _vm.changeContactCorrelation(ritem.id, litem.id);
           }
         }
-      }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t")]);
+      }, [_vm._v("\n\t\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t\t")]);
     })], 2)], 1);
-  }), 0) : _vm.availableRemoteContactCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No contacts collections where found in the connected account.")) + "\n\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading contacts collections from the connected account.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }), 0) : _vm.availableRemoteContactCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No contacts collections where found in the connected account.")) + "\n\t\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading contacts collections from the connected account.")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11474,7 +11474,7 @@ var render = function render() {
       },
       expression: "state.contacts_harmonize"
     }
-  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11497,15 +11497,15 @@ var render = function render() {
       },
       expression: "state.contacts_prevalence"
     }
-  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "prevails")) + "\n\t\t\t\t\t")])], 1), _vm._v(" "), _c("br"), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "), _c("br")]), _vm._v(" "), _c("div", {
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "prevails")) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "), _c("br"), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br")]), _vm._v(" "), _c("div", {
     staticClass: "ews-correlations-events"
   }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Calendars")))]), _vm._v(" "), _c("div", {
     staticClass: "settings-hint"
-  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.availableRemoteEventCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteEventCollections, function (ritem) {
+  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.state.system_calendar == 1 ? _c("div", [_vm.availableRemoteEventCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteEventCollections, function (ritem) {
     return _c("li", {
       key: ritem.id,
       staticClass: "ews-collectionlist-item"
-    }, [_c("CalendarIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(ritem.name) + " (" + _vm._s(ritem.count) + " Events)\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcActions", {
+    }, [_c("CalendarIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(ritem.name) + " (" + _vm._s(ritem.count) + " Events)\n\t\t\t\t\t\t\t")]), _vm._v(" "), _c("NcActions", {
       scopedSlots: _vm._u([{
         key: "icon",
         fn: function fn() {
@@ -11526,7 +11526,7 @@ var render = function render() {
         },
         proxy: true
       }], null, true)
-    }, [_vm._v("\n\t\t\t\t\t\t\t\tClear\n\t\t\t\t\t\t\t")]), _vm._v(" "), _vm._l(_vm.availableLocalEventCollections, function (litem) {
+    }, [_vm._v("\n\t\t\t\t\t\t\t\t\tClear\n\t\t\t\t\t\t\t\t")]), _vm._v(" "), _vm._l(_vm.availableLocalEventCollections, function (litem) {
       return _c("NcActionRadio", {
         key: litem.id,
         attrs: {
@@ -11538,9 +11538,9 @@ var render = function render() {
             return _vm.changeEventCorrelation(ritem.id, litem.id);
           }
         }
-      }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t")]);
+      }, [_vm._v("\n\t\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t\t")]);
     })], 2)], 1);
-  }), 0) : _vm.availableRemoteEventCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No events collections where found in the connected account.")) + "\n\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading events collections from the connected account.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }), 0) : _vm.availableRemoteEventCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No events collections where found in the connected account.")) + "\n\t\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading events collections from the connected account.")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11563,7 +11563,7 @@ var render = function render() {
       },
       expression: "state.events_harmonize"
     }
-  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11586,7 +11586,7 @@ var render = function render() {
       },
       expression: "state.events_prevalence"
     }
-  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "prevails")) + "\n\t\t\t\t\t")])], 1), _vm._v(" "), _c("br"), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "), _c("br")]), _vm._v(" "), _c("div", {
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "prevails")) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "), _c("br"), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br")]), _vm._v(" "), _c("div", {
     staticClass: "ews-actions"
   }, [_c("NcButton", {
     on: {

@@ -108,72 +108,77 @@
 					<div class="settings-hint">
 						{{ t('integration_ews', 'Select the remote contacts folder(s) you wish to synchronize by pressing the link button next to the contact folder name and selecting the local contacts address book to synchronize to.') }}
 					</div>
-					<ul v-if="availableRemoteContactCollections.length > 0">
-						<li v-for="ritem in availableRemoteContactCollections" :key="ritem.id" class="ews-collectionlist-item">
-							<ContactIcon />
-							<label>
-								{{ ritem.name }} ({{ ritem.count }} Contacts)
-							</label>
-							<NcActions>
-								<template #icon>
-									<LinkIcon />
-								</template>
-								<NcActionButton @click="clearContactCorrelation(ritem.id)">
+					<div v-if="state.system_contacts == 1">
+						<ul v-if="availableRemoteContactCollections.length > 0">
+							<li v-for="ritem in availableRemoteContactCollections" :key="ritem.id" class="ews-collectionlist-item">
+								<ContactIcon />
+								<label>
+									{{ ritem.name }} ({{ ritem.count }} Contacts)
+								</label>
+								<NcActions>
 									<template #icon>
-										<CloseIcon />
+										<LinkIcon />
 									</template>
-									Clear
-								</NcActionButton>
-								<NcActionRadio v-for="litem in availableLocalContactCollections"
-									:key="litem.id"
-									:disabled="establishedContactCorrelationDisable(ritem.id, litem.id)"
-									:checked="establishedContactCorrelationSelect(ritem.id, litem.id)"
-									@change="changeContactCorrelation(ritem.id, litem.id)">
-									{{ litem.name }}
-								</NcActionRadio>
-							</NcActions>
-						</li>
-					</ul>
-					<div v-else-if="availableRemoteContactCollections.length == 0">
-						{{ t('integration_ews', 'No contacts collections where found in the connected account.') }}
+									<NcActionButton @click="clearContactCorrelation(ritem.id)">
+										<template #icon>
+											<CloseIcon />
+										</template>
+										Clear
+									</NcActionButton>
+									<NcActionRadio v-for="litem in availableLocalContactCollections"
+										:key="litem.id"
+										:disabled="establishedContactCorrelationDisable(ritem.id, litem.id)"
+										:checked="establishedContactCorrelationSelect(ritem.id, litem.id)"
+										@change="changeContactCorrelation(ritem.id, litem.id)">
+										{{ litem.name }}
+									</NcActionRadio>
+								</NcActions>
+							</li>
+						</ul>
+						<div v-else-if="availableRemoteContactCollections.length == 0">
+							{{ t('integration_ews', 'No contacts collections where found in the connected account.') }}
+						</div>
+						<div v-else>
+							{{ t('integration_ews', 'Loading contacts collections from the connected account.') }}
+						</div>
+						<br>
+						<div>
+							<label>
+								{{ t('integration_ews', 'Synchronize ') }}
+							</label>
+							<NcSelect v-model="state.contacts_harmonize"
+								:reduce="item => item.id"
+								:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
+							<label>
+								{{ t('integration_ews', 'and if there is a conflict') }}
+							</label>
+							<NcSelect v-model="state.contacts_prevalence"
+								:reduce="item => item.id"
+								:options="[{label: 'Remote', id: 'R'}, {label: 'Local', id: 'L'}, {label: 'Chronology', id: 'C'}]" />
+							<label>
+								{{ t('integration_ews', 'prevails') }}
+							</label>
+						</div>
+						<br />
+						<div v-if="false" style="display: flex">
+							<label>
+								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
+							</label>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="c" name="contacts_actions_local">Create</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="u" name="contacts_actions_local">Update</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="d" name="contacts_actions_local">Delete</NcCheckboxRadioSwitch>
+						</div>
+						<div v-if="false" style="display: flex">
+							<label>
+								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
+							</label>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="c" name="contacts_actions_remote">Create</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="u" name="contacts_actions_remote">Update</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="d" name="contacts_actions_remote">Delete</NcCheckboxRadioSwitch>
+						</div>
 					</div>
 					<div v-else>
-						{{ t('integration_ews', 'Loading contacts collections from the connected account.') }}
-					</div>
-					<br>
-					<div>
-						<label>
-							{{ t('integration_ews', 'Synchronize ') }}
-						</label>
-						<NcSelect v-model="state.contacts_harmonize"
-							:reduce="item => item.id"
-							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
-						<label>
-							{{ t('integration_ews', 'and if there is a conflict') }}
-						</label>
-						<NcSelect v-model="state.contacts_prevalence"
-							:reduce="item => item.id"
-							:options="[{label: 'Remote', id: 'R'}, {label: 'Local', id: 'L'}, {label: 'Chronology', id: 'C'}]" />
-						<label>
-							{{ t('integration_ews', 'prevails') }}
-						</label>
-					</div>
-					<br />
-					<div v-if="false" style="display: flex">
-						<label>
-							{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
-						</label>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="c" name="contacts_actions_local">Create</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="u" name="contacts_actions_local">Update</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="d" name="contacts_actions_local">Delete</NcCheckboxRadioSwitch>
-					</div>
-					<div v-if="false" style="display: flex">
-						<label>
-							{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
-						</label>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="c" name="contacts_actions_remote">Create</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="u" name="contacts_actions_remote">Update</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="d" name="contacts_actions_remote">Delete</NcCheckboxRadioSwitch>
+						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
 					<br />
 				</div>
@@ -182,72 +187,77 @@
 					<div class="settings-hint">
 						{{ t('integration_ews', 'Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.') }}
 					</div>
-					<ul v-if="availableRemoteEventCollections.length > 0">
-						<li v-for="ritem in availableRemoteEventCollections" :key="ritem.id" class="ews-collectionlist-item">
-							<CalendarIcon />
-							<label>
-								{{ ritem.name }} ({{ ritem.count }} Events)
-							</label>
-							<NcActions>
-								<template #icon>
-									<LinkIcon />
-								</template>
-								<NcActionButton @click="clearEventCorrelation(ritem.id)">
+					<div v-if="state.system_calendar == 1">
+						<ul v-if="availableRemoteEventCollections.length > 0">
+							<li v-for="ritem in availableRemoteEventCollections" :key="ritem.id" class="ews-collectionlist-item">
+								<CalendarIcon />
+								<label>
+									{{ ritem.name }} ({{ ritem.count }} Events)
+								</label>
+								<NcActions>
 									<template #icon>
-										<CloseIcon />
+										<LinkIcon />
 									</template>
-									Clear
-								</NcActionButton>
-								<NcActionRadio v-for="litem in availableLocalEventCollections"
-									:key="litem.id"
-									:disabled="establishedEventCorrelationDisable(ritem.id, litem.id)"
-									:checked="establishedEventCorrelationSelect(ritem.id, litem.id)"
-									@change="changeEventCorrelation(ritem.id, litem.id)">
-									{{ litem.name }}
-								</NcActionRadio>
-							</NcActions>
-						</li>
-					</ul>
-					<div v-else-if="availableRemoteEventCollections.length == 0">
-						{{ t('integration_ews', 'No events collections where found in the connected account.') }}
+									<NcActionButton @click="clearEventCorrelation(ritem.id)">
+										<template #icon>
+											<CloseIcon />
+										</template>
+										Clear
+									</NcActionButton>
+									<NcActionRadio v-for="litem in availableLocalEventCollections"
+										:key="litem.id"
+										:disabled="establishedEventCorrelationDisable(ritem.id, litem.id)"
+										:checked="establishedEventCorrelationSelect(ritem.id, litem.id)"
+										@change="changeEventCorrelation(ritem.id, litem.id)">
+										{{ litem.name }}
+									</NcActionRadio>
+								</NcActions>
+							</li>
+						</ul>
+						<div v-else-if="availableRemoteEventCollections.length == 0">
+							{{ t('integration_ews', 'No events collections where found in the connected account.') }}
+						</div>
+						<div v-else>
+							{{ t('integration_ews', 'Loading events collections from the connected account.') }}
+						</div>
+						<br>
+						<div>
+							<label>
+								{{ t('integration_ews', 'Synchronize ') }}
+							</label>
+							<NcSelect v-model="state.events_harmonize"
+								:reduce="item => item.id"
+								:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
+							<label>
+								{{ t('integration_ews', 'and if there is a conflict') }}
+							</label>
+							<NcSelect v-model="state.events_prevalence"
+								:reduce="item => item.id"
+								:options="[{label: 'Remote', id: 'R'}, {label: 'Local', id: 'L'}, {label: 'Chronology', id: 'C'}]" />
+							<label>
+								{{ t('integration_ews', 'prevails') }}
+							</label>
+						</div>
+						<br />
+						<div v-if="false" style="display: flex">
+							<label>
+								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
+							</label>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="c" name="events_actions_local">Create</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="u" name="events_actions_local">Update</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="d" name="events_actions_local">Delete</NcCheckboxRadioSwitch>
+						</div>
+						<div v-if="false" style="display: flex">
+							<label>
+								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
+							</label>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="c" name="events_actions_remote">Create</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="u" name="events_actions_remote">Update</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="d" name="events_actions_remote">Delete</NcCheckboxRadioSwitch>
+						</div>
 					</div>
 					<div v-else>
-						{{ t('integration_ews', 'Loading events collections from the connected account.') }}
-					</div>
-					<br>
-					<div>
-						<label>
-							{{ t('integration_ews', 'Synchronize ') }}
-						</label>
-						<NcSelect v-model="state.events_harmonize"
-							:reduce="item => item.id"
-							:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
-						<label>
-							{{ t('integration_ews', 'and if there is a conflict') }}
-						</label>
-						<NcSelect v-model="state.events_prevalence"
-							:reduce="item => item.id"
-							:options="[{label: 'Remote', id: 'R'}, {label: 'Local', id: 'L'}, {label: 'Chronology', id: 'C'}]" />
-						<label>
-							{{ t('integration_ews', 'prevails') }}
-						</label>
-					</div>
-					<br />
-					<div v-if="false" style="display: flex">
-						<label>
-							{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
-						</label>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="c" name="events_actions_local">Create</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="u" name="events_actions_local">Update</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="d" name="events_actions_local">Delete</NcCheckboxRadioSwitch>
-					</div>
-					<div v-if="false" style="display: flex">
-						<label>
-							{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
-						</label>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="c" name="events_actions_remote">Create</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="u" name="events_actions_remote">Update</NcCheckboxRadioSwitch>
-						<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="d" name="events_actions_remote">Delete</NcCheckboxRadioSwitch>
+						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
 					<br />
 				</div>
