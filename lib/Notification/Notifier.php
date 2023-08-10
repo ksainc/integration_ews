@@ -80,7 +80,7 @@ class Notifier implements INotifier {
 	 * @since 17.0.0
 	 */
 	public function getName(): string {
-		return $this->factory->get('integration_ews')->t('EWS Integration');
+		return $this->factory->get('integration_ews')->t('EWS Connector');
 	}
 
 	/**

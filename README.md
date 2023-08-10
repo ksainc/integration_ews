@@ -1,8 +1,8 @@
-# EWS Integration in Nextcloud
+# EWS Connector in Nextcloud
 
 EWS (Exchange Web Services) integration allows you to automatically bidirectionally synchronize your Nextcloud calendars and contacts with an external EWS protocol capable system like Microsoft Exchange, Kerio Connect, etc
 
-![EWS Integration](https://github.com/ksainc/integration_ews/blob/62a4ae5081526009e310ea9e9734809a769697cf/img/EWS%20Notification%20Screen.png?raw=true 'Notifications')
+![EWS Connector](https://github.com/ksainc/integration_ews/blob/62a4ae5081526009e310ea9e9734809a769697cf/img/EWS%20Notification%20Screen.png?raw=true 'Notifications')
 
 ## How to use
 
@@ -10,11 +10,11 @@ Before proceeding further please make sure you read the following sections, Requ
 
 After the app is installed and enabled in Nextcloud you should have a new section call "Connected Accounts" under "Personal Settings", if you don't see it refresh the browser window.
 
-![EWS Integration](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Initial%20Screen.png?raw=true 'Initial Configuration')
+![EWS Connector](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Initial%20Screen.png?raw=true 'Initial Configuration')
 
 On the initial screen you will be asked for the account information (hostname, username, password) for the remote system. After filling in the required information, press the "Connect" button. The app will then attempt an initial connection to the remote system, if successful, it will retrieve a list of all available calendars and contacts folders from the remote system, and display them below the authentication section.
 
-![EWS Integration](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Connected%20Screen.png?raw=true 'Correlation Configuration')
+![EWS Connector](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Connected%20Screen.png?raw=true 'Correlation Configuration')
 
 Once your accounts is connected and the remote calendars and contacts folders are listed similar to the image above. The next step is to create some correlations (associations/relations/links) between the local and remote, calendar or contacts collections by clicking the link icon beside the remote collection name and selecting the local calendar or contacts address book to associate with and click save. PLEASE READ THE WARNING BELOW BEFORE CLICK SAVE
 
@@ -24,7 +24,7 @@ This is an initial release. Although the app has been thoroughly tested in our e
 
 ## How it works
 
-The app has two modes of operation, passive and active mode, which are controllable from the Nextcloud administration section "EWS Integration".
+The app has two modes of operation, passive and active mode, which are controllable from the Nextcloud administration section "EWS Connector".
 
 ##### Passive Mode
 

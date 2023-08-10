@@ -58,7 +58,7 @@ class AdminSection implements IIconSection {
 	 * @return string
 	 */
 	public function getName(): string {
-		return $this->l->t('EWS Integration');
+		return $this->l->t('EWS Connector');
 	}
 
 	/**

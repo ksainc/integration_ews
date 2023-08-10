@@ -11281,7 +11281,7 @@ var render = function render() {
     attrs: {
       size: 32
     }
-  }), _c("h2", [_vm._v(" " + _vm._s(_vm.t("integration_ews", "EWS Integration")))])], 1), _vm._v(" "), _c("div", {
+  }), _c("h2", [_vm._v(" " + _vm._s(_vm.t("integration_ews", "EWS Connector")))])], 1), _vm._v(" "), _c("div", {
     staticClass: "ews-content"
   }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Authentication")))]), _vm._v(" "), _vm.state.account_connected != 1 ? _c("div", [_c("div", {
     staticClass: "settings-hint"

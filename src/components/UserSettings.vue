@@ -24,7 +24,7 @@
 <template>
 	<div id="ews_settings" class="section">
 		<div class="ews-section-heading">
-			<EwsIcon :size="32" /><h2> {{ t('integration_ews', 'EWS Integration') }}</h2>
+			<EwsIcon :size="32" /><h2> {{ t('integration_ews', 'EWS Connector') }}</h2>
 		</div>
 		<div class="ews-content">
 			<h3>{{ t('integration_ews', 'Authentication') }}</h3>

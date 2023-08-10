@@ -10868,7 +10868,7 @@ var render = function render() {
     attrs: {
       size: 32
     }
-  }), _c("h2", [_vm._v(" " + _vm._s(_vm.t("integration_ews", "EWS Integration")))])], 1), _vm._v(" "), _c("p", {
+  }), _c("h2", [_vm._v(" " + _vm._s(_vm.t("integration_ews", "EWS Connector")))])], 1), _vm._v(" "), _c("p", {
     staticClass: "settings-hint"
   }, [_vm._v("\n\t\t" + _vm._s(_vm.t("integration_ews", "Select the system settings for Exchange Integration")) + "\n\t")]), _vm._v(" "), _c("div", {
     staticClass: "fields"

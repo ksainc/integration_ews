@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: EWS Integration
+Upstream-Name: EWS Connector
 Upstream-Contact: Sebastian Krupinski <krupinski01@gmail.com>
 Source: https://github.com/nextcloud/profiler
 
