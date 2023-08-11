@@ -86,8 +86,26 @@ class EWSSoap extends \SoapClient
             );
         }
 
-        parent::__construct($wsdl, $options);
+        // validator (called with processResponse()) needs an XML entity loader
+		$this->callWithXmlEntityLoader(function () use ($wsdl, $options): void {
+			parent::__construct($wsdl, $options);
+		});
+        
     }
+
+    /**
+	 * @returns mixed returns the result of the callable parameter
+	 */
+	public function callWithXmlEntityLoader(callable $func) {
+		libxml_set_external_entity_loader(static function ($public, $system) {
+			return $system;
+		});
+		$result = $func();
+		libxml_set_external_entity_loader(static function () {
+			return null;
+		});
+		return $result;
+	}
 
     /**
      * {@inheritdoc}
