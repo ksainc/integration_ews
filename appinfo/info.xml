@@ -28,6 +28,11 @@
         <lib>curl</lib>
         <lib>soap</lib>
     </dependencies>
+    <commands>
+		<command>OCA\EWS\Commands\Connect</command>
+		<command>OCA\EWS\Commands\Disconnect</command>
+		<command>OCA\EWS\Commands\Harmonize</command>
+	</commands>
     <settings>
         <admin>OCA\EWS\Settings\AdminSettings</admin>
         <admin-section>OCA\EWS\Settings\AdminSection</admin-section>

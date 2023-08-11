@@ -158,31 +158,44 @@ class CoreService {
 	 * 
 	 * @return bool
 	 */
-	public function connectAccount(string $uid, string $account_provider, string $account_id, string $account_secret): bool {
+	public function connectAccount(string $uid, string $account_provider, string $account_id, string $account_secret, bool $validate = true): bool {
 
-		// construct remote data store client
-		$RemoteStore = new EWSClient($account_provider, $account_id, $account_secret, 'Exchange2007');
-		// retrieve root folder attributes
-		$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
-		// process response
-		if (isset($rs)) {
-			// extract server version from response
-			preg_match_all(
-				'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
-				$RemoteStore->getClient()->__last_response,
-				$match
-			);
-
+		// define connect status place holder
+		$connected = false;
+		// evaluate validate flag
+		if ($validate) {
+			// construct remote data store client
+			$RemoteStore = new EWSClient($account_provider, $account_id, $account_secret, 'Exchange2007');
+			// retrieve root folder attributes
+			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
+			// evaluate server response
+			if (isset($rs)) {
+				// extract server version from response
+				preg_match_all(
+					'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
+					$RemoteStore->getClient()->__last_response,
+					$match
+				);
+				$account_protocol = $match[2][0];
+				$connected = true;
+			}
+		}
+		else {
+			$connected = true;
+			$account_protocol = 'Exchange2010';
+		}
+		// evaluate connect status
+		if ($connected) {
 			// retrieve default configuration
 			$uc = $this->ConfigurationService->retrieveUser($uid);
 			// update configuration
 			$uc['account_provider'] = $account_provider;
 			$uc['account_id'] = $account_id;
 			$uc['account_secret'] = $account_secret;
-			$uc['account_protocol'] = $match[2][0];
+			$uc['account_protocol'] = $account_protocol;
 			$uc['account_connected'] = '1';
 			// deposit configuration to datastore
-			$uc = $this->ConfigurationService->retrieveUser($uid);
+			$uc = $this->ConfigurationService->depositUser($uid);
 
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
