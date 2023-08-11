@@ -50,7 +50,7 @@ use OCA\EWS\Tasks\HarmonizationLauncher;
 
 class HarmonizationService {
 
-	private const EXECUSIONTIMEOUT = 60;
+	private const EXECUSIONTIMEOUT = 3600;
 
 	/**
 	 * @var LoggerInterface
@@ -148,18 +148,17 @@ class HarmonizationService {
 
 		$this->logger->info('Statred Harmonization of Collections for ' . $uid);
 
-		// retrieve harmonization status
-		$status = $this->ConfigurationService->getHarmonizationStatus($uid);
 		// evaluate, if harmonization is executing
-		if ($status->State === 1) {
-			if (is_numeric($status->Started) && (time() - intval($status->Started)) < self::EXECUSIONTIMEOUT) {
+		if ($this->ConfigurationService->getHarmonizationState($uid) === true) {
+			if ((time() - $this->ConfigurationService->getHarmonizationHeartBeat($uid)) < self::EXECUSIONTIMEOUT) {
 				return;
 			}
 		}
-		unset($status);
 
-		// update harmonization status, state and start time
-		$this->ConfigurationService->setHarmonizationStatus($uid, 1, time(), null);
+		// update harmonization state and start time
+		$this->ConfigurationService->setHarmonizationState($uid, true);
+		$this->ConfigurationService->setHarmonizationStart($uid);
+		$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 		
 		try {
 			// retrieve Configuration
@@ -175,6 +174,8 @@ class HarmonizationService {
 				$this->ContactsService->Configuration = $Configuration;
 				// execute contacts harmonization loop
 				do {
+					// update harmonization heart beat
+					$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 					// harmonize contacts collections
 					$statistics = $this->ContactsService->performHarmonization();
 					// evaluate if anything was done and publish notice if needed
@@ -191,6 +192,8 @@ class HarmonizationService {
 				$this->EventsService->Configuration = $Configuration;
 				// execute events harmonization loop
 				do {
+					// update harmonization heart beat
+					$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 					// harmonize events collections
 					$statistics = $this->EventsService->performHarmonization();
 					// evaluate if anything was done and publish notice if needed
@@ -204,8 +207,9 @@ class HarmonizationService {
 			throw new Exception($e, 1);
 			
 		}
-		// update harmonization status, state and end time
-		$this->ConfigurationService->setHarmonizationStatus($uid, 0, null, time());
+		// update harmonization state and end time
+		$this->ConfigurationService->setHarmonizationState($uid, false);
+		$this->ConfigurationService->setHarmonizationEnd($uid);
 
 		$this->logger->info('Finished Harmonization of Collections for ' . $uid);
 	}

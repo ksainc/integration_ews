@@ -508,49 +508,132 @@ class ConfigurationService {
 	}
 
 	/**
-	 * Gets harmonization status
+	 * Gets harmonization state
 	 * 
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid	nextcloud user id
 	 * 
-	 * @return object
+	 * @return bool
 	 */
-	public function getHarmonizationStatus(string $uid): object {
+	public function getHarmonizationState(string $uid): bool {
 
-		// construct status object
-		$hs = (object) ['State' => null, 'Started' => null, 'Ended' => null];
-		// retrieve status values
-		$hs->State = (int) $this->retrieveUserValue($uid, 'account_harmonization_state');
-		$hs->Started = (int) $this->retrieveUserValue($uid, 'account_harmonization_start');
-		$hs->Ended = (int) $this->retrieveUserValue($uid, 'account_harmonization_end');
-		// return status object
-		return $hs;
+		// retrieve state
+		return (bool) $this->retrieveUserValue($uid, 'account_harmonization_state');
 
 	}
 
 	/**
-	 * Sets harmonization status
+	 * Sets harmonization state
 	 * 
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid		nextcloud user id
-	 * @param int $state		harmonization state (1 - running, 0 - not running)
-	 * @param int $start		harmonization start epoch time stamp
-	 * @param int $end			harmonization end epoch time stamp
+	 * @param bool $state		harmonization state (true/false)
 	 * 
 	 * @return void
 	 */
-	public function setHarmonizationStatus(string $uid, int $state, ?int $start, ?int $end): void {
+	public function setHarmonizationState(string $uid, bool $state): void {
 		
-		// update harmonization values
+		// deposit state
 		$this->depositUserValue($uid, 'account_harmonization_state', $state);
-		if (isset($start)) {
-			$this->depositUserValue($uid, 'account_harmonization_start', $start);
-		}
-		if (isset($end)) {
-			$this->depositUserValue($uid, 'account_harmonization_end', $end);
-		}
+
+	}
+
+	
+	/**
+	 * Gets harmonization start
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id
+	 * 
+	 * @return int
+	 */
+	public function getHarmonizationStart(string $uid): int {
+
+		// return time stamp
+		return (int) $this->retrieveUserValue($uid, 'account_harmonization_start');
+
+	}
+
+	/**
+	 * Sets harmonization start
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * 
+	 * @return void
+	 */
+	public function setHarmonizationStart(string $uid): void {
+		
+		// deposit time stamp
+		$this->depositUserValue($uid, 'account_harmonization_start', time());
+
+	}
+
+	/**
+	 * Gets harmonization end
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id
+	 * 
+	 * @return int
+	 */
+	public function getHarmonizationEnd(string $uid): int {
+
+		// return time stamp
+		return (int) $this->retrieveUserValue($uid, 'account_harmonization_end');
+
+	}
+
+	/**
+	 * Sets harmonization end
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * 
+	 * @return void
+	 */
+	public function setHarmonizationEnd(string $uid): void {
+		
+		// deposit time stamp
+		$this->depositUserValue($uid, 'account_harmonization_end', time());
+
+	}
+
+	/**
+	 * Gets harmonization heart beat
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id
+	 * 
+	 * @return int
+	 */
+	public function getHarmonizationHeartBeat(string $uid): int {
+
+		// return time stamp
+		return (int) $this->retrieveUserValue($uid, 'account_harmonization_hb');
+
+	}
+
+	/**
+	 * Sets harmonization heart beat
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * 
+	 * @return void
+	 */
+	public function setHarmonizationHeartBeat(string $uid): void {
+		
+		// deposit time stamp
+		$this->depositUserValue($uid, 'account_harmonization_hb', time());
 
 	}
 
