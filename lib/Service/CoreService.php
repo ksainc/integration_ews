@@ -470,18 +470,18 @@ class CoreService {
 		//return;
 
 		try {
-			// retrieve preferences
-			$settings = $this->ConfigurationService->retrieveUser($uid);
-			$settings = new \OCA\EWS\Objects\SettingsObject($settings);
+			// retrieve Configuration
+			$Configuration = $this->ConfigurationService->retrieveUser($uid);
+			$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
 			// create remote store client
 			$RemoteStore = $this->createClient($uid);
 			// Test Contacts
 			$this->ContactsService->RemoteStore = $RemoteStore;
-			$this->ContactsService->Settings = $settings;
+			$this->ContactsService->Configuration = $Configuration;
 			$result = $this->ContactsService->performTest($action);
 			// Test Events
 			$this->EventsService->RemoteStore = $RemoteStore;
-			$this->EventsService->Settings = $settings;
+			$this->EventsService->Configuration = $Configuration;
 			$result = $this->EventsService->performTest($action);
 			// destroy remote store client
 			$this->destroyClient($RemoteStore);
