@@ -226,8 +226,7 @@ class HarmonizationService {
 	public function performActions (string $uid): void {
 
 		// retrieve harmonization status
-		$status = $this->ConfigurationService->getHarmonizationStatus($uid);
-		$ttl = $status->Started;
+		$ttl = $this->ConfigurationService->getHarmonizationStart($uid);
 
 		try {
 			// retrieve Configuration
@@ -239,6 +238,8 @@ class HarmonizationService {
 			if ($this->ConfigurationService->isContactsAppAvailable() && $Configuration->ContactsHarmonize > -1) {
 				$this->ContactsService->RemoteStore = $RemoteStore;
 				$this->ContactsService->Configuration = $Configuration;
+				// update harmonization heart beat
+				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 				// harmonize contact collections
 				$statistics = $this->ContactsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
@@ -250,6 +251,8 @@ class HarmonizationService {
 			if ($this->ConfigurationService->isCalendarAppAvailable() && $Configuration->EventsHarmonize > -1) {
 				$this->EventsService->RemoteStore = $RemoteStore;
 				$this->EventsService->Configuration = $Configuration;
+				// update harmonization heart beat
+				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 				// harmonize event collections
 				$statistics = $this->EventsService->performActions($ttl);
 				// evaluate if anything was done and publish notice if needed
