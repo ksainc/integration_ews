@@ -72,7 +72,7 @@ class Connect extends Command {
         $account_provider = $input->getArgument('provider');
         $account_id = $input->getArgument('accountid');
         $account_secret = $input->getArgument('accountsecret');
-        $validate = $input->getArgument('validate');
+        $validate = filter_var($input->getArgument('validate'), FILTER_VALIDATE_BOOLEAN);
 
         if (!$this->userManager->userExists($uid)) {
 			$output->writeln("<error>User $uid does not exist</error>");

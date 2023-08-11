@@ -210,7 +210,7 @@ class ConfigurationService {
 	 * 
 	 * @return void
 	 */
-	public function destroyUser(string $uid, ?array $keys = null): array {
+	public function destroyUser(string $uid, ?array $keys = null): void {
 
 		// evaluate if we are looking for specific parameters
 		if (!isset($keys) || count($keys) == 0) {
@@ -333,7 +333,7 @@ class ConfigurationService {
 	 * 
 	 * @return void
 	 */
-	public function destroySystem(?array $keys = null): array {
+	public function destroySystem(?array $keys = null): void {
 
 		// evaluate if we are looking for specific parameters
 		if (!isset($keys) || count($keys) == 0) {

@@ -79,7 +79,7 @@ class CalendarObjectUpdatedListener implements IEventListener {
 							$a->setorigin('L');
 							$a->setlcid($cid);
 							$a->setloid($oid);
-							$a->setl0state($ostate);
+							$a->setlostate($ostate);
 							$a->setcreatedon(date(DATE_W3C));
 							// deposit action entry
 							$this->ActionManager->insert($a);

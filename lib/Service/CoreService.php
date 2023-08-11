@@ -195,7 +195,7 @@ class CoreService {
 			$uc['account_protocol'] = $account_protocol;
 			$uc['account_connected'] = '1';
 			// deposit configuration to datastore
-			$uc = $this->ConfigurationService->depositUser($uid);
+			$uc = $this->ConfigurationService->depositUser($uid, $uc);
 
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
@@ -225,11 +225,8 @@ class CoreService {
 		$this->CorrelationsService->deleteByUserId($uid);
 		// delete actions
 		$this->ActionMapper->deleteByUserId($uid);
-		// delete settings and preferences
-		$settings = $this->config->getUserKeys($uid, Application::APP_ID);
-		foreach ($settings as $entry) {
-			$this->config->deleteUserValue($uid, Application::APP_ID, $entry);
-		}
+		// delete configuration
+		$this->ConfigurationService->destroyUser($uid);
 
 	}
 
