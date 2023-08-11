@@ -152,7 +152,7 @@ class CoreService {
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid				nextcloud user id
-	 * @param string $account_provider	host name or ip
+	 * @param string $account_provider	FQDN or IP
 	 * @param string $account_id		account username
 	 * @param string $account_secret	account secret
 	 * 
@@ -186,16 +186,10 @@ class CoreService {
 		}
 		// evaluate connect status
 		if ($connected) {
-			// retrieve default configuration
-			$uc = $this->ConfigurationService->retrieveUser($uid);
-			// update configuration
-			$uc['account_provider'] = $account_provider;
-			$uc['account_id'] = $account_id;
-			$uc['account_secret'] = $account_secret;
-			$uc['account_protocol'] = $account_protocol;
-			$uc['account_connected'] = '1';
+			// deposit authentication to datastore
+			$this->ConfigurationService->depositAuthentication($uid, $account_provider, $account_id, $account_secret, $account_protocol);
 			// deposit configuration to datastore
-			$uc = $this->ConfigurationService->depositUser($uid, $uc);
+			$this->ConfigurationService->depositUser($uid, ['account_connected' => '1']);
 
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);

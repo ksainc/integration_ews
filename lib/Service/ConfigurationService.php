@@ -26,8 +26,10 @@
 namespace OCA\EWS\Service;
 
 use Exception;
-use OCP\IConfig;
 use Psr\Log\LoggerInterface;
+
+use OCP\IConfig;
+use OCP\Security\ICrypto;
 
 use OCA\EWS\AppInfo\Application;
 
@@ -71,15 +73,19 @@ class ConfigurationService {
 
 	/** @var IConfig */
 	private $_ds;
+	
+	/** @var ICrypto */
+	private $_cs;
 
-	public function __construct(LoggerInterface $logger, IConfig $config)
+	public function __construct(LoggerInterface $logger, IConfig $config, ICrypto $crypto)
 	{
 		$this->logger = $logger;
 		$this->_ds = $config;
+		$this->_cs = $crypto;
 	}
 
 	/**
-	 * Retrieves all user authentication parameters
+	 * Retrieves user authentication parameters
 	 * 
 	 * @since Release 1.0.0
 	 * 
@@ -87,17 +93,41 @@ class ConfigurationService {
 	 * 
 	 * @return array of key/value pairs, of parameters
 	 */
-	public function retrieveAuthentication($uid): array {
+	public function retrieveAuthentication(string $uid): array {
 		
 		// define defaults authentication parameters
 		$keys = ['account_provider', 'account_id', 'account_secret', 'account_protocol'];
-		// retrieve all user authentication parameters
+		// retrieve user authentication parameters
 		$parameters = [];
-		foreach ($keys as $key) {
-			$parameters[$key] = $this->retrieveUserValue($uid, $key);
-		}
+		$parameters['account_provider'] = $this->retrieveUserValue($uid, 'account_provider');
+		$parameters['account_id'] = $this->retrieveUserValue($uid, 'account_id');
+		$parameters['account_secret'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_secret'));
+		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
 		// return configuration parameters
 		return $parameters;
+
+	}
+
+	/**
+	 * Deposit user authentication parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid				nextcloud user id
+	 * @param string $account_provider	FQDN or IP 
+	 * @param string $account_id		account username
+	 * @param string $account_secret	account secret
+	 * @param string $account_protocol	account protocol version
+	 * 
+	 * @return void
+	 */
+	public function depositAuthentication(string $uid, string $account_provider, string $account_id, string $account_secret, string $account_protocol): void {
+		
+		// deposit user authentication parameters
+		$this->depositUserValue($uid, 'account_provider', $account_provider);
+		$this->depositUserValue($uid, 'account_id', $account_id);
+		$this->depositUserValue($uid, 'account_secret', $this->_cs->encrypt($account_secret));
+		$this->depositUserValue($uid, 'account_protocol', $account_protocol);
 
 	}
 
