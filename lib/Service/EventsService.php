@@ -39,7 +39,8 @@ use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\Local\LocalEventsService;
 use OCA\EWS\Service\Remote\RemoteEventsService;
 use OCA\EWS\Components\EWS\EWSClient;
-use \OCA\EWS\Objects\EventObject;
+use OCA\EWS\Objects\EventObject;
+use OCA\EWS\Objects\HarmonizationStatisticsObject;
 
 class EventsService {
 	/**
@@ -73,7 +74,7 @@ class EventsService {
 	/**
 	 * @var Object
 	 */
-	public $Configuration;
+	private $Configuration;
 	/**
 	 * @var array
 	 */
@@ -103,7 +104,8 @@ class EventsService {
 	 *
 	 * @return HarmonizationStatisticsObject
 	 */
-	public function performHarmonization() : object {
+	public function performHarmonization($correlation, $configuration) : object {
+		$this->Configuration = $configuration;
 		// assign data stores
 		$this->LocalEventsService->DataStore = $this->LocalStore;
 		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
@@ -112,173 +114,168 @@ class EventsService {
 		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
 		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
 		// construct statistics object
-		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
-		// retrieve list of correlations
-		$correlations = $this->CorrelationsService->findByType($this->Configuration->UserId, 'EC');
-		// iterate through correlation items
-		foreach ($correlations as $correlation) {
-			// construct UUID's place holder
-			$this->RemoteUUIDs = null;
-			// set local and remote collection id's
-			$caid = (string) $correlation->getid();
-			$lcid = $correlation->getloid();
-			$rcid = $correlation->getroid();
-			// delete and skip collection correlation if remote id or local id is missing
-			if (empty($lcid) || empty($rcid)){
-				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote ID or Local ID');
-				continue;
-			}
-			// delete and skip collection correlation if local collection is missing
-			$lcollection = $this->LocalEventsService->fetchCollection($lcid);
-			if (!isset($lcollection) || ($lcollection->Id != $lcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Local Collection');
-				continue;
-			}
-			// delete and skip collection correlation if remote collection is missing
-			$rcollection = $this->RemoteEventsService->fetchCollection($rcid);
-			if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
-				continue;
-			}
-			// retrieve list of local changed objects
-			$lCollectionChanges = $this->LocalEventsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlostate());
-			// process local created objects
-			foreach ($lCollectionChanges['added'] as $iid) {
-				// process create
-				$as = $this->harmonizeLocalAltered(
-					$this->Configuration->UserId, 
-					$lcid, 
-					$iid, 
-					$rcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'RC':
-						$statistics->RemoteCreated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-				}
-			}
-			// process local modified items
-			foreach ($lCollectionChanges['modified'] as $iid) {
-				// process create
-				$as = $this->harmonizeLocalAltered(
-					$this->Configuration->UserId, 
-					$lcid, 
-					$iid, 
-					$rcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'RC':
-						$statistics->RemoteCreated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-				}
-			}
-			// process local deleted items
-			foreach ($lCollectionChanges['deleted'] as $iid) {
-				// process delete
-				$as = $this->harmonizeLocalDelete(
-					$this->Configuration->UserId, 
-					$lcid, 
-					$iid
-				);
-				if ($as == 'RD') {
-					// assign status
-					$statistics->RemoteDeleted += 1;
-				}
-			}
-			// Make sure to store this for the next sync.
-			$correlation->setlostate($lCollectionChanges['syncToken']);
-			$this->CorrelationsService->update($correlation);
-
-			// retrieve list of remote changed object
-			$rCollectionChanges = $this->RemoteEventsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrostate());
-			// process remote created objects
-			foreach ($rCollectionChanges->Create as $changed) {
-				// process create
-				$as = $this->harmonizeRemoteAltered(
-					$this->Configuration->UserId, 
-					$rcid, 
-					$changed->CalendarItem->ItemId->Id, 
-					$lcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'LC':
-						$statistics->LocalCreated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-				}
-			}
-			// process remote modified objects
-			foreach ($rCollectionChanges->Update as $changed) {
-				// process update
-				$as = $this->harmonizeRemoteAltered(
-					$this->Configuration->UserId, 
-					$rcid, 
-					$changed->CalendarItem->ItemId->Id, 
-					$lcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'LC':
-						$statistics->LocalCreated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-				}
-			}
-			// process remote deleted objects
-			foreach ($rCollectionChanges->Delete as $changed) {
-				// process delete
-				$as = $this->harmonizeRemoteDelete(
-					$this->Configuration->UserId, 
-					$rcid, 
-					$changed->ItemId->Id
-				);
-				if ($as == 'LD') {
-					// increment statistics
-					$statistics->LocalDeleted += 1;
-				}
-			}
-			// Make sure to store this for the next sync.
-			$correlation->setrostate($rCollectionChanges->SyncToken);
-			$this->CorrelationsService->update($correlation);
-			// destroy UUID's place holder
-			unset($this->RemoteUUIDs);
-
+		$statistics = new HarmonizationStatisticsObject();
+		
+		// construct UUID's place holder
+		$this->RemoteUUIDs = null;
+		// set local and remote collection id's
+		$caid = (string) $correlation->getid();
+		$lcid = $correlation->getloid();
+		$rcid = $correlation->getroid();
+		// delete and skip collection correlation if remote id or local id is missing
+		if (empty($lcid) || empty($rcid)){
+			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+			$this->CorrelationsService->delete($correlation);
+			$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote ID or Local ID');
+			return $statistics;
 		}
+		// delete and skip collection correlation if local collection is missing
+		$lcollection = $this->LocalEventsService->fetchCollection($lcid);
+		if (!isset($lcollection) || ($lcollection->Id != $lcid)) {
+			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+			$this->CorrelationsService->delete($correlation);
+			$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Local Collection');
+			return $statistics;
+		}
+		// delete and skip collection correlation if remote collection is missing
+		$rcollection = $this->RemoteEventsService->fetchCollection($rcid);
+		if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
+			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+			$this->CorrelationsService->delete($correlation);
+			$this->logger->debug('EWS - Deleted Events collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
+			return $statistics;
+		}
+		// retrieve list of local changed objects
+		$lCollectionChanges = $this->LocalEventsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlostate());
+		// process local created objects
+		foreach ($lCollectionChanges['added'] as $iid) {
+			// process create
+			$as = $this->harmonizeLocalAltered(
+				$this->Configuration->UserId, 
+				$lcid, 
+				$iid, 
+				$rcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'RC':
+					$statistics->RemoteCreated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+			}
+		}
+		// process local modified items
+		foreach ($lCollectionChanges['modified'] as $iid) {
+			// process create
+			$as = $this->harmonizeLocalAltered(
+				$this->Configuration->UserId, 
+				$lcid, 
+				$iid, 
+				$rcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'RC':
+					$statistics->RemoteCreated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+			}
+		}
+		// process local deleted items
+		foreach ($lCollectionChanges['deleted'] as $iid) {
+			// process delete
+			$as = $this->harmonizeLocalDelete(
+				$this->Configuration->UserId, 
+				$lcid, 
+				$iid
+			);
+			if ($as == 'RD') {
+				// assign status
+				$statistics->RemoteDeleted += 1;
+			}
+		}
+		// Make sure to store this for the next sync.
+		$correlation->setlostate($lCollectionChanges['syncToken']);
+		$this->CorrelationsService->update($correlation);
+
+		// retrieve list of remote changed object
+		$rCollectionChanges = $this->RemoteEventsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrostate());
+		// process remote created objects
+		foreach ($rCollectionChanges->Create as $changed) {
+			// process create
+			$as = $this->harmonizeRemoteAltered(
+				$this->Configuration->UserId, 
+				$rcid, 
+				$changed->CalendarItem->ItemId->Id, 
+				$lcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'LC':
+					$statistics->LocalCreated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+			}
+		}
+		// process remote modified objects
+		foreach ($rCollectionChanges->Update as $changed) {
+			// process update
+			$as = $this->harmonizeRemoteAltered(
+				$this->Configuration->UserId, 
+				$rcid, 
+				$changed->CalendarItem->ItemId->Id, 
+				$lcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'LC':
+					$statistics->LocalCreated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+			}
+		}
+		// process remote deleted objects
+		foreach ($rCollectionChanges->Delete as $changed) {
+			// process delete
+			$as = $this->harmonizeRemoteDelete(
+				$this->Configuration->UserId, 
+				$rcid, 
+				$changed->ItemId->Id
+			);
+			if ($as == 'LD') {
+				// increment statistics
+				$statistics->LocalDeleted += 1;
+			}
+		}
+		// Make sure to store this for the next sync.
+		$correlation->setrostate($rCollectionChanges->SyncToken);
+		$this->CorrelationsService->update($correlation);
+		// destroy UUID's place holder
+		unset($this->RemoteUUIDs);
 
 		// return statistics
 		return $statistics;
@@ -292,7 +289,8 @@ class EventsService {
 	 *
 	 * @return void
 	 */
-	public function performActions($syncedOn) : object {
+	public function performActions($syncedOn, $configuration) : object {
+		$this->Configuration = $configuration;
 		// assign data stores
 		$this->LocalEventsService->DataStore = $this->LocalStore;
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;

@@ -32,7 +32,6 @@ try {
 	$executionMode = 'S';
 	$executionDuration = 3600;
 	$executionPause = 60;
-	$executionStart = time();
 	$uid = null;
 
 	$logger = \OC::$server->getLogger();
@@ -131,7 +130,7 @@ try {
 	}
 
 	// evaluate if user account is connected
-	if ($ConfigurationService->isAccountConnected($uid)) {
+	if (!$ConfigurationService->isAccountConnected($uid)) {
 		$logger->info("Harmonization thread failed user $uid does not have a connected account", ['app' => 'integration_ews']);
 		echo "Harmonization thread failed user $uid does not have a connected account" . PHP_EOL;
 		exit(0);
@@ -140,7 +139,8 @@ try {
 	// retrieve and assign defaults
 	$executionDuration = $ConfigurationService->getHarmonizationThreadDuration();
 	$executionPause = $ConfigurationService->getHarmonizationThreadPause();
-	$executionConclusion = 'N';
+	$executionStart = time();
+	$executionConclusion = '';
 
 	$logger->info("Harmonization thread started for $uid", ['app' => 'integration_ews']);
 	echo "Harmonization thread started for $uid" . PHP_EOL;
@@ -164,7 +164,7 @@ try {
 			break;
 		}
 		// evaluate if user account is stil connected
-		if ($ConfigurationService->isAccountConnected($uid)) {
+		if (!$ConfigurationService->isAccountConnected($uid)) {
 			$executionConclusion = 'EA';
 			break;
 		}
@@ -177,6 +177,8 @@ try {
 		// execute actions
 		$HarmonizationService->performActions($uid);
 
+		$executionConclusion = 'N';
+
 		// pause execution
 		sleep($executionPause);
 	}
@@ -188,13 +190,14 @@ try {
 	$logger->info("Harmonization thread ended for $uid", ['app' => 'integration_ews']);
 	echo "Harmonization thread ended for $uid" . PHP_EOL;
 
-
-	// spawn new harmonization thread
-	$tid = $HarmonizationThreadService->launch($uid);
-	// evaluate, if thread id is present
-	if ($tid > 0) {
-		$HarmonizationThreadService->setId($uid, $tid);
-		$HarmonizationThreadService->setHeartBeat($uid, time());
+	if ($executionConclusion == 'N') {
+		// spawn new harmonization thread
+		$tid = $HarmonizationThreadService->launch($uid);
+		// evaluate, if thread id is present
+		if ($tid > 0) {
+			$HarmonizationThreadService->setId($uid, $tid);
+			$HarmonizationThreadService->setHeartBeat($uid, time());
+		}
 	}
 
 	exit();

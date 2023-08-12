@@ -39,6 +39,7 @@ use OCA\EWS\Service\Local\LocalContactsService;
 use OCA\EWS\Service\Remote\RemoteContactsService;
 use OCA\EWS\Components\EWS\EWSClient;
 use OCA\EWS\Objects\ContactObject;
+use OCA\EWS\Objects\HarmonizationStatisticsObject;
 
 class ContactsService {
 	/**
@@ -68,7 +69,7 @@ class ContactsService {
 	/**
 	 * @var Object
 	 */
-	public $Configuration;
+	private $Configuration;
 	/**
 	 * @var array
 	 */
@@ -96,179 +97,174 @@ class ContactsService {
 	 *
 	 * @return HarmonizationStatisticsObject
 	 */
-	public function performHarmonization() : object {
-
+	public function performHarmonization($correlation, $configuration) : object {
+		$this->Configuration = $configuration;
 		// assign data stores
 		$this->LocalContactsService->DataStore = $this->LocalStore;
 		$this->RemoteContactsService->DataStore = $this->RemoteStore;
 		// construct statistics object
-		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
-		// retrieve list of correlations
-		$correlations = $this->CorrelationsService->findByType($this->Configuration->UserId, 'CC');
-		// iterate through correlation items
-		foreach ($correlations as $correlation) {
-			// construct UUID's place holder
-			$this->RemoteUUIDs = null;
-			// set local and remote collection id's
-			$caid = (string) $correlation->getid();
-			$lcid = $correlation->getloid();
-			$rcid = $correlation->getroid();
-			// delete and skip collection correlation if remote id or local id is missing
-			if (empty($lcid) || empty($rcid)){
-				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote ID or Local ID');
-				continue;
-			}
-			// delete and skip collection correlation if local collection is missing
-			$lcollection = $this->LocalContactsService->fetchCollection($lcid);
-			if (!isset($lcollection) || ($lcollection->Id != $lcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Local Collection');
-				continue;
-			}
-			// delete and skip collection correlation if remote collection is missing
-			$rcollection = $this->RemoteContactsService->fetchCollection($rcid);
-			if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
-				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-				$this->CorrelationsService->delete($correlation);
-				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
-				continue;
-			}
-			// retrieve list of local changed objects
-			$lCollectionChanges = $this->LocalContactsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlostate());
-			// process local created objects
-			foreach ($lCollectionChanges['added'] as $iid) {
-				// process create
-				$as = $this->harmonizeLocalAltered(
-					$this->Configuration->UserId, 
-					$lcid, 
-					$iid, 
-					$rcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'RC':
-						$statistics->RemoteCreated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-				}
-			}
-			// process local modified items
-			foreach ($lCollectionChanges['modified'] as $iid) {
-				// process create
-				$as = $this->harmonizeLocalAltered(
-					$this->Configuration->UserId, 
-					$lcid, 
-					$iid, 
-					$rcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'RC':
-						$statistics->RemoteCreated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-				}
-			}
-			// process local deleted items
-			foreach ($lCollectionChanges['deleted'] as $iid) {
-				// process delete
-				$as = $this->harmonizeLocalDelete(
-					$this->Configuration->UserId, 
-					$lcid, 
-					$iid
-				);
-				if ($as == 'RD') {
-					// assign status
-					$statistics->RemoteDeleted += 1;
-				}
-			}
-			// update and deposit correlation local state
-			$correlation->setlostate($lCollectionChanges['syncToken']);
-			$this->CorrelationsService->update($correlation);
+		$statistics = new HarmonizationStatisticsObject();
 
-			// retrieve list of remote changed object
-			$rCollectionChanges = $this->RemoteContactsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrostate());
-			// process remote created objects
-			foreach ($rCollectionChanges->Create as $changed) {
-				// process create
-				$as = $this->harmonizeRemoteAltered(
-					$this->Configuration->UserId, 
-					$rcid, 
-					$changed->Contact->ItemId->Id, 
-					$lcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'LC':
-						$statistics->LocalCreated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-				}
-			}
-			// process remote modified objects
-			foreach ($rCollectionChanges->Update as $changed) {
-				// process update
-				$as = $this->harmonizeRemoteAltered(
-					$this->Configuration->UserId, 
-					$rcid, 
-					$changed->Contact->ItemId->Id, 
-					$lcid, 
-					$caid
-				);
-				// increment statistics
-				switch ($as) {
-					case 'LC':
-						$statistics->LocalCreated += 1;
-						break;
-					case 'LU':
-						$statistics->LocalUpdated += 1;
-						break;
-					case 'RU':
-						$statistics->RemoteUpdated += 1;
-						break;
-				}
-			}
-			// process remote deleted objects
-			foreach ($rCollectionChanges->Delete as $changed) {
-				// process delete
-				$as = $this->harmonizeRemoteDelete(
-					$this->Configuration->UserId, 
-					$rcid, 
-					$changed->ItemId->Id
-				);
-				if ($as == 'LD') {
-					// increment statistics
-					$statistics->LocalDeleted += 1;
-				}
-			}
-			// update and deposit correlation remote state
-			$correlation->setrostate($rCollectionChanges->SyncToken);
-			$this->CorrelationsService->update($correlation);
-			// destroy UUID's place holder
-			unset($this->RemoteUUIDs);
-
+		// construct UUID's place holder
+		$this->RemoteUUIDs = null;
+		// set local and remote collection id's
+		$caid = (string) $correlation->getid();
+		$lcid = $correlation->getloid();
+		$rcid = $correlation->getroid();
+		// delete and skip collection correlation if remote id or local id is missing
+		if (empty($lcid) || empty($rcid)){
+			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+			$this->CorrelationsService->delete($correlation);
+			$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote ID or Local ID');
+			return $statistics;
 		}
+		// delete and skip collection correlation if local collection is missing
+		$lcollection = $this->LocalContactsService->fetchCollection($lcid);
+		if (!isset($lcollection) || ($lcollection->Id != $lcid)) {
+			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+			$this->CorrelationsService->delete($correlation);
+			$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Local Collection');
+			return $statistics;
+		}
+		// delete and skip collection correlation if remote collection is missing
+		$rcollection = $this->RemoteContactsService->fetchCollection($rcid);
+		if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
+			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+			$this->CorrelationsService->delete($correlation);
+			$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
+			return $statistics;
+		}
+		// retrieve list of local changed objects
+		$lCollectionChanges = $this->LocalContactsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlostate());
+		// process local created objects
+		foreach ($lCollectionChanges['added'] as $iid) {
+			// process create
+			$as = $this->harmonizeLocalAltered(
+				$this->Configuration->UserId, 
+				$lcid, 
+				$iid, 
+				$rcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'RC':
+					$statistics->RemoteCreated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+			}
+		}
+		// process local modified items
+		foreach ($lCollectionChanges['modified'] as $iid) {
+			// process create
+			$as = $this->harmonizeLocalAltered(
+				$this->Configuration->UserId, 
+				$lcid, 
+				$iid, 
+				$rcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'RC':
+					$statistics->RemoteCreated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+			}
+		}
+		// process local deleted items
+		foreach ($lCollectionChanges['deleted'] as $iid) {
+			// process delete
+			$as = $this->harmonizeLocalDelete(
+				$this->Configuration->UserId, 
+				$lcid, 
+				$iid
+			);
+			if ($as == 'RD') {
+				// assign status
+				$statistics->RemoteDeleted += 1;
+			}
+		}
+		// update and deposit correlation local state
+		$correlation->setlostate($lCollectionChanges['syncToken']);
+		$this->CorrelationsService->update($correlation);
+
+		// retrieve list of remote changed object
+		$rCollectionChanges = $this->RemoteContactsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrostate());
+		// process remote created objects
+		foreach ($rCollectionChanges->Create as $changed) {
+			// process create
+			$as = $this->harmonizeRemoteAltered(
+				$this->Configuration->UserId, 
+				$rcid, 
+				$changed->Contact->ItemId->Id, 
+				$lcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'LC':
+					$statistics->LocalCreated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+			}
+		}
+		// process remote modified objects
+		foreach ($rCollectionChanges->Update as $changed) {
+			// process update
+			$as = $this->harmonizeRemoteAltered(
+				$this->Configuration->UserId, 
+				$rcid, 
+				$changed->Contact->ItemId->Id, 
+				$lcid, 
+				$caid
+			);
+			// increment statistics
+			switch ($as) {
+				case 'LC':
+					$statistics->LocalCreated += 1;
+					break;
+				case 'LU':
+					$statistics->LocalUpdated += 1;
+					break;
+				case 'RU':
+					$statistics->RemoteUpdated += 1;
+					break;
+			}
+		}
+		// process remote deleted objects
+		foreach ($rCollectionChanges->Delete as $changed) {
+			// process delete
+			$as = $this->harmonizeRemoteDelete(
+				$this->Configuration->UserId, 
+				$rcid, 
+				$changed->ItemId->Id
+			);
+			if ($as == 'LD') {
+				// increment statistics
+				$statistics->LocalDeleted += 1;
+			}
+		}
+		// update and deposit correlation remote state
+		$correlation->setrostate($rCollectionChanges->SyncToken);
+		$this->CorrelationsService->update($correlation);
+		// destroy UUID's place holder
+		unset($this->RemoteUUIDs);
 
 		// return statistics
 		return $statistics;
@@ -282,7 +278,8 @@ class ContactsService {
 	 *
 	 * @return void
 	 */
-	public function performActions($syncedOn) : object {
+	public function performActions($syncedOn, $configuration) : object {
+		$this->Configuration = $configuration;
 		// assign data stores
 		$this->LocalContactsService->DataStore = $this->LocalStore;
 		$this->RemoteContactsService->DataStore = $this->RemoteStore;

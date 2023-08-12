@@ -50,8 +50,6 @@ use OCA\EWS\Tasks\HarmonizationLauncher;
 
 class HarmonizationService {
 
-	private const EXECUSIONTIMEOUT = 3600;
-
 	/**
 	 * @var LoggerInterface
 	 */
@@ -150,7 +148,7 @@ class HarmonizationService {
 
 		// evaluate, if harmonization is executing
 		if ($this->ConfigurationService->getHarmonizationState($uid) === true) {
-			if ((time() - $this->ConfigurationService->getHarmonizationHeartBeat($uid)) < self::EXECUSIONTIMEOUT) {
+			if ((time() - $this->ConfigurationService->getHarmonizationHeartBeat($uid)) < 900) {
 				return;
 			}
 		}
@@ -170,37 +168,45 @@ class HarmonizationService {
 			if ($this->ConfigurationService->isContactsAppAvailable() &&
 				(($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->ContactsHarmonize > -1))) {
-				$this->ContactsService->RemoteStore = $RemoteStore;;
-				$this->ContactsService->Configuration = $Configuration;
-				// execute contacts harmonization loop
-				do {
-					// update harmonization heart beat
-					$this->ConfigurationService->setHarmonizationHeartBeat($uid);
-					// harmonize contacts collections
-					$statistics = $this->ContactsService->performHarmonization();
-					// evaluate if anything was done and publish notice if needed
-					if ($statistics->total() > 0) {
-						$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
-					}
-				} while ($statistics->total() > 0);
+				$this->ContactsService->RemoteStore = $RemoteStore;
+				// retrieve list of collections correlations
+				$correlations = $this->CorrelationsService->findByType($uid, 'CC');
+				// iterate through correlation items
+				foreach ($correlations as $correlation) {
+					// execute contacts harmonization loop
+					do {
+						// update harmonization heart beat
+						$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+						// harmonize contacts collections
+						$statistics = $this->ContactsService->performHarmonization($correlation, $Configuration);
+						// evaluate if anything was done and publish notice if needed
+						if ($statistics->total() > 0) {
+							$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
+						}
+					} while ($statistics->total() > 0);
+				}
 			}
 			// events harmonization
 			if ($this->ConfigurationService->isCalendarAppAvailable() &&
 				(($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->EventsHarmonize > -1))) {
 				$this->EventsService->RemoteStore = $RemoteStore;
-				$this->EventsService->Configuration = $Configuration;
-				// execute events harmonization loop
-				do {
-					// update harmonization heart beat
-					$this->ConfigurationService->setHarmonizationHeartBeat($uid);
-					// harmonize events collections
-					$statistics = $this->EventsService->performHarmonization();
-					// evaluate if anything was done and publish notice if needed
-					if ($statistics->total() > 0) {
-						$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
-					}
-				} while ($statistics->total() > 0);
+				// retrieve list of correlations
+				$correlations = $this->CorrelationsService->findByType($uid, 'EC');
+				// iterate through correlation items
+				foreach ($correlations as $correlation) {
+					// execute events harmonization loop
+					do {
+						// update harmonization heart beat
+						$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+						// harmonize events collections
+						$statistics = $this->EventsService->performHarmonization($correlation, $Configuration);
+						// evaluate if anything was done and publish notice if needed
+						if ($statistics->total() > 0) {
+							$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
+						}
+					} while ($statistics->total() > 0);
+				}
 			}
 		} catch (Exception $e) {
 			
@@ -237,11 +243,10 @@ class HarmonizationService {
 			// contacts harmonization
 			if ($this->ConfigurationService->isContactsAppAvailable() && $Configuration->ContactsHarmonize > -1) {
 				$this->ContactsService->RemoteStore = $RemoteStore;
-				$this->ContactsService->Configuration = $Configuration;
 				// update harmonization heart beat
 				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 				// harmonize contact collections
-				$statistics = $this->ContactsService->performActions($ttl);
+				$statistics = $this->ContactsService->performActions($ttl, $Configuration);
 				// evaluate if anything was done and publish notice if needed
 				if ($statistics->total() > 0) {
 					$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
@@ -250,11 +255,10 @@ class HarmonizationService {
 			// events harmonization
 			if ($this->ConfigurationService->isCalendarAppAvailable() && $Configuration->EventsHarmonize > -1) {
 				$this->EventsService->RemoteStore = $RemoteStore;
-				$this->EventsService->Configuration = $Configuration;
 				// update harmonization heart beat
 				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
 				// harmonize event collections
-				$statistics = $this->EventsService->performActions($ttl);
+				$statistics = $this->EventsService->performActions($ttl, $Configuration);
 				// evaluate if anything was done and publish notice if needed
 				if ($statistics->total() > 0) {
 					$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
