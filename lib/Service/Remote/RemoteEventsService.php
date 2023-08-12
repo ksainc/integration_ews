@@ -462,6 +462,7 @@ class RemoteEventsService {
 			$ro->ReminderIsSet  = 'true';
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
 				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
+				$ro->ReminderIsSet = 'true';
 				$ro->ReminderMinutesBeforeStart = $t;
 				unset($t);
 			}
@@ -479,6 +480,7 @@ class RemoteEventsService {
 						($so->Notifications[0]->When->h * 60) +
 						($so->Notifications[0]->When->i);
 				}
+				$ro->ReminderIsSet = 'true';
 				$ro->ReminderMinutesBeforeStart = $t;
 				unset($t);
 			}
@@ -871,11 +873,8 @@ class RemoteEventsService {
 			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'true');
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
 				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
-				$rm[] = $this->updateFieldUnindexed(
-					'item:ReminderMinutesBeforeStart',
-					'ReminderMinutesBeforeStart',
-					$t
-				);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'ture');
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
@@ -892,11 +891,8 @@ class RemoteEventsService {
 						($so->Notifications[0]->When->h * 60) +
 						($so->Notifications[0]->When->i);
 				}
-				$rm[] = $this->updateFieldUnindexed(
-					'item:ReminderMinutesBeforeStart',
-					'ReminderMinutesBeforeStart',
-					(string) $t
-				);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart',(string) $t);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'ture');
 				unset($t);
 			}
 		}

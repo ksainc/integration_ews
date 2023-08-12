@@ -137,6 +137,7 @@ Calendars
 | Recurrence  - Yearly Relative | Limited | EWS Limitation  
 Limited to single month of the year |
 | Recurrence  - End | Supported |  |
+| Reminders | Limited | EWS Limitation<br />Relative And Absolute with negative value only. Absolute is converted to Relative. |
 
 ## Future Features
 - Add Oauth2 Support
