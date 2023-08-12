@@ -30,20 +30,41 @@ try {
 
 	// assign defaults
 	$executionMode = 'S';
-	$executionDuration = 300;
-	$executionCushion = 300;
+	$executionDuration = 3600;
 	$executionPause = 60;
 	$executionStart = time();
 	$uid = null;
 
 	$logger = \OC::$server->getLogger();
-	$config = \OC::$server->getConfig();
 
 	// evaluate if script was started from console
 	if (php_sapi_name() == 'cli') {
 		$executionMode = 'C';
+
 		$logger->info('Harmonization thread running, as console script', ['app' => 'integration_ews']);
 		echo 'Harmonization thread running, as console script' . PHP_EOL;
+
+		// evaluate if required function exists
+        if (!function_exists('posix_getuid')) {
+            echo "The posix extensions are required - see https://www.php.net/manual/en/book.posix.php" . PHP_EOL;
+            exit(1);
+        }
+
+        // evaluate if script is running as the proper system user
+        $user = posix_getuid();
+        $configUser = fileowner(\OC::$configDir . 'config.php');
+        if ($user !== $configUser) {
+            echo "Harmonization thread has to be executed with the user that owns the file config/config.php" . PHP_EOL;
+            echo "Current user id: " . $user . PHP_EOL;
+            echo "Owner id of config.php: " . $configUser . PHP_EOL;
+            exit(1);
+        }
+	}
+	// evaluate if script was started from localhost
+	elseif ($_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1') {
+		$logger->info('Harmonization thread can only be executed from the console or localhost', ['app' => 'integration_ews']);
+		echo 'Harmonization thread can only be executed from the console or localhost' . PHP_EOL;
+		exit(0);
 	}
 
 	// evaluate running mode
@@ -74,27 +95,6 @@ try {
 	$logger->info('Harmonization thread started for ' . $uid, ['app' => 'integration_ews']);
 	echo 'Harmonization thread started for ' . $uid . PHP_EOL;
 
-	// set execusion time limit plus cusion
-	if ($executionMode == 'C') {
-        // assign execusion limit
-		@set_time_limit($executionDuration + $executionCushion);
-        // the cron job must be executed with the right user
-        if (!function_exists('posix_getuid')) {
-            echo "The posix extensions are required - see https://www.php.net/manual/en/book.posix.php" . PHP_EOL;
-            exit(1);
-        }
-
-        // evaluate if script is running as the proper system user
-        $user = posix_getuid();
-        $configUser = fileowner(\OC::$configDir . 'config.php');
-        if ($user !== $configUser) {
-            echo "Harmonization thread has to be executed with the user that owns the file config/config.php" . PHP_EOL;
-            echo "Current user id: " . $user . PHP_EOL;
-            echo "Owner id of config.php: " . $configUser . PHP_EOL;
-            exit(1);
-        }
-    }
-
 	// evaluate if nextcloud is installed
 	if (!(bool) \OC::$server->getConfig()->getSystemValue('installed', false)) {
 		$logger->info('Harmonization thread ended, system installed status is false', ['app' => 'integration_ews']);
@@ -108,6 +108,9 @@ try {
 		echo 'Harmonization thread ended, system maintenance mode is on' . PHP_EOL;
 		exit(0);
 	}
+
+	// assign execusion limit
+	@set_time_limit($executionDuration);
 
 	// load all apps to get all api routes properly setup
 	OC_App::loadApps();
