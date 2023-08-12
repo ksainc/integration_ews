@@ -41,12 +41,13 @@ try {
 	if (php_sapi_name() == 'cli') {
 		$executionMode = 'C';
 
-		$logger->info('Harmonization thread running, as console script', ['app' => 'integration_ews']);
-		echo 'Harmonization thread running, as console script' . PHP_EOL;
+		$logger->info("Harmonization thread executed from console", ['app' => 'integration_ews']);
+		echo "Harmonization thread executed from console" . PHP_EOL;
 
 		// evaluate if required function exists
         if (!function_exists('posix_getuid')) {
-            echo "The posix extensions are required - see https://www.php.net/manual/en/book.posix.php" . PHP_EOL;
+			$logger->info("Harmonization thread failed missing required posix extensions - see https://www.php.net/manual/en/book.posix.php", ['app' => 'integration_ews']);
+            echo "Harmonization thread failed missing required posix extensions - see https://www.php.net/manual/en/book.posix.php" . PHP_EOL;
             exit(1);
         }
 
@@ -54,58 +55,58 @@ try {
         $user = posix_getuid();
         $configUser = fileowner(\OC::$configDir . 'config.php');
         if ($user !== $configUser) {
-            echo "Harmonization thread has to be executed with the user that owns the file config/config.php" . PHP_EOL;
-            echo "Current user id: " . $user . PHP_EOL;
-            echo "Owner id of config.php: " . $configUser . PHP_EOL;
+			$logger->info(
+				"Harmonization thread failed has to be executed with the user that owns the file config/config.php" .
+            	 "Current user id: $user Owner id of config.php: $configUser" . PHP_EOL
+				, ['app' => 'integration_ews']);
+            echo "Harmonization thread failed has to be executed with the user that owns the file config/config.php" .
+            	 "Current user id: $user Owner id of config.php: $configUser" . PHP_EOL;
             exit(1);
         }
 	}
 	// evaluate if script was started from localhost
 	elseif ($_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1') {
-		$logger->info('Harmonization thread can only be executed from the console or localhost', ['app' => 'integration_ews']);
-		echo 'Harmonization thread can only be executed from the console or localhost' . PHP_EOL;
-		exit(0);
+		$logger->info("Harmonization thread failed can only be executed from the console or localhost", ['app' => 'integration_ews']);
+		echo "Harmonization thread failed can only be executed from the console or localhost" . PHP_EOL;
+		exit(1);
 	}
 
 	// evaluate running mode
 	if ($executionMode == 'C') {
 		// retrieve passed parameters
 		$parameters = getopt("u:");
-		// evaluate if user name exists
+		// evaluate if user parameter exists
 		if (isset($parameters["u"])) {
-			// assign user name
+			// assign user id
 			$uid = \OCA\EWS\Utile\Sanitizer::username($parameters["u"]);
 		}
 	}
 	else {
-		// evaluate if user name exists
+		// evaluate if user parameter exists
 		if (isset($_GET["u"])) {
-			// assign user name
+			// assign user id
 			$uid = \OCA\EWS\Utile\Sanitizer::username($_GET["u"]);
 		}
 	}
 	
-	// evaluate, if user name is present
+	// evaluate, if user parameter is present
 	if (empty($uid)) {
-		$logger->info('Harmonization thread ended, missing required parameters', ['app' => 'integration_ews']);
-		echo 'Harmonization thread ended, missing required parameters' . PHP_EOL;
+		$logger->info("Harmonization thread failed missing required parameters", ['app' => 'integration_ews']);
+		echo "Harmonization thread failed missing required parameters" . PHP_EOL;
 		exit(0);
 	}
 
-	$logger->info('Harmonization thread started for ' . $uid, ['app' => 'integration_ews']);
-	echo 'Harmonization thread started for ' . $uid . PHP_EOL;
-
 	// evaluate if nextcloud is installed
 	if (!(bool) \OC::$server->getConfig()->getSystemValue('installed', false)) {
-		$logger->info('Harmonization thread ended, system installed status is false', ['app' => 'integration_ews']);
-		echo 'Harmonization thread ended, system installed status is false' . PHP_EOL;
+		$logger->info("Harmonization thread failed system installed status is false", ['app' => 'integration_ews']);
+		echo "Harmonization thread failed system installed status is false" . PHP_EOL;
 		exit(0);
 	}
 
 	// evaluate if nextcloud is in maintenance mode
 	if ((bool) \OC::$server->getSystemConfig()->getValue('maintenance', false)) {
-		$logger->info('Harmonization thread ended, system maintenance mode is on', ['app' => 'integration_ews']);
-		echo 'Harmonization thread ended, system maintenance mode is on' . PHP_EOL;
+		$logger->info("Harmonization thread failed system maintenance mode is on", ['app' => 'integration_ews']);
+		echo "Harmonization thread failed system maintenance mode is on" . PHP_EOL;
 		exit(0);
 	}
 
@@ -124,18 +125,29 @@ try {
 	// evaluate if another harmonization thread is already running for this user
 	$tid = $HarmonizationThreadService->getId($uid);
 	if (getmypid() != $tid && $HarmonizationThreadService->isActive($uid, $tid)) {
-		$logger->info('Harmonization thread ended, another thread is already running for ' . $uid, ['app' => 'integration_ews']);
-		echo 'Harmonization thread ended, another thread is already running for ' . $uid . PHP_EOL;
+		$logger->info("Harmonization thread failed another thread is already running for $uid", ['app' => 'integration_ews']);
+		echo "Harmonization thread failed another thread is already running for $uid" . PHP_EOL;
+		exit(0);
+	}
+
+	// evaluate if user account is connected
+	if ($ConfigurationService->isAccountConnected($uid)) {
+		$logger->info("Harmonization thread failed user $uid does not have a connected account", ['app' => 'integration_ews']);
+		echo "Harmonization thread failed user $uid does not have a connected account" . PHP_EOL;
 		exit(0);
 	}
 
 	// retrieve and assign defaults
 	$executionDuration = $ConfigurationService->getHarmonizationThreadDuration();
 	$executionPause = $ConfigurationService->getHarmonizationThreadPause();
+	$executionConclusion = 'N';
+
+	$logger->info("Harmonization thread started for $uid", ['app' => 'integration_ews']);
+	echo "Harmonization thread started for $uid" . PHP_EOL;
 
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');
-	// connect to remote events feed(s)
+	// connect to remote events queue(s)
 	$cs = $HarmonizationService->connectEvents($uid, 60, 'CC');
 	$es = $HarmonizationService->connectEvents($uid, 60, 'EC');
 
@@ -146,12 +158,16 @@ try {
 		 * TODO: evaluate if user still exists and is active
 		 * 
 		 */
-
-		/**
-		 * 
-		 * TODO: evaluate if ews account is still connected
-		 * 
-		 */
+		// evaluate if nextcloud is in maintenance mode
+		if ((bool) \OC::$server->getSystemConfig()->getValue('maintenance', false)) {
+			$executionConclusion = 'EM';
+			break;
+		}
+		// evaluate if user account is stil connected
+		if ($ConfigurationService->isAccountConnected($uid)) {
+			$executionConclusion = 'EA';
+			break;
+		}
 
 		// update heart beat
 		$HarmonizationThreadService->setHeartBeat($uid, time());
@@ -165,12 +181,13 @@ try {
 		sleep($executionPause);
 	}
 
-	// disconnect from remote events feed(s)
+	// disconnect from remote events queue(s)
 	$cs = $HarmonizationService->disconnectEvents($uid, $cs->Id);
 	$es = $HarmonizationService->disconnectEvents($uid, $es->Id);
 
-	$logger->info('Harmonization thread ended for ' . $uid, ['app' => 'integration_ews']);
-	echo 'Harmonization thread ended for ' . $uid . PHP_EOL;
+	$logger->info("Harmonization thread ended for $uid", ['app' => 'integration_ews']);
+	echo "Harmonization thread ended for $uid" . PHP_EOL;
+
 
 	// spawn new harmonization thread
 	$tid = $HarmonizationThreadService->launch($uid);

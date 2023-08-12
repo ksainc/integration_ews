@@ -834,4 +834,18 @@ class ConfigurationService {
 		}
 
 	}
+
+	/**
+	 * retrieve account status
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return bool
+	 */
+	public function isAccountConnected(string $uid): bool {
+
+		// retrieve account status
+		return filter_var($this->retrieveUserValue($uid, 'account_connected'), FILTER_VALIDATE_BOOLEAN);
+
+	}
 }
