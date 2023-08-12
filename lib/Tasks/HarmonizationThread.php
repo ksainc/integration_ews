@@ -112,16 +112,6 @@ try {
 	// load all apps to get all api routes properly setup
 	OC_App::loadApps();
 
-	//\OC::$server->getSession()->close();
-
-	// initialize a dummy memory session
-	/*
-	$session = new \OC\Session\Memory('');
-	$cryptoWrapper = \OC::$server->getSessionCryptoWrapper();
-	$session = $cryptoWrapper->wrapSession($session);
-	\OC::$server->setSession($session);
-	*/
-
 	// initilize required services
 	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
@@ -139,9 +129,6 @@ try {
 	// retrieve and assign defaults
 	$executionDuration = $ConfigurationService->getHarmonizationThreadDuration();
 	$executionPause = $ConfigurationService->getHarmonizationThreadPause();
-	// no longer required since we listen to events feeds
-	//$harmonizePause = 120;
-	//$harmonizeStart = 0;
 
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');
@@ -170,15 +157,6 @@ try {
 		$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
 		// execute actions
 		$HarmonizationService->performActions($uid);
-
-		// no longer required since we listen to events feed
-		// execute harmonization
-		/*
-		if ((time() - $harmonizeStart) > $harmonizePause) {
-			$harmonizeStart = time();
-			$HarmonizationService->performHarmonization($uid, 'S');
-		}
-		*/
 
 		// pause execution
 		sleep($executionPause);
