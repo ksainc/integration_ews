@@ -70,6 +70,12 @@ Once the files are in place, proceed to the apps administration screen and enabl
 
 The following is a very long list of things that work and limitations.
 
+- Passive (scheduled) and Active (live) Syncronization
+- Account Auto Discovery
+- Calendar Syncronization
+- Contacts Syncronization
+- Mail App Integration
+
 About 95% of the properties between Nextcloud and EWS are transferable and supported for both Contacts and Calendars, some properties are limited due to the limitations of both systems.
 
 Please note that at the moment the app only supports basic and NTLM authentication. 
@@ -141,4 +147,6 @@ Limited to single month of the year |
 
 ## Future Features
 - Add Oauth2 Support
-- Add Mail integration
+- Add MFA Support
+- Add Tasks Syncronization Support
+- Add Notes Syncronization Support
