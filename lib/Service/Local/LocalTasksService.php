@@ -33,15 +33,15 @@ use OC\Files\Node\LazyUserFolder;
 use OCA\DAV\CalDAV\CalDavBackend;
 
 use OCA\EWS\AppInfo\Application;
-use OCA\EWS\Db\EventsUtile;
-use OCA\EWS\Objects\EventCollectionObject;
-use OCA\EWS\Objects\EventObject;
-use OCA\EWS\Objects\EventAttachmentObject;
+use OCA\EWS\Db\TasksUtile;
+use OCA\EWS\Objects\TaskCollectionObject;
+use OCA\EWS\Objects\TaskObject;
+use OCA\EWS\Objects\TaskAttachmentObject;
 
 use Sabre\VObject\Reader;
-use Sabre\VObject\Component\VEvent;
+use Sabre\VObject\Component\VTodo;
 
-class LocalEventsService {
+class LocalTasksService {
 	/**
 	 * @var LoggerInterface
 	 */
@@ -63,9 +63,9 @@ class LocalEventsService {
 	 */
 	public ?LazyUserFolder $FileStore = null;
 
-	public function __construct (string $appName, LoggerInterface $logger, EventsUtile $EventsUtile) {
+	public function __construct (string $appName, LoggerInterface $logger, TasksUtile $TasksUtile) {
 		$this->logger = $logger;
-        $this->EventsUtile = $EventsUtile;
+        $this->TasksUtile = $TasksUtile;
         $this->DefaultTimeZone = new DateTimeZone(date_default_timezone_get());
 	}
 
@@ -99,15 +99,15 @@ class LocalEventsService {
      * 
 	 * @param string $cid - Collection Id
 	 * 
-	 * @return EventCollectionObject of collection properties
+	 * @return TaskCollectionObject of collection properties
 	 */
-	public function fetchCollection(string $cid): ?EventCollectionObject {
+	public function fetchCollection(string $cid): ?TaskCollectionObject {
 
         // retrieve collection properties
         $ec = $this->DataStore->getCalendarById($cid);
 
         if (isset($ec)) {
-            return new EventCollectionObject(
+            return new TaskCollectionObject(
                 $ec['id'],
                 $ec['{DAV:}displayname'],
                 $ec['{http://sabredav.org/ns}sync-token']
@@ -128,9 +128,9 @@ class LocalEventsService {
 	 * @param string $cid - Collection URI
      * @param string $name - Collection Name
 	 * 
-	 * @return EventCollectionObject
+	 * @return TaskCollectionObject
 	 */
-	public function createCollection(string $uid, string $cid, string $name): ?EventCollectionObject {
+	public function createCollection(string $uid, string $cid, string $name): ?TaskCollectionObject {
 
         // check for user id and collection - must contain to create
         if (!empty($uid) && !empty($cid)) {
@@ -203,32 +203,32 @@ class LocalEventsService {
 	 * @param string $cid - Collection ID
      * @param string $uuid - Item UUID
 	 * 
-	 * @return EventObject EventObject - successfully retrieved / null - failed to retrieve
+	 * @return TaskObject TaskObject - successfully retrieved / null - failed to retrieve
 	 */
-	public function findCollectionItemByUUID(string $cid, string $uuid): ?EventObject {
+	public function findCollectionItemByUUID(string $cid, string $uuid): ?TaskObject {
         
         // search data store for object
-		$lo = $this->EventsUtile->findByUUID($cid, $uuid, 'VEVENT');
+		$lo = $this->TasksUtile->findByUUID($cid, $uuid, 'VTODO');
         // validate result
         if (is_array($lo) && count($lo) > 0) {
             $lo = $lo[0];
-            // convert string to vevent object
-            $eo = Reader::read($lo['calendardata']);
-            // convert to event object
-            if (isset($eo->VEVENT)) {
-                $eo = $this->toEventObject($eo->VEVENT);
-                $eo->ID = $lo['uri'];
-                $eo->UUID = $lo['uid'];
-                $eo->CID = $lo['calendarid'];
-                $eo->ModifiedOn = new DateTime(date("Y-m-d H:i:s", $lo['lastmodified']));
-                $eo->State = trim($lo['etag'],'"');
+            // convert string to vtask object
+            $to = Reader::read($lo['calendardata']);
+            // convert to task object
+            if (isset($to->VTODO)) {
+                $to = $this->toTaskObject($to->VTODO);
+                $to->ID = $lo['uri'];
+                $to->UUID = $lo['uid'];
+                $to->CID = $lo['calendarid'];
+                $to->ModifiedOn = new DateTime(date("Y-m-d H:i:s", $lo['lastmodified']));
+                $to->State = trim($lo['etag'],'"');
                 // attachments
-                if (count($eo->Attachments) > 0) {
+                if (count($to->Attachments) > 0) {
                     // retrieve attachments from local data store
-                    $eo->Attachments = $this->fetchCollectionItemAttachment(array_column($eo->Attachments, 'Id'), 'F');
+                    $to->Attachments = $this->fetchCollectionItemAttachment(array_column($to->Attachments, 'Id'), 'F');
                 }
-                // return event object
-                return $eo;
+                // return task object
+                return $to;
             }
             else {
                 return null;
@@ -248,31 +248,31 @@ class LocalEventsService {
 	 * @param string $cid - Collection ID
      * @param string $iid - Item ID
 	 * 
-	 * @return EventObject EventObject - successfully retrieved / null - failed to retrieve
+	 * @return TaskObject TaskObject - successfully retrieved / null - failed to retrieve
 	 */
-	public function fetchCollectionItem(string $cid, string $iid): ?EventObject {
+	public function fetchCollectionItem(string $cid, string $iid): ?TaskObject {
 
         // retrieve collection item
         $lo = $this->DataStore->getCalendarObject($cid, $iid);
-        // return event object or null
+        // return task object or null
         if ($lo) {
             // read item data
-            $eo = Reader::read($lo['calendardata']);
-            // convert to event object
-            if (isset($eo->VEVENT)) {
-                $eo = $this->toEventObject($eo->VEVENT);
-                $eo->ID = $lo['uri'];
-                $eo->CID = $lo['calendarid'];
-                $eo->ModifiedOn = new DateTime(date("Y-m-d H:i:s", $lo['lastmodified']));
-                $eo->State = trim($lo['etag'],'"');
+            $to = Reader::read($lo['calendardata']);
+            // convert to task object
+            if (isset($to->VTODO)) {
+                $to = $this->toTaskObject($to->VTODO);
+                $to->ID = $lo['uri'];
+                $to->CID = $lo['calendarid'];
+                $to->ModifiedOn = new DateTime(date("Y-m-d H:i:s", $lo['lastmodified']));
+                $to->State = trim($lo['etag'],'"');
 
                 // attachments
-                if (count($eo->Attachments) > 0) {
+                if (count($to->Attachments) > 0) {
                     // retrieve attachments from local data store
-                    $eo->Attachments = $this->fetchCollectionItemAttachment(array_column($eo->Attachments, 'Id'), 'F');
+                    $to->Attachments = $this->fetchCollectionItemAttachment(array_column($to->Attachments, 'Id'), 'F');
                 }
-                // return event object
-                return $eo;
+                // return task object
+                return $to;
             }
             else {
                 return null;
@@ -290,43 +290,43 @@ class LocalEventsService {
      * @since Release 1.0.0
      * 
 	 * @param string $cid - Collection ID
-     * @param EventObject $eo - Item Data
+     * @param TaskObject $so - Item Data
 	 * 
-	 * @return EventObject
+	 * @return TaskObject
 	 */
-	public function createCollectionItem(string $cid, EventObject $so): ?EventObject {
+	public function createCollectionItem(string $cid, TaskObject $so): ?TaskObject {
 
         // clone source object
-        $eo = clone $so;
+        $to = clone $so;
         // deposit attachment(s)
-        if (count($eo->Attachments) > 0) {
+        if (count($to->Attachments) > 0) {
             // create or update attachements in local data store
-            $eo->Attachments = $this->createCollectionItemAttachment(
-                $eo->StartsOn->format('Y-m-d H.i.s') . " " . \OCA\EWS\Utile\Sanitizer::folder($eo->Label, true, true), 
-                $eo->Attachments
+            $to->Attachments = $this->createCollectionItemAttachment(
+                $to->StartsOn->format('Y-m-d H.i.s') . " " . \OCA\EWS\Utile\Sanitizer::folder($to->Label, true, true), 
+                $to->Attachments
             );
         }
         //evaluate if task object contains uuid
-        if (empty($eo->UUID)) {
+        if (empty($to->UUID)) {
             // generate uuid if missing
-            $eo->UUID = \OCA\EWS\Utile\UUID::v4();
+            $to->UUID = \OCA\EWS\Utile\UUID::v4();
         }
-        // convert event object to vevent object
-        $ve = $this->fromEventObject($eo);
+        // convert task object to vtodo object
+        $vt = $this->fromTaskObject($to);
         // generate item id
-        $veid = \OCA\EWS\Utile\UUID::v4() . '.ics';
+        $vtid = \OCA\EWS\Utile\UUID::v4() . '.ics';
         // create item in data store
         $rs = $this->DataStore->createCalendarObject(
             $cid, 
-            $veid, 
-            "BEGIN:VCALENDAR\nVERSION:2.0\n" . $ve->serialize() . "\nEND:VCALENDAR"
+            $vtid, 
+            "BEGIN:VCALENDAR\nVERSION:2.0\n" . $vt->serialize() . "\nEND:VCALENDAR"
         );
-        // return event object or null
+        // return task object or null
         if (isset($rs)) {
-            $eo->ID = $veid;
-            $eo->CID = $cid;
-            $eo->State = trim($rs,'"');
-            return $eo;
+            $to->ID = $vtid;
+            $to->CID = $cid;
+            $to->State = trim($rs,'"');
+            return $to;
         } else {
             return null;
         }
@@ -340,39 +340,39 @@ class LocalEventsService {
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Item ID
-     * @param EventObject $eo - Source Data
+     * @param TaskObject $so - Source Data
 	 * 
-	 * @return EventObject
+	 * @return TaskObject
 	 */
-	public function updateCollectionItem(string $cid, string $iid, EventObject $so): ?EventObject {
+	public function updateCollectionItem(string $cid, string $iid, TaskObject $so): ?TaskObject {
 
         // check for id - must contain id to update
         if (!empty($iid)) {
             // clone source object
-            $eo = clone $so;
+            $to = clone $so;
             // deposit attachment(s)
-            if (count($eo->Attachments) > 0) {
+            if (count($to->Attachments) > 0) {
                 // create or update attachements in local data store
-                $eo->Attachments = $this->createCollectionItemAttachment(
-                    $eo->StartsOn->format('Y-m-d H.i.s') . " " . \OCA\EWS\Utile\Sanitizer::folder($eo->Label, true, true), 
-                    $eo->Attachments
+                $to->Attachments = $this->createCollectionItemAttachment(
+                    $to->StartsOn->format('Y-m-d H.i.s') . " " . \OCA\EWS\Utile\Sanitizer::folder($to->Label, true, true), 
+                    $to->Attachments
                 );
             }
-            // convert event object to vevent object
-            $ve = $this->fromEventObject($eo);
+            // convert task object to vtodo object
+            $vt = $this->fromTaskObject($to);
             // update item in data store
             $rs = $this->DataStore->updateCalendarObject(
                 $cid, 
                 $iid, 
-                "BEGIN:VCALENDAR\nVERSION:2.0\n" . $ve->serialize() . "\nEND:VCALENDAR"
+                "BEGIN:VCALENDAR\nVERSION:2.0\n" . $vt->serialize() . "\nEND:VCALENDAR"
             );
         }
-        // return event object or null
+        // return task object or null
         if (isset($rs)) {
-            $eo->ID = $iid;
-            $eo->CID = $cid;
-			$eo->State = trim($rs,'"');
-            return $eo;
+            $to->ID = $iid;
+            $to->CID = $cid;
+			$to->State = trim($rs,'"');
+            return $to;
         } else {
             return null;
         }
@@ -414,7 +414,7 @@ class LocalEventsService {
      * @param string $batch - Collection of Id's
      * @param string $flag - I - File Information / F - File Information + Content
 	 * 
-	 * @return EventAttachmentObject
+	 * @return TaskAttachmentObject
 	 */
 	public function fetchCollectionItemAttachment(array $batch, string $flag = 'I'): array {
 
@@ -430,7 +430,7 @@ class LocalEventsService {
                 // 
                 $fo = $this->FileStore->getById($entry);
                 if($fo[0] instanceof \OCP\Files\File) {
-                    $ao = new EventAttachmentObject('D');
+                    $ao = new TaskAttachmentObject('D');
                     $ao->Id = $fo[0]->getFileInfo()->getId();
                     $ao->Name = $fo[0]->getFileInfo()->getName();
                     $ao->Type = $fo[0]->getFileInfo()->getMimetype();
@@ -458,7 +458,7 @@ class LocalEventsService {
      * 
      * @param string $uid - User ID
      * @param string $fn - Folder Name to save attachments
-     * @param array $batch - Collection of EventAttachmentObject(s) objects
+     * @param array $batch - Collection of TaskAttachmentObject(s) objects
 	 * 
 	 * @return string
 	 */
@@ -475,7 +475,7 @@ class LocalEventsService {
             // check if file exists and write to it if possible
             try {
                 // construct folder location
-                $fl = 'Calendar/' . $fn;
+                $fl = 'Tasks/' . $fn;
                 // check if folder exists
                 if (!$this->FileStore->nodeExists($fl)) {
                     // create folder if missing
@@ -542,145 +542,71 @@ class LocalEventsService {
     }
 
     /**
-     * convert vevent object to event object
+     * convert vtodo object to task object
      * 
      * @since Release 1.0.0
      * 
-	 * @param VEvent $vo - source object
+	 * @param VTodo $vo - source object
 	 * 
-	 * @return EventObject converted object
+	 * @return TaskObject converted object
 	 */
-	public function toEventObject(VEvent $vo): EventObject {
+	public function toTaskObject(VTodo $vo): TaskObject {
 		
-        // construct event object
-		$eo = new EventObject();
+        // construct task object
+		$to = new TaskObject();
         // Origin
-		$eo->Origin = 'L';
+		$to->Origin = 'L';
         // UUID
         if (isset($vo->UID)) {
-            $eo->UUID = trim($vo->UID->getValue());
+            $to->UUID = trim($vo->UID->getValue());
         }
         // Creation Date
         if (isset($vo->CREATED)) {
-            $eo->CreatedOn = new DateTime($vo->CREATED->getValue());
+            $to->CreatedOn = new DateTime($vo->CREATED->getValue());
         }
         // Modification Date
         if (isset($vo->{'LAST-MODIFIED'})) {
-            $eo->ModifiedOn = new DateTime($vo->{'LAST-MODIFIED'}->getValue());
+            $to->ModifiedOn = new DateTime($vo->{'LAST-MODIFIED'}->getValue());
         }
         // Starts Date/Time
-        // Starts Time Zone
         if (isset($vo->DTSTART)) {
-            if (isset($vo->DTSTART->parameters['TZID'])) {
-                $eo->StartsTZ = new DateTimeZone($vo->DTSTART->parameters['TZID']->getValue());
-            }
-            elseif (str_contains($vo->DTSTART, 'Z')) {
-                $eo->StartsTZ = new DateTimeZone('UTC');
-            }
-            elseif ($this->UserTimeZone instanceof \DateTimeZone) {
-                $eo->StartsTZ = $this->UserTimeZone;
-            }
-            else {
-                $eo->StartsTZ = $this->DefaultTimeZone;
-            }
-            $eo->StartsOn = new DateTime($vo->DTSTART->getValue(), $eo->StartsTZ);
+            $to->StartsOn = new DateTime($vo->DTSTART->getValue());
         }
-        // Ends Date/Time
-        // Ends Time Zone
-        if (isset($vo->DTEND)) {
-            if (isset($vo->DTEND->parameters['TZID'])) {
-                $eo->EndsTZ = new DateTimeZone($vo->DTEND->parameters['TZID']->getValue());
-            }
-            elseif (str_contains($vo->DTSTART, 'Z')) {
-                $eo->EndsTZ = new DateTimeZone('UTC');
-            }
-            elseif ($this->UserTimeZone instanceof \DateTimeZone) {
-                $eo->EndsTZ = $this->UserTimeZone;
-            }
-            else {
-                $eo->EndsTZ = $this->DefaultTimeZone;
-            }
-            $eo->EndsOn = new DateTime($vo->DTEND->getValue(), $eo->EndsTZ);
+        // DUE Date/Time
+        if (isset($vo->DUE)) {
+            $to->DueOn = new DateTime($vo->DUE->getValue());
         }
         // Label
         if (isset($vo->SUMMARY)) {
-            $eo->Label = trim($vo->SUMMARY->getValue());
+            $to->Label = trim($vo->SUMMARY->getValue());
         }
         // Notes
         if (isset($vo->DESCRIPTION)) {
             if (!empty(trim($vo->DESCRIPTION->getValue()))) {
-                $eo->Notes = trim($vo->DESCRIPTION->getValue());
+                $to->Notes = trim($vo->DESCRIPTION->getValue());
             }
         }
-        // Location
-        if (isset($vo->LOCATION)) {
-            $eo->Location = trim($vo->LOCATION->getValue());
+        // Progress
+        if (isset($vo->{'PERCENT-COMPLETE'})) {
+            $to->Progress = trim($vo->{'PERCENT-COMPLETE'}->getValue());
         }
-        // Availability
-        if (isset($vo->TRANSP)) {
-            if ($vo->TRANSP->getValue() == 'TRANSPARENT') {
-                $eo->Availability = 'Free';
-            }
-            else {
-                $eo->Availability = 'Busy';
-            }
+        // Status
+        if (isset($vo->STATUS)) {
+            $to->Status = $this->fromStatus($vo->STATUS->getValue());;
         }
         // Priority
         if (isset($vo->PRIORITY)) {
-            $eo->Priority = trim($vo->PRIORITY->getValue());
+            $to->Priority = trim($vo->PRIORITY->getValue());
         }
         // Sensitivity
         if (isset($vo->CLASS)) {
-            $eo->Sensitivity = $this->fromClass($vo->CLASS->getValue());
-        }
-        // Color
-        if (isset($vo->COLOR)) {
-            $eo->Color = trim($vo->COLOR->getValue());
+            $to->Sensitivity = $this->fromClass($vo->CLASS->getValue());
         }
         // Tag(s)
         if (isset($vo->CATEGORIES)) {
             foreach($vo->CATEGORIES->getParts() as $entry) {
-                $eo->addTag(
+                $to->addTag(
                     trim($entry)
-                );
-            }
-        }
-        // Organizer
-        if (isset($vo->ORGANIZER)) {
-            // address
-            $eo->Organizer->Address = str_replace('mailto:', "", $vo->ORGANIZER->getValue());
-            // name
-            if (isset($vo->ORGANIZER->parameters['CN'])) {
-                $eo->Organizer->Name = $vo->ORGANIZER->parameters['CN']->getValue();
-            }
-        }
-        // Attendee(s)
-        if (isset($vo->ATTENDEE)) {
-            foreach($vo->ATTENDEE as $entry) {
-                // Attendee Type
-                if (isset($entry->parameters['ROLE'])) {
-                    $t = $this->fromAttendeeRole($entry->parameters['ROLE']->getValue());
-                } else {
-                    $t = $this->fromAttendeeRole(null);
-                }
-                // Attendee Name
-                if (isset($entry->parameters['CN'])) {
-                    $n = $entry->parameters['CN']->getValue();
-                } else {
-                    $n = null;
-                }
-                // Attendee Attendance
-                if (isset($entry->parameters['PARTSTAT'])) {
-                    $r = $this->fromAttendeeStatus($entry->parameters['PARTSTAT']->getValue());
-                } else {
-                    $r = $this->fromAttendeeStatus(null);
-                }
-                // construct entry
-                $eo->addAttendee(
-                    str_replace('mailto:', "", $entry->getValue()),
-                    $n,
-                    $t,
-                    $r
                 );
             }
         }
@@ -701,7 +627,7 @@ class LocalEventsService {
                                 $p = 'A';
                                 $w = new DateTime($vo->VALARM->TRIGGER[0]->getValue());
                             }
-                            $eo->addNotification(
+                            $to->addNotification(
                                 $t,
                                 $p,
                                 $w
@@ -724,7 +650,7 @@ class LocalEventsService {
                     $ft = $entry->parameters['FMTTYPE']->getValue();
                     $fd = $entry->parameters['FILENAME']->getValue();
 
-                    $eo->addAttachment(
+                    $to->addAttachment(
                         $fs,
                         $fi,
                         $fn,
@@ -740,54 +666,54 @@ class LocalEventsService {
         if (isset($vo->RRULE)) {
             $parts = $vo->RRULE->getParts();
             if (isset($parts['FREQ'])) {
-                $eo->Occurrence->Precision = $this->fromFrequency($parts['FREQ']);
+                $to->Occurrence->Precision = $this->fromFrequency($parts['FREQ']);
             }
             if (isset($parts['INTERVAL'])) {
-                $eo->Occurrence->Interval = $parts['INTERVAL'];
+                $to->Occurrence->Interval = $parts['INTERVAL'];
             }
             if (isset($parts['COUNT'])) {
-                $eo->Occurrence->Iterations = $parts['COUNT'];
+                $to->Occurrence->Iterations = $parts['COUNT'];
             }
             if (isset($parts['UNTIL'])) {
-                $eo->Occurrence->Concludes = new DateTime($parts['UNTIL']);
+                $to->Occurrence->Concludes = new DateTime($parts['UNTIL']);
             }
             if (isset($parts['BYDAY'])) {
                 if (is_array($parts['BYDAY'])) {
-                    $eo->Occurrence->OnDayOfWeek = $this->fromByDay($parts['BYDAY']);
+                    $to->Occurrence->OnDayOfWeek = $this->fromByDay($parts['BYDAY']);
                 }
                 else {
-                    $eo->Occurrence->OnDayOfWeek = $this->fromByDay(array($parts['BYDAY']));
+                    $to->Occurrence->OnDayOfWeek = $this->fromByDay(array($parts['BYDAY']));
                 }
             }
             if (isset($parts['BYMONTH'])) {
                 if (is_array($parts['BYMONTH'])) {
-                    $eo->Occurrence->OnMonthOfYear = $parts['BYMONTH'];
+                    $to->Occurrence->OnMonthOfYear = $parts['BYMONTH'];
                 }
                 else {
-                    $eo->Occurrence->OnMonthOfYear = array($parts['BYMONTH']);
+                    $to->Occurrence->OnMonthOfYear = array($parts['BYMONTH']);
                 }
             }
             if (isset($parts['BYMONTHDAY'])) {
                 if (is_array($parts['BYMONTHDAY'])) {
-                    $eo->Occurrence->OnDayOfMonth = $parts['BYMONTHDAY'];
+                    $to->Occurrence->OnDayOfMonth = $parts['BYMONTHDAY'];
                 }
                 else {
-                    $eo->Occurrence->OnDayOfMonth = array($parts['BYMONTHDAY']);
+                    $to->Occurrence->OnDayOfMonth = array($parts['BYMONTHDAY']);
                 }
             }
             if (isset($parts['BYYEARDAY'])) {
                 if (is_array($parts['BYYEARDAY'])) {
-                    $eo->Occurrence->OnDayOfYear = $parts['BYYEARDAY'];
+                    $to->Occurrence->OnDayOfYear = $parts['BYYEARDAY'];
                 }
                 else {
-                    $eo->Occurrence->OnDayOfYear = array($parts['BYYEARDAY']);
+                    $to->Occurrence->OnDayOfYear = array($parts['BYYEARDAY']);
                 }
             }
             if (isset($parts['BYSETPOS'])) {
-                $eo->Occurrence->Pattern = 'R';
-                $eo->Occurrence->OnWeekOfMonth = array($parts['BYSETPOS']);
+                $to->Occurrence->Pattern = 'R';
+                $to->Occurrence->OnWeekOfMonth = array($parts['BYSETPOS']);
             } else {
-                $eo->Occurrence->Pattern = 'A';
+                $to->Occurrence->Pattern = 'A';
             }
             // Excludes
             if (isset($vo->EXDATE)) {
@@ -804,149 +730,73 @@ class LocalEventsService {
                     else {
                         $tz = $this->DefaultTimeZone;
                     }
-                    $eo->Occurrence->Excludes[] = new DateTime($entry->getValue(), $tz);
+                    $to->Occurrence->Excludes[] = new DateTime($entry->getValue(), $tz);
                 }
             }
         }
         
-		// return event object
-		return $eo;
+		// return task object
+		return $to;
         
     }
 
     /**
-     * Convert event object to vevent object
+     * Convert task object to vtask object
      * 
      * @since Release 1.0.0
      * 
-	 * @param EventObject $vo - source object
+	 * @param TaskObject $vo - source object
 	 * 
-	 * @return VEvent converted object
+	 * @return VTodo converted object
 	 */
-    public function fromEventObject(EventObject $eo): VEvent{
+    public function fromTaskObject(TaskObject $to): VTodo{
 
-        // construct vevent object
+        // construct vtask object
         $vo = new \Sabre\VObject\Component\VCalendar();
-        $vo = $vo->createComponent('VEVENT');
+        $vo = $vo->createComponent('VTODO');
         // UID
-        if ($eo->UUID) {
-            $vo->UID->setValue($eo->UUID);
+        if ($to->UUID) {
+            $vo->UID->setValue($to->UUID);
         }
         // Starts Date/Time
-        // Starts Time Zone
-        if (isset($eo->StartsOn)) {
-            $vo->add('DTSTART');
-
-            if (isset($eo->StartsTZ)) {
-                $tz = $eo->StartsTZ->getName();  
-            }
-            elseif ($this->UserTimeZone instanceof \DateTimeZone) {
-                $tz = $this->UserTimeZone->getName();
-            }
-            else {
-                $tz = $this->DefaultTimeZone->getName();
-            }
-
-            $dt = clone $eo->StartsOn;
-            $dt->setTimezone(new DateTimeZone($tz));
-            $vo->DTSTART->setValue($dt->format('Ymd\THis'));
-            $vo->DTSTART->add('TZID', $tz);
-            unset($dt);
-            unset($tz);
+        if (isset($to->StartsOn)) {
+            $vo->add('DTSTART', $to->StartsOn->format('Ymd\THis'));
         }
         // Ends Date/Time
-        // Ends Time Zone
-        if (isset($eo->EndsOn)) {
-            $vo->add('DTEND');
-
-            if (isset($eo->EndsTZ)) {
-                $tz = $eo->EndsTZ->getName();  
-            }
-            elseif ($this->UserTimeZone instanceof \DateTimeZone) {
-                $tz = $this->UserTimeZone->getName();
-            }
-            else {
-                $tz = $this->DefaultTimeZone->getName();
-            }
-
-            $dt = clone $eo->EndsOn;
-            $dt->setTimezone(new DateTimeZone($tz));
-            $vo->DTEND->setValue($dt->format('Ymd\THis'));
-            $vo->DTEND->add('TZID', $tz);
-            unset($dt);
-            unset($tz);
-        }
-        // Time Zone
-        if ($eo->TimeZone) {
-            //$vo->add('TZ', $eo->TimeZone->getName());
+        if (isset($to->DueOn)) {
+            $vo->add('DUE', $to->DueOn->format('Ymd\THis'));
         }
         // Label
-        if ($eo->Label) {
-            $vo->add('SUMMARY',$eo->Label);
+        if ($to->Label) {
+            $vo->add('SUMMARY',$to->Label);
         }
         // Notes
-        if (isset($eo->Notes)) {
-            $vo->add('DESCRIPTION', $eo->Notes);
+        if (isset($to->Notes)) {
+            $vo->add('DESCRIPTION', $to->Notes);
         }
-        // Location
-        if (isset($eo->Location)) {
-            $vo->add('LOCATION', trim($eo->Location));
+        // Progress
+        if (isset($to->Progress)) {
+            $vo->add('PERCENT-COMPLETE', $to->Progress);
         }
-        // Availability
-        if (isset($eo->Availability)) {
-            if ($eo->Availability == 'Free') {
-                $vo->add('TRANSP', 'TRANSPARENT');
-            }
-            else {
-                $vo->add('TRANSP', 'OPAQUE');
-            }
+        // Status
+        if (isset($to->Status)) {
+            $vo->add('STATUS', $this->toStatus($to->Status));
         }
         // Priority
-        if (isset($eo->Priority)) {
-            $vo->add('PRIORITY', $eo->Priority);
+        if (isset($to->Priority)) {
+            $vo->add('PRIORITY', $to->Priority);
         }
         // Sensitivity
-        if (isset($eo->Sensitivity)) {
-            $vo->add('CLASS', $this->toClass($eo->Sensitivity));
-        }
-        // Color
-        if (isset($eo->Color)) {
-            $vo->add('COLOR', trim($eo->Color));
+        if (isset($to->Sensitivity)) {
+            $vo->add('CLASS', $this->toClass($to->Sensitivity));
         }
         // Tag(s)
-        if (count($eo->Tags) > 0) {
-            $vo->add('CATEGORIES', $eo->Tags);
-        }
-        // Organizer
-        if (isset($vo->Organizer) && isset($vo->Organizer->Address)) {
-            $vo->add(
-                'ORGANIZER', 
-                'mailto:' . $vo->Organizer->Address,
-                array('CN' => $vo->Organizer->Name)
-            );
-        }
-        // Attendee(s)
-        if (count($eo->Attendee) > 0) {
-            foreach($eo->Attendee as $entry) {
-                $p = array();
-                // Attendee Type
-                $p['ROLE'] = $this->toAttendeeRole($entry->Type);
-                // Attendee Name
-                if (isset($entry->Name)) {
-                    $p['CN'] = $entry->Name;
-                } else {
-                    $p['CN'] = '';
-                }
-                // Attendee Attendance
-                $p['PARTSTAT'] = $this->toAttendeeStatus($entry->Attendance);
-                
-                $vo->add('ATTENDEE', 'mailto:' . $entry->Address, $p);
-                unset($p);
-            }
+        if (count($to->Tags) > 0) {
+            $vo->add('CATEGORIES', $to->Tags);
         }
         // Attachment(s)
-        if (count($eo->Attachments) > 0) {
-            foreach($eo->Attachments as $entry) {
+        if (count($to->Attachments) > 0) {
+            foreach($to->Attachments as $entry) {
                 // Data Store
                 if ($entry->Store == 'D' && !empty($entry->Id)) {
                     $p = array();
@@ -989,8 +839,8 @@ class LocalEventsService {
             }
         }
         // Notifications
-        if (count($eo->Notifications) > 0) {
-            foreach($eo->Notifications as $entry) {
+        if (count($to->Notifications) > 0) {
+            foreach($to->Notifications as $entry) {
                 $vo->add('VALARM');
                 $i= $vo->VALARM->count() - 1;
                 // Notifications Type
@@ -1010,59 +860,58 @@ class LocalEventsService {
                 unset($t);
             }
         }
-
         // Occurrence
-        if (isset($eo->Occurrence->Precision)) {
+        if (isset($to->Occurrence->Precision)) {
             $p = array();
             // Occurrence Precision
-            if (isset($eo->Occurrence->Precision)) {
-                $p['FREQ'] = $this->toFrequency($eo->Occurrence->Precision);
+            if (isset($to->Occurrence->Precision)) {
+                $p['FREQ'] = $this->toFrequency($to->Occurrence->Precision);
             }
             // Occurrence Interval
-            if (isset($eo->Occurrence->Interval)) {
-                $p['INTERVAL'] = $eo->Occurrence->Interval;
+            if (isset($to->Occurrence->Interval)) {
+                $p['INTERVAL'] = $to->Occurrence->Interval;
             }
             // Occurrence Interval
-            if (isset($eo->Occurrence->Iterations)) {
-                $p['COUNT'] = $eo->Occurrence->Iterations;
+            if (isset($to->Occurrence->Iterations)) {
+                $p['COUNT'] = $to->Occurrence->Iterations;
             }
             // Occurrence Conclusion
-            if (isset($eo->Occurrence->Concludes)) {
-                if ($eo->Origin == 'R') {
+            if (isset($to->Occurrence->Concludes)) {
+                if ($to->Origin == 'R') {
                     // adjust for how until day is calculated
-                    $p['UNTIL'] = (clone $eo->Occurrence->Concludes)
+                    $p['UNTIL'] = (clone $to->Occurrence->Concludes)
                                   ->add(new DateInterval('PT24H'))->format('Ymd\THis\Z');
                 }
                 else {
-                    $p['UNTIL'] = $eo->Occurrence->Concludes->format('Ymd\THis\Z');
+                    $p['UNTIL'] = $to->Occurrence->Concludes->format('Ymd\THis\Z');
                 }
             }
             // Occurrence Day Of Week
-            if (count($eo->Occurrence->OnDayOfWeek) > 0) {
-                $p['BYDAY'] = $this->toByDay($eo->Occurrence->OnDayOfWeek);
+            if (count($to->Occurrence->OnDayOfWeek) > 0) {
+                $p['BYDAY'] = $this->toByDay($to->Occurrence->OnDayOfWeek);
             }
             // Occurrence Day Of Month
-            if (count($eo->Occurrence->OnDayOfMonth) > 0) {
-                $p['BYMONTHDAY'] = implode(',', $eo->Occurrence->OnDayOfMonth);
+            if (count($to->Occurrence->OnDayOfMonth) > 0) {
+                $p['BYMONTHDAY'] = implode(',', $to->Occurrence->OnDayOfMonth);
             }
             // Occurrence Day Of Year
-            if (count($eo->Occurrence->OnDayOfYear) > 0) {
-                $p['BYYEARDAY'] = implode(',', $eo->Occurrence->OnDayOfYear);
+            if (count($to->Occurrence->OnDayOfYear) > 0) {
+                $p['BYYEARDAY'] = implode(',', $to->Occurrence->OnDayOfYear);
             }
             // Occurrence Month Of Year
-            if (count($eo->Occurrence->OnMonthOfYear) > 0) {
-                $p['BYMONTH'] = implode(',', $eo->Occurrence->OnMonthOfYear);
+            if (count($to->Occurrence->OnMonthOfYear) > 0) {
+                $p['BYMONTH'] = implode(',', $to->Occurrence->OnMonthOfYear);
             }
             // Occurrence Relative
-            if ($eo->Occurrence->Pattern == 'R') {
-                $p['BYSETPOS'] = implode(',', $eo->Occurrence->OnWeekOfMonth);
+            if ($to->Occurrence->Pattern == 'R') {
+                $p['BYSETPOS'] = implode(',', $to->Occurrence->OnWeekOfMonth);
             }
             // create attribute
             $vo->add('RRULE', $p);
             unset($p);
             // Occurrence Excludes
-            if (count($eo->Occurrence->Excludes) > 0) {
-                foreach ($eo->Occurrence->Excludes as $entry) {
+            if (count($to->Occurrence->Excludes) > 0) {
+                foreach ($to->Occurrence->Excludes as $entry) {
                     if ($entry instanceof \DateTime) {
                         $tz = $entry->getTimeZone()->getName();  
                     }
@@ -1092,13 +941,13 @@ class LocalEventsService {
     }
 
     /**
-     * convert local frequency to event object occurrence precision
+     * convert local frequency to task object occurrence precision
 	 * 
      * @since Release 1.0.0
      * 
 	 * @param sting $frequency - local frequency value
 	 * 
-	 * @return int event object occurrence precision value
+	 * @return int task object occurrence precision value
 	 */
     private function fromFrequency(?string $frequency): string {
 		
@@ -1124,11 +973,11 @@ class LocalEventsService {
 	}
 
     /**
-     * convert event object occurrence precision to local frequency
+     * convert task object occurrence precision to local frequency
 	 * 
      * @since Release 1.0.0
      * 
-	 * @param int $precision - event object occurrence precision value
+	 * @param int $precision - task object occurrence precision value
 	 * 
 	 * @return string local frequency value
 	 */
@@ -1156,13 +1005,13 @@ class LocalEventsService {
 	}
 
     /**
-     * convert local by day to event object days of the week
+     * convert local by day to task object days of the week
 	 * 
      * @since Release 1.0.0
      * 
 	 * @param array $days - local by day values(s)
 	 * 
-	 * @return array event object days of the week values(s)
+	 * @return array task object days of the week values(s)
 	 */
     private function fromByDay(array $days): array {
         
@@ -1187,11 +1036,11 @@ class LocalEventsService {
     }
 
     /**
-     * convert event object days of the week to local by day
+     * convert task object days of the week to local by day
 	 * 
      * @since Release 1.0.0
      * 
-	 * @param array $days - event object days of the week values(s)
+	 * @param array $days - task object days of the week values(s)
 	 * 
 	 * @return string local by day values(s)
 	 */
@@ -1221,13 +1070,72 @@ class LocalEventsService {
     }
 
     /**
-     * convert local class to event object sensitivity
+     * convert local status to task object status
+	 * 
+     * @since Release 1.0.0
+     * 
+	 * @param sting $status - local status value
+	 * 
+	 * @return string task object status value
+	 */
+    private function fromStatus(?string $status): string {
+		
+        // status conversion reference
+		$_tm = array(
+			'NEEDS-ACTION' => 'N',
+			'IN-PROCESS' => 'P',
+			'COMPLETED' => 'C',
+            'CANCELLED' => 'D'
+		);
+        // evaluate if status value exists
+		if (isset($_tm[$status])) {
+			// return converted status value
+			return $_tm[$status];
+		} else {
+            // return default status value
+			return 'N';
+		}
+		
+	}
+
+    /**
+     * convert task object status to local status
+     *  
+     * @since Release 1.0.0
+     * 
+	 * @param string $status - task object status value
+	 * 
+	 * @return string local status value
+	 */
+	private function toStatus(?string $status): string {
+
+        // status conversion reference
+		$_tm = array(
+			'N' => 'NEEDS-ACTION',
+			'P' => 'IN-PROCESS',
+            'W' => 'IN-PROCESS',
+			'C' => 'COMPLETED',
+			'D' => 'CANCELLED'
+		);
+        // evaluate if status value exists
+		if (isset($_tm[$status])) {
+			// return converted status value
+			return $_tm[$status];
+		} else {
+            // return default status value
+			return 'NEEDS-ACTION';
+		}
+
+	}
+
+    /**
+     * convert local class to task object sensitivity
 	 * 
      * @since Release 1.0.0
      * 
 	 * @param sting $level - local class value
 	 * 
-	 * @return int|null event object sensitivity value
+	 * @return int|null task object sensitivity value
 	 */
     private function fromClass(?string $level): int {
 		
@@ -1249,11 +1157,11 @@ class LocalEventsService {
 	}
 
     /**
-     * convert event object sensitivity to local class
+     * convert task object sensitivity to local class
 	 * 
      * @since Release 1.0.0
      * 
-	 * @param int $level - event object sensitivity value
+	 * @param int $level - task object sensitivity value
 	 * 
 	 * @return string|null local class value
 	 */
@@ -1277,131 +1185,13 @@ class LocalEventsService {
 	}
 
     /**
-     * convert local attendee role to event object attendee attendance
-	 * 
-     * @since Release 1.0.0
-     * 
-	 * @param sting $role - local attendee role value
-	 * 
-	 * @return int event object attendee attendance value
-	 */
-    private function fromAttendeeRole(?string $role): string {
-		
-        // role conversion reference
-		$_tm = array(
-			'REQ-PARTICIPANT' => 'R',
-			'OPT-PARTICIPANT' => 'O',
-			'NON-PARTICIPANT' => 'N',
-            'CHAIR' => 'C'
-		);
-        // evaluate if role value exists
-		if (isset($_tm[$role])) {
-			// return converted attendance value
-			return $_tm[$role];
-		} else {
-            // return default attendance value
-			return 'R';
-		}
-		
-	}
-
-    /**
-     * convert event object attendee attendance to local attendee role
-     *  
-     * @since Release 1.0.0
-     * 
-	 * @param string $attendance - event object attendee attendance value
-	 * 
-	 * @return string local attendee role value
-	 */
-	private function toAttendeeRole(?string $attendance): string {
-
-        // attendance conversion reference
-		$_tm = array(
-			'R' => 'REQ-PARTICIPANT',
-			'O' => 'OPT-PARTICIPANT',
-			'N' => 'NON-PARTICIPANT',
-			'C' => 'CHAIR'
-		);
-        // evaluate if attendance value exists
-		if (isset($_tm[$attendance])) {
-			// return converted role value
-			return $_tm[$attendance];
-		} else {
-            // return default role value
-			return 'REQ-PARTICIPANT';
-		}
-
-	}
-
-    /**
-     * convert local attendee status to event object attendee status
-	 * 
-     * @since Release 1.0.0
-     * 
-	 * @param sting $status - local attendee status value
-	 * 
-	 * @return int event object attendee status value
-	 */
-    private function fromAttendeeStatus(?string $status): string {
-		
-        // status conversion reference
-		$_tm = array(
-			'ACCEPTED' => 'A',
-			'DECLINED' => 'D',
-			'TENTATIVE' => 'T',
-            'DELEGATED' => 'R',
-			'NEEDS-ACTION' => 'N'
-		);
-        // evaluate if status value exists
-		if (isset($_tm[$status])) {
-			// return converted status value
-			return $_tm[$status];
-		} else {
-            // return default status value
-			return 'N';
-		}
-		
-	}
-
-    /**
-     * convert event object attendee status to local attendee status
-     *  
-     * @since Release 1.0.0
-     * 
-	 * @param string $status - event object attendee status value
-	 * 
-	 * @return string local attendee status value
-	 */
-	private function toAttendeeStatus(?string $status): string {
-
-        // status conversion reference
-		$_tm = array(
-			'A' => 'ACCEPTED',
-			'D' => 'DECLINED',
-			'T' => 'TENTATIVE',
-			'R' => 'DELEGATED',
-			'N' => 'NEEDS-ACTION'
-		);
-        // evaluate if status value exists
-		if (isset($_tm[$status])) {
-			// return converted status value
-			return $_tm[$status];
-		} else {
-            // return default status value
-			return 'NEEDS-ACTION';
-		}
-
-	}
-
-    /**
-     * convert local alarm action to event object alarm action type
+     * convert local alarm action to task object alarm action type
 	 * 
      * @since Release 1.0.0
      * 
 	 * @param sting $action - local alarm action value
 	 * 
-	 * @return int event object alarm action type value
+	 * @return int task object alarm action type value
 	 */
     private function fromAlarmAction(?string $action): string {
 		
@@ -1423,11 +1213,11 @@ class LocalEventsService {
 	}
 
     /**
-     * convert event object alarm type to local alram action
+     * convert task object alarm type to local alram action
      *  
      * @since Release 1.0.0
      * 
-	 * @param string $type - event object action type value
+	 * @param string $type - task object action type value
 	 * 
 	 * @return string local alarm action value
 	 */
@@ -1451,13 +1241,13 @@ class LocalEventsService {
 	}
 
     /**
-     * convert local duration period to event object date interval
+     * convert local duration period to task object date interval
 	 * 
      * @since Release 1.0.0
      * 
 	 * @param sting $period - local duration period value
 	 * 
-	 * @return DateInterval event object date interval object
+	 * @return DateInterval task object date interval object
 	 */
     private function fromDurationPeriod(string $period): DateInterval {
 		
@@ -1477,11 +1267,11 @@ class LocalEventsService {
 	}
 
     /**
-     * convert event object date interval to local duration period
+     * convert task object date interval to local duration period
 	 * 
      * @since Release 1.0.0
      * 
-	 * @param DateInterval $period - event object date interval object
+	 * @param DateInterval $period - task object date interval object
 	 * 
 	 * @return string local duration period value
 	 */

@@ -1,0 +1,70 @@
+<Task>
+   <ItemId/>
+   <ParentFolderId/>
+   <DateTimeCreated/>
+   <DateTimeReceived/>
+   <DateTimeSent/>
+   <LastModifiedTime/>
+
+   <Subject/>
+   <Body/>
+   <Categories/>
+   <Sensitivity/>
+   <Importance/>
+
+   <StartDate/>
+   <DueDate/>
+   <CompleteDate/>
+   <Status/>
+   <StatusDescription/>
+   <PercentComplete/>
+   
+   <AssignedTime/>
+   <ActualWork/>
+   <TotalWork/>
+   
+   <ReminderDueBy/>
+   <ReminderIsSet/>
+   <ReminderMinutesBeforeStart/>
+
+   <Recurrence/>
+
+   <HasAttachments/>
+   <Attachments/>
+   <ExtendedProperty/>
+
+   <ResponseObjects/>
+   <IsComplete/>
+   <IsRecurring/>
+   <Contacts/>
+
+   <MimeContent/>
+   <ItemClass/>
+   <Size/>
+   <InReplyTo/>
+   <IsSubmitted/>
+   <IsDraft/>
+   <IsFromMe/>
+   <IsResend/>
+   <IsUnmodified/>
+   <InternetMessageHeaders/>
+   <DisplayCc/>
+   <DisplayTo/>
+   <Culture/>
+   <BillingInformation/>
+   <ChangeCount/>
+   <Companies/>
+   <DelegationState/>
+   <Delegator/>
+   <IsAssignmentEditable/>
+   <IsTeamTask/>
+   <Mileage/>
+   <Owner/>
+   <EffectiveRights/>
+   <LastModifiedName/>
+   <IsAssociated/>
+   <WebClientReadFormQueryString/>
+   <WebClientEditFormQueryString/>
+   <ConversationId/>
+   <UniqueBody/>
+</Task>

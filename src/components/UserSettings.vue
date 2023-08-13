@@ -201,7 +201,7 @@
 					<div class="settings-hint">
 						{{ t('integration_ews', 'Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.') }}
 					</div>
-					<div v-if="state.system_calendar == 1">
+					<div v-if="state.system_events == 1">
 						<ul v-if="availableRemoteEventCollections.length > 0">
 							<li v-for="ritem in availableRemoteEventCollections" :key="ritem.id" class="ews-collectionlist-item">
 								<CalendarIcon />
@@ -268,6 +268,85 @@
 							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="c" name="events_actions_remote">Create</NcCheckboxRadioSwitch>
 							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="u" name="events_actions_remote">Update</NcCheckboxRadioSwitch>
 							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="d" name="events_actions_remote">Delete</NcCheckboxRadioSwitch>
+						</div>
+					</div>
+					<div v-else>
+						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
+					</div>
+					<br />
+				</div>
+				<div class="ews-correlations-tasks">
+					<h3>{{ t('integration_ews', 'Tasks') }}</h3>
+					<div class="settings-hint">
+						{{ t('integration_ews', 'Select the remote Task(s) folder you wish to synchronize by pressing the link button next to the folder name and selecting the local calendar to synchronize to.') }}
+					</div>
+					<div v-if="state.system_tasks == 1">
+						<ul v-if="availableRemoteTaskCollections.length > 0">
+							<li v-for="ritem in availableRemoteTaskCollections" :key="ritem.id" class="ews-collectionlist-item">
+								<CalendarIcon />
+								<label>
+									{{ ritem.name }} ({{ ritem.count }} Tasks)
+								</label>
+								<NcActions>
+									<template #icon>
+										<LinkIcon />
+									</template>
+									<NcActionButton @click="clearTaskCorrelation(ritem.id)">
+										<template #icon>
+											<CloseIcon />
+										</template>
+										Clear
+									</NcActionButton>
+									<NcActionRadio v-for="litem in availableLocalTaskCollections"
+										:key="litem.id"
+										:disabled="establishedTaskCorrelationDisable(ritem.id, litem.id)"
+										:checked="establishedTaskCorrelationSelect(ritem.id, litem.id)"
+										@change="changeTaskCorrelation(ritem.id, litem.id)">
+										{{ litem.name }}
+									</NcActionRadio>
+								</NcActions>
+							</li>
+						</ul>
+						<div v-else-if="availableRemoteTaskCollections.length == 0">
+							{{ t('integration_ews', 'No tasks collections where found in the connected account.') }}
+						</div>
+						<div v-else>
+							{{ t('integration_ews', 'Loading tasks collections from the connected account.') }}
+						</div>
+						<br>
+						<div>
+							<label>
+								{{ t('integration_ews', 'Synchronize ') }}
+							</label>
+							<NcSelect v-model="state.tasks_harmonize"
+								:reduce="item => item.id"
+								:options="[{label: 'Never', id: '-1'}, {label: 'Manually', id: '0'}, {label: 'Automatically', id: '5'}]" />
+							<label>
+								{{ t('integration_ews', 'and if there is a conflict') }}
+							</label>
+							<NcSelect v-model="state.tasks_prevalence"
+								:reduce="item => item.id"
+								:options="[{label: 'Remote', id: 'R'}, {label: 'Local', id: 'L'}, {label: 'Chronology', id: 'C'}]" />
+							<label>
+								{{ t('integration_ews', 'prevails') }}
+							</label>
+						</div>
+						<br />
+						<div v-if="false" style="display: flex">
+							<label>
+								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
+							</label>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="c" name="tasks_actions_local">Create</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="u" name="tasks_actions_local">Update</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="d" name="tasks_actions_local">Delete</NcCheckboxRadioSwitch>
+						</div>
+						<div v-if="false" style="display: flex">
+							<label>
+								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
+							</label>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="c" name="tasks_actions_remote">Create</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="u" name="tasks_actions_remote">Update</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="d" name="tasks_actions_remote">Delete</NcCheckboxRadioSwitch>
 						</div>
 					</div>
 					<div v-else>
@@ -350,14 +429,18 @@ export default {
 		return {
 			readonly: true,
 			state: loadState('integration_ews', 'user-configuration'),
-			// calendars
-			availableRemoteEventCollections: [],
-			availableLocalEventCollections: [],
-			establishedEventCorrelations: [],
 			// contacts
 			availableRemoteContactCollections: [],
 			availableLocalContactCollections: [],
 			establishedContactCorrelations: [],
+			// calendars
+			availableRemoteEventCollections: [],
+			availableLocalEventCollections: [],
+			establishedEventCorrelations: [],
+			// tasks
+			availableRemoteTaskCollections: [],
+			availableLocalTaskCollections: [],
+			establishedTaskCorrelations: [],
 
 			configureManually: false,
 			configureMail: false,
@@ -422,14 +505,18 @@ export default {
 					this.state.account_id = ''
 					this.state.account_secret = ''
 					this.state.account_connected = ''
-					// events
-					this.availableRemoteEventCollections = []
-					this.availableLocalEventCollections = []
-					this.establishedEventCorrelations = []
 					// contacts
 					this.availableRemoteContactCollections = []
 					this.availableLocalContactCollections = []
 					this.establishedContactCorrelations = []
+					// events
+					this.availableRemoteEventCollections = []
+					this.availableLocalEventCollections = []
+					this.establishedEventCorrelations = []
+					// tasks
+					this.availableRemoteTaskCollections = []
+					this.availableLocalTaskCollections = []
+					this.establishedTaskCorrelations = []
 				})
 				.catch((error) => {
 					showError(
@@ -450,6 +537,10 @@ export default {
 				events_harmonize: this.state.events_harmonize,
 				events_actions_local: this.state.events_actions_local,
 				events_actions_remote: this.state.events_actions_remote,
+				tasks_prevalence: this.state.tasks_prevalence,
+				tasks_harmonize: this.state.tasks_harmonize,
+				tasks_actions_local: this.state.tasks_actions_local,
+				tasks_actions_remote: this.state.tasks_actions_remote,
 			})
 			this.depositCorrelations()
 		},
@@ -489,13 +580,17 @@ export default {
 			const uri = generateUrl('/apps/integration_ews/fetch-remote-collections')
 			axios.get(uri)
 				.then((response) => {
+					if (response.data.ContactCollections) {
+						this.availableRemoteContactCollections = response.data.ContactCollections
+						showSuccess(('Found ' + this.availableRemoteContactCollections.length + ' Remote Contacts Collections'))
+					}
 					if (response.data.EventCollections) {
 						this.availableRemoteEventCollections = response.data.EventCollections
 						showSuccess(('Found ' + this.availableRemoteEventCollections.length + ' Remote Events Collections'))
 					}
-					if (response.data.ContactCollections) {
-						this.availableRemoteContactCollections = response.data.ContactCollections
-						showSuccess(('Found ' + this.availableRemoteContactCollections.length + ' Remote Contacts Collections'))
+					if (response.data.TaskCollections) {
+						this.availableRemoteTaskCollections = response.data.TaskCollections
+						showSuccess(('Found ' + this.availableRemoteTaskCollections.length + ' Remote Tasks Collections'))
 					}
 				})
 				.catch((error) => {
@@ -511,13 +606,17 @@ export default {
 			const uri = generateUrl('/apps/integration_ews/fetch-local-collections')
 			axios.get(uri)
 				.then((response) => {
+					if (response.data.ContactCollections) {
+						this.availableLocalContactCollections = response.data.ContactCollections
+						showSuccess(('Found ' + this.availableLocalContactCollections.length + ' Local Contacts Collections'))
+					}
 					if (response.data.EventCollections) {
 						this.availableLocalEventCollections = response.data.EventCollections
 						showSuccess(('Found ' + this.availableLocalEventCollections.length + ' Local Events Collections'))
 					}
-					if (response.data.ContactCollections) {
-						this.availableLocalContactCollections = response.data.ContactCollections
-						showSuccess(('Found ' + this.availableLocalContactCollections.length + ' Local Contacts Collections'))
+					if (response.data.TaskCollections) {
+						this.availableLocalTaskCollections = response.data.TaskCollections
+						showSuccess(('Found ' + this.availableLocalTaskCollections.length + ' Local Tasks Collections'))
 					}
 				})
 				.catch((error) => {
@@ -533,13 +632,17 @@ export default {
 			const uri = generateUrl('/apps/integration_ews/fetch-correlations')
 			axios.get(uri)
 				.then((response) => {
+					if (response.data.ContactCorrelations) {
+						this.establishedContactCorrelations = response.data.ContactCorrelations
+						showSuccess(('Found ' + this.establishedContactCorrelations.length + ' Contact Collection Correlations'))
+					}
 					if (response.data.EventCorrelations) {
 						this.establishedEventCorrelations = response.data.EventCorrelations
 						showSuccess(('Found ' + this.establishedEventCorrelations.length + ' Event Collection Correlations'))
 					}
-					if (response.data.ContactCorrelations) {
-						this.establishedContactCorrelations = response.data.ContactCorrelations
-						showSuccess(('Found ' + this.establishedContactCorrelations.length + ' Contact Collection Correlations'))
+					if (response.data.TaskCorrelations) {
+						this.establishedTaskCorrelations = response.data.TaskCorrelations
+						showSuccess(('Found ' + this.establishedTaskCorrelations.length + ' Task Collection Correlations'))
 					}
 				})
 				.catch((error) => {
@@ -556,17 +659,22 @@ export default {
 			const data = {
 				ContactCorrelations: this.establishedContactCorrelations,
 				EventCorrelations: this.establishedEventCorrelations,
+				TaskCorrelations: this.establishedTaskCorrelations,
 			}
 			axios.put(uri, data)
 				.then((response) => {
 					showSuccess('Saved correlations')
+					if (response.data.ContactCorrelations) {
+						this.establishedContactCorrelations = response.data.ContactCorrelations
+						showSuccess('Found ' + this.establishedContactCorrelations.length + ' Contact Collection Correlations')
+					}
 					if (response.data.EventCorrelations) {
 						this.establishedEventCorrelations = response.data.EventCorrelations
 						showSuccess('Found ' + this.establishedEventCorrelations.length + ' Event Collection Correlations')
 					}
-					if (response.data.ContactCorrelations) {
-						this.establishedContactCorrelations = response.data.ContactCorrelations
-						showSuccess('Found ' + this.establishedContactCorrelations.length + ' Contact Collection Correlations')
+					if (response.data.TaskCorrelations) {
+						this.establishedTaskCorrelations = response.data.TaskCorrelations
+						showSuccess('Found ' + this.establishedTaskCorrelations.length + ' Task Collection Correlations')
 					}
 				})
 				.catch((error) => {
@@ -633,6 +741,16 @@ export default {
 				this.establishedEventCorrelations[cid].action = 'U'
 			}
 		},
+		changeTaskCorrelation(roid, loid) {
+			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
+
+			if (cid === -1) {
+				this.establishedTaskCorrelations.push({ id: null, roid: roid, loid: loid, type: 'TC', action: 'C' })
+			} else {
+				this.establishedTaskCorrelations[cid].loid = loid
+				this.establishedTaskCorrelations[cid].action = 'U'
+			}
+		},
 		clearContactCorrelation(roid) {
 			const cid = this.establishedContactCorrelations.findIndex(i => i.roid == roid)
 
@@ -650,6 +768,16 @@ export default {
 				this.establishedEventCorrelations[cid].roid = null
 				this.establishedEventCorrelations[cid].loid = null
 				this.establishedEventCorrelations[cid].action = 'D'
+				// this.establishedEventCorrelations.splice(cid, 1)
+			}
+		},
+		clearTaskCorrelation(roid) {
+			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
+
+			if (cid > -1) {
+				this.establishedTaskCorrelations[cid].roid = null
+				this.establishedTaskCorrelations[cid].loid = null
+				this.establishedTaskCorrelations[cid].action = 'D'
 				// this.establishedEventCorrelations.splice(cid, 1)
 			}
 		},
@@ -715,6 +843,46 @@ export default {
 		},
 		establishedEventCorrelationSelect(roid, loid) {
 			const citem = this.establishedEventCorrelations.find(i => i.loid == loid)
+
+			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
+			// console.log('R Item ID ' + roid)
+			// console.log('L Item ID ' + loid)
+
+			if (typeof citem !== 'undefined') {
+				if (citem.roid === roid) {
+					// console.log('Logic True - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+					return true
+				} else {
+					// console.log('Logic False - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+					return false
+				}
+			} else {
+				// console.log('Logic undefined')
+				return false
+			}
+		},
+		establishedTaskCorrelationDisable(roid, loid) {
+			const citem = this.establishedTaskCorrelations.find(i => i.loid == loid)
+
+			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
+			// console.log('R Item ID ' + roid)
+			// console.log('L Item ID ' + loid)
+
+			if (typeof citem !== 'undefined') {
+				if (citem.roid !== roid) {
+					// console.log('Logic True - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+					return true
+				} else {
+					// console.log('Logic False - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+					return false
+				}
+			} else {
+				// console.log('Logic undefined')
+				return false
+			}
+		},
+		establishedTaskCorrelationSelect(roid, loid) {
+			const citem = this.establishedTaskCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)

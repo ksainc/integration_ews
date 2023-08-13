@@ -147,6 +147,29 @@ class Notifier implements INotifier {
 
 			return $notification;
 
+		case 'tasks_harmonized':
+			$p = $notification->getSubjectParameters();
+			$content = "The following changes where performed \n";
+			if ($p['LocalCreated'] > 0 || $p['RemoteCreated'] > 0) {
+				$content .= "\n Created: ";
+				if ($p['LocalCreated'] > 0) { $content .= $p['LocalCreated'] . " - Local "; }
+				if ($p['RemoteCreated'] > 0) { $content .= $p['RemoteCreated'] . " - Remote "; }
+			}
+			if ($p['LocalUpdated'] > 0 || $p['RemoteUpdated'] > 0) {
+				$content .= "\n Updated: ";
+				if ($p['LocalUpdated'] > 0) { $content .= $p['LocalUpdated'] . " - Local "; }
+				if ($p['RemoteUpdated'] > 0) { $content .= $p['RemoteUpdated'] . " - Remote "; }
+			}
+			if ($p['LocalDeleted'] > 0 || $p['RemoteDeleted'] > 0) {
+				$content .= "\n Deleted: ";
+				if ($p['LocalDeleted'] > 0) { $content .= $p['LocalDeleted'] . " - Local "; }
+				if ($p['RemoteDeleted'] > 0) { $content .= $p['RemoteDeleted'] . " - Remote "; }
+			}
+			
+			$notification->setParsedSubject("Tasks Syncronized \n");
+			$notification->setRichMessage($content);
+
+			return $notification;
 		default:
 			// Unknown subject => Unknown notification => throw
 			throw new InvalidArgumentException();

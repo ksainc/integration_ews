@@ -26,24 +26,20 @@
 namespace OCA\EWS\Objects;
 
 use DateTime;
-use DateTimeZone;
 
-class ConfigurationObject {
+class TaskOccurrenceObject {
+    public ?string $Pattern = null;         // Pattern - A - Absolute / R - Relative
+	public ?string $Precision = null;       // Time Scale - D - Daily / W - Weekly / M - Monthly / Y - Yearly
+    public ?string $Interval = null;        // Time Interval - Every 2 Days / Every 4 Weeks / Every 1 Year
+    public ?string $Iterations = null;      // Number of recurrence
+    public ?DateTime $Concludes = null;     // Date to stop recurrence
+    public array $Excludes = [];
+    public array $OnDayOfWeek = [];
+    public array $OnDayOfMonth = [];
+    public array $OnDayOfYear = [];
+    public array $OnWeekOfMonth = [];
+    public array $OnWeekOfYear = [];
+    public array $OnMonthOfYear = [];
 
-	public ?DateTimeZone $SystemTimeZone = null;
-	public string $UserId = '';						// nextcloud user id
-	public ?DateTimeZone $UserTimeZone = null; 		// nextcloud user timezone
-	public int $ContactsHarmonize = -1;				// contacts harmonize
-	public string $ContactsPrevalence = '';			// contacts prevalence
-	public string $ContactsPresentation = '';
-	public int $EventsHarmonize = -1;				// events harmonize
-	public string $EventsPrevalence = '';			// events prevalence
-	public int $TasksHarmonize = -1;				// tasks harmonize
-	public string $TasksPrevalence = '';			// tasks prevalence
-	public ?DateTimeZone $EventsTimezone = null;
-	public string $AccountProvider = '';
-	public string $AccountId = '';
-	public string $AccountProtocol = '';
-	public string $AccountConnected = '';
-	
+    public function __construct() {}
 }

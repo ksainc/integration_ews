@@ -10863,14 +10863,18 @@ __webpack_require__.r(__webpack_exports__);
     return {
       readonly: true,
       state: (0,_nextcloud_initial_state__WEBPACK_IMPORTED_MODULE_2__.loadState)('integration_ews', 'user-configuration'),
-      // calendars
-      availableRemoteEventCollections: [],
-      availableLocalEventCollections: [],
-      establishedEventCorrelations: [],
       // contacts
       availableRemoteContactCollections: [],
       availableLocalContactCollections: [],
       establishedContactCorrelations: [],
+      // calendars
+      availableRemoteEventCollections: [],
+      availableLocalEventCollections: [],
+      establishedEventCorrelations: [],
+      // tasks
+      availableRemoteTaskCollections: [],
+      availableLocalTaskCollections: [],
+      establishedTaskCorrelations: [],
       configureManually: false,
       configureMail: false
     };
@@ -10925,14 +10929,18 @@ __webpack_require__.r(__webpack_exports__);
         _this2.state.account_id = '';
         _this2.state.account_secret = '';
         _this2.state.account_connected = '';
-        // events
-        _this2.availableRemoteEventCollections = [];
-        _this2.availableLocalEventCollections = [];
-        _this2.establishedEventCorrelations = [];
         // contacts
         _this2.availableRemoteContactCollections = [];
         _this2.availableLocalContactCollections = [];
         _this2.establishedContactCorrelations = [];
+        // events
+        _this2.availableRemoteEventCollections = [];
+        _this2.availableLocalEventCollections = [];
+        _this2.establishedEventCorrelations = [];
+        // tasks
+        _this2.availableRemoteTaskCollections = [];
+        _this2.availableLocalTaskCollections = [];
+        _this2.establishedTaskCorrelations = [];
       }).catch(function (error) {
         var _error$response2;
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to disconnect from EWS account') + ': ' + ((_error$response2 = error.response) === null || _error$response2 === void 0 || (_error$response2 = _error$response2.request) === null || _error$response2 === void 0 ? void 0 : _error$response2.responseText));
@@ -10947,7 +10955,11 @@ __webpack_require__.r(__webpack_exports__);
         events_prevalence: this.state.events_prevalence,
         events_harmonize: this.state.events_harmonize,
         events_actions_local: this.state.events_actions_local,
-        events_actions_remote: this.state.events_actions_remote
+        events_actions_remote: this.state.events_actions_remote,
+        tasks_prevalence: this.state.tasks_prevalence,
+        tasks_harmonize: this.state.tasks_harmonize,
+        tasks_actions_local: this.state.tasks_actions_local,
+        tasks_actions_remote: this.state.tasks_actions_remote
       });
       this.depositCorrelations();
     },
@@ -10980,13 +10992,17 @@ __webpack_require__.r(__webpack_exports__);
       var _this4 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-remote-collections');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
+        if (response.data.ContactCollections) {
+          _this4.availableRemoteContactCollections = response.data.ContactCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteContactCollections.length + ' Remote Contacts Collections');
+        }
         if (response.data.EventCollections) {
           _this4.availableRemoteEventCollections = response.data.EventCollections;
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteEventCollections.length + ' Remote Events Collections');
         }
-        if (response.data.ContactCollections) {
-          _this4.availableRemoteContactCollections = response.data.ContactCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteContactCollections.length + ' Remote Contacts Collections');
+        if (response.data.TaskCollections) {
+          _this4.availableRemoteTaskCollections = response.data.TaskCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteTaskCollections.length + ' Remote Tasks Collections');
         }
       }).catch(function (error) {
         var _error$response5;
@@ -10997,13 +11013,17 @@ __webpack_require__.r(__webpack_exports__);
       var _this5 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-local-collections');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
+        if (response.data.ContactCollections) {
+          _this5.availableLocalContactCollections = response.data.ContactCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalContactCollections.length + ' Local Contacts Collections');
+        }
         if (response.data.EventCollections) {
           _this5.availableLocalEventCollections = response.data.EventCollections;
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalEventCollections.length + ' Local Events Collections');
         }
-        if (response.data.ContactCollections) {
-          _this5.availableLocalContactCollections = response.data.ContactCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalContactCollections.length + ' Local Contacts Collections');
+        if (response.data.TaskCollections) {
+          _this5.availableLocalTaskCollections = response.data.TaskCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalTaskCollections.length + ' Local Tasks Collections');
         }
       }).catch(function (error) {
         var _error$response6;
@@ -11014,13 +11034,17 @@ __webpack_require__.r(__webpack_exports__);
       var _this6 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-correlations');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
+        if (response.data.ContactCorrelations) {
+          _this6.establishedContactCorrelations = response.data.ContactCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedContactCorrelations.length + ' Contact Collection Correlations');
+        }
         if (response.data.EventCorrelations) {
           _this6.establishedEventCorrelations = response.data.EventCorrelations;
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedEventCorrelations.length + ' Event Collection Correlations');
         }
-        if (response.data.ContactCorrelations) {
-          _this6.establishedContactCorrelations = response.data.ContactCorrelations;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedContactCorrelations.length + ' Contact Collection Correlations');
+        if (response.data.TaskCorrelations) {
+          _this6.establishedTaskCorrelations = response.data.TaskCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedTaskCorrelations.length + ' Task Collection Correlations');
         }
       }).catch(function (error) {
         var _error$response7;
@@ -11032,17 +11056,22 @@ __webpack_require__.r(__webpack_exports__);
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/deposit-correlations');
       var data = {
         ContactCorrelations: this.establishedContactCorrelations,
-        EventCorrelations: this.establishedEventCorrelations
+        EventCorrelations: this.establishedEventCorrelations,
+        TaskCorrelations: this.establishedTaskCorrelations
       };
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].put(uri, data).then(function (response) {
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Saved correlations');
+        if (response.data.ContactCorrelations) {
+          _this7.establishedContactCorrelations = response.data.ContactCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this7.establishedContactCorrelations.length + ' Contact Collection Correlations');
+        }
         if (response.data.EventCorrelations) {
           _this7.establishedEventCorrelations = response.data.EventCorrelations;
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this7.establishedEventCorrelations.length + ' Event Collection Correlations');
         }
-        if (response.data.ContactCorrelations) {
-          _this7.establishedContactCorrelations = response.data.ContactCorrelations;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this7.establishedContactCorrelations.length + ' Contact Collection Correlations');
+        if (response.data.TaskCorrelations) {
+          _this7.establishedTaskCorrelations = response.data.TaskCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this7.establishedTaskCorrelations.length + ' Task Collection Correlations');
         }
       }).catch(function (error) {
         var _error$response8;
@@ -11105,6 +11134,23 @@ __webpack_require__.r(__webpack_exports__);
         this.establishedEventCorrelations[cid].action = 'U';
       }
     },
+    changeTaskCorrelation: function changeTaskCorrelation(roid, loid) {
+      var cid = this.establishedTaskCorrelations.findIndex(function (i) {
+        return i.roid == roid;
+      });
+      if (cid === -1) {
+        this.establishedTaskCorrelations.push({
+          id: null,
+          roid: roid,
+          loid: loid,
+          type: 'TC',
+          action: 'C'
+        });
+      } else {
+        this.establishedTaskCorrelations[cid].loid = loid;
+        this.establishedTaskCorrelations[cid].action = 'U';
+      }
+    },
     clearContactCorrelation: function clearContactCorrelation(roid) {
       var cid = this.establishedContactCorrelations.findIndex(function (i) {
         return i.roid == roid;
@@ -11124,6 +11170,17 @@ __webpack_require__.r(__webpack_exports__);
         this.establishedEventCorrelations[cid].roid = null;
         this.establishedEventCorrelations[cid].loid = null;
         this.establishedEventCorrelations[cid].action = 'D';
+        // this.establishedEventCorrelations.splice(cid, 1)
+      }
+    },
+    clearTaskCorrelation: function clearTaskCorrelation(roid) {
+      var cid = this.establishedTaskCorrelations.findIndex(function (i) {
+        return i.roid == roid;
+      });
+      if (cid > -1) {
+        this.establishedTaskCorrelations[cid].roid = null;
+        this.establishedTaskCorrelations[cid].loid = null;
+        this.establishedTaskCorrelations[cid].action = 'D';
         // this.establishedEventCorrelations.splice(cid, 1)
       }
     },
@@ -11195,6 +11252,50 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedEventCorrelationSelect: function establishedEventCorrelationSelect(roid, loid) {
       var citem = this.establishedEventCorrelations.find(function (i) {
+        return i.loid == loid;
+      });
+
+      // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
+      // console.log('R Item ID ' + roid)
+      // console.log('L Item ID ' + loid)
+
+      if (typeof citem !== 'undefined') {
+        if (citem.roid === roid) {
+          // console.log('Logic True - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+          return true;
+        } else {
+          // console.log('Logic False - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+          return false;
+        }
+      } else {
+        // console.log('Logic undefined')
+        return false;
+      }
+    },
+    establishedTaskCorrelationDisable: function establishedTaskCorrelationDisable(roid, loid) {
+      var citem = this.establishedTaskCorrelations.find(function (i) {
+        return i.loid == loid;
+      });
+
+      // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
+      // console.log('R Item ID ' + roid)
+      // console.log('L Item ID ' + loid)
+
+      if (typeof citem !== 'undefined') {
+        if (citem.roid !== roid) {
+          // console.log('Logic True - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+          return true;
+        } else {
+          // console.log('Logic False - C Item RID: ' + citem.roid + ' R Item ID: ' + roid)
+          return false;
+        }
+      } else {
+        // console.log('Logic undefined')
+        return false;
+      }
+    },
+    establishedTaskCorrelationSelect: function establishedTaskCorrelationSelect(roid, loid) {
+      var citem = this.establishedTaskCorrelations.find(function (i) {
         return i.loid == loid;
       });
 
@@ -11524,7 +11625,7 @@ var render = function render() {
     staticClass: "ews-correlations-events"
   }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Calendars")))]), _vm._v(" "), _c("div", {
     staticClass: "settings-hint"
-  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.state.system_calendar == 1 ? _c("div", [_vm.availableRemoteEventCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteEventCollections, function (ritem) {
+  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.state.system_events == 1 ? _c("div", [_vm.availableRemoteEventCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteEventCollections, function (ritem) {
     return _c("li", {
       key: ritem.id,
       staticClass: "ews-collectionlist-item"
@@ -11608,6 +11709,95 @@ var render = function render() {
         _vm.$set(_vm.state, "events_prevalence", $$v);
       },
       expression: "state.events_prevalence"
+    }
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "prevails")) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "), _c("br"), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br")]), _vm._v(" "), _c("div", {
+    staticClass: "ews-correlations-tasks"
+  }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Tasks")))]), _vm._v(" "), _c("div", {
+    staticClass: "settings-hint"
+  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Select the remote Task(s) folder you wish to synchronize by pressing the link button next to the folder name and selecting the local calendar to synchronize to.")) + "\n\t\t\t\t")]), _vm._v(" "), _vm.state.system_tasks == 1 ? _c("div", [_vm.availableRemoteTaskCollections.length > 0 ? _c("ul", _vm._l(_vm.availableRemoteTaskCollections, function (ritem) {
+    return _c("li", {
+      key: ritem.id,
+      staticClass: "ews-collectionlist-item"
+    }, [_c("CalendarIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(ritem.name) + " (" + _vm._s(ritem.count) + " Tasks)\n\t\t\t\t\t\t\t")]), _vm._v(" "), _c("NcActions", {
+      scopedSlots: _vm._u([{
+        key: "icon",
+        fn: function fn() {
+          return [_c("LinkIcon")];
+        },
+        proxy: true
+      }], null, true)
+    }, [_vm._v(" "), _c("NcActionButton", {
+      on: {
+        click: function click($event) {
+          return _vm.clearTaskCorrelation(ritem.id);
+        }
+      },
+      scopedSlots: _vm._u([{
+        key: "icon",
+        fn: function fn() {
+          return [_c("CloseIcon")];
+        },
+        proxy: true
+      }], null, true)
+    }, [_vm._v("\n\t\t\t\t\t\t\t\t\tClear\n\t\t\t\t\t\t\t\t")]), _vm._v(" "), _vm._l(_vm.availableLocalTaskCollections, function (litem) {
+      return _c("NcActionRadio", {
+        key: litem.id,
+        attrs: {
+          disabled: _vm.establishedTaskCorrelationDisable(ritem.id, litem.id),
+          checked: _vm.establishedTaskCorrelationSelect(ritem.id, litem.id)
+        },
+        on: {
+          change: function change($event) {
+            return _vm.changeTaskCorrelation(ritem.id, litem.id);
+          }
+        }
+      }, [_vm._v("\n\t\t\t\t\t\t\t\t\t" + _vm._s(litem.name) + "\n\t\t\t\t\t\t\t\t")]);
+    })], 2)], 1);
+  }), 0) : _vm.availableRemoteTaskCollections.length == 0 ? _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No tasks collections where found in the connected account.")) + "\n\t\t\t\t\t")]) : _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Loading tasks collections from the connected account.")) + "\n\t\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronize ")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+    attrs: {
+      reduce: function reduce(item) {
+        return item.id;
+      },
+      options: [{
+        label: "Never",
+        id: "-1"
+      }, {
+        label: "Manually",
+        id: "0"
+      }, {
+        label: "Automatically",
+        id: "5"
+      }]
+    },
+    model: {
+      value: _vm.state.tasks_harmonize,
+      callback: function callback($$v) {
+        _vm.$set(_vm.state, "tasks_harmonize", $$v);
+      },
+      expression: "state.tasks_harmonize"
+    }
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "and if there is a conflict")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+    attrs: {
+      reduce: function reduce(item) {
+        return item.id;
+      },
+      options: [{
+        label: "Remote",
+        id: "R"
+      }, {
+        label: "Local",
+        id: "L"
+      }, {
+        label: "Chronology",
+        id: "C"
+      }]
+    },
+    model: {
+      value: _vm.state.tasks_prevalence,
+      callback: function callback($$v) {
+        _vm.$set(_vm.state, "tasks_prevalence", $$v);
+      },
+      expression: "state.tasks_prevalence"
     }
   }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "prevails")) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "), _c("br"), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c("div", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("br")]), _vm._v(" "), _c("div", {
     staticClass: "ews-actions"

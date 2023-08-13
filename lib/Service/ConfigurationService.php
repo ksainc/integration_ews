@@ -66,6 +66,8 @@ class ConfigurationService {
 		'events_harmonize' => '5',
 		'events_prevalence' => 'R',
 		'events_timezone' => '',
+		'tasks_harmonize' => '5',
+		'tasks_prevalence' => 'R',
 	];
 
 	/** @var LoggerInterface */
@@ -152,8 +154,9 @@ class ConfigurationService {
 			$parameters['user_id'] = $uid;
 			$parameters['user_timezone'] = $this->_ds->getUserValue($uid, 'calendar', 'timezone');
 			$parameters['system_timezone'] = $this->_ds->getUserValue($uid, 'core', 'timezone');
-			$parameters['system_calendar'] = $this->isCalendarAppAvailable();
 			$parameters['system_contacts'] = $this->isContactsAppAvailable();
+			$parameters['system_events'] = $this->isCalendarAppAvailable();
+			$parameters['system_tasks'] = $this->isTasksAppAvailable();
 		}
 		// retrieve system configuration values
 		foreach ($keys as $entry) {
@@ -450,6 +453,12 @@ class ConfigurationService {
 						}
 					}
 					unset($tz);
+					break;
+				case 'tasks_harmonize':
+					$o->TasksHarmonize = $value;
+					break;
+				case 'tasks_prevalence':
+					$o->TasksPrevalence = $value;
 					break;
 				case 'account_provider':
 					$o->AccountProvider = $value;
@@ -846,6 +855,27 @@ class ConfigurationService {
 
 		// retrieve calendar app status
 		$status = $this->_ds->getAppValue('calendar', 'enabled');
+		// evaluate status
+		if ($status == 'yes') {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * retrieve task app status
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return bool
+	 */
+	public function isTasksAppAvailable(): bool {
+
+		// retrieve calendar app status
+		$status = $this->_ds->getAppValue('tasks', 'enabled');
 		// evaluate status
 		if ($status == 'yes') {
 			return true;

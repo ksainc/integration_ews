@@ -77,7 +77,15 @@ try {
 	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
-	$HarmonizationThreadService = \OC::$server->get(\OCA\EWS\Service\HarmonizationThreadService::class);
+
+	// execute retrieve local collections harmonization
+	//$test = $CoreService->fetchLocalCollections($uid);
+
+	// execute retrieve remote collections harmonization
+	//$test = $CoreService->fetchRemoteCollections($uid);
+
+	// execute retrieve correlations harmonization
+	//$test = $CoreService->fetchCorrelations($uid);
 
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');

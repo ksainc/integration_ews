@@ -41,10 +41,13 @@ use OCA\EWS\Service\CoreService;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
 use OCA\EWS\Service\EventsService;
+use OCA\EWS\Service\TasksService;
 use OCA\EWS\Service\Local\LocalContactsService;
 use OCA\EWS\Service\Local\LocalEventsService;
+use OCA\EWS\Service\Local\LocalTasksService;
 use OCA\EWS\Service\Remote\RemoteContactsService;
 use OCA\EWS\Service\Remote\RemoteEventsService;
+use OCA\EWS\Service\Remote\RemoteTasksService;
 use OCA\EWS\Service\Remote\RemoteCommonService;
 use OCA\EWS\Tasks\HarmonizationLauncher;
 
@@ -79,6 +82,10 @@ class HarmonizationService {
 	 */
 	private $LocalEventsService;
 	/**
+	 * @var LocalTasksService
+	 */
+	private $LocalTasksService;
+	/**
 	 * @var RemoteContactsService
 	 */
 	private $RemoteContactsService;
@@ -86,6 +93,10 @@ class HarmonizationService {
 	 * @var RemoteEventsService
 	 */
 	private $RemoteEventsService;
+	/**
+	 * @var RemoteTasksService
+	 */
+	private $RemoteTasksService;
 	/**
 	 * @var CardDavBackend
 	 */
@@ -108,11 +119,14 @@ class HarmonizationService {
 								CorrelationsService $CorrelationsService,
 								LocalContactsService $LocalContactsService,
 								LocalEventsService $LocalEventsService,
+								LocalTasksService $LocalTasksService,
 								RemoteContactsService $RemoteContactsService,
 								RemoteEventsService $RemoteEventsService,
+								RemoteTasksService $RemoteTasksService,
 								RemoteCommonService $RemoteCommonService,
 								ContactsService $ContactsService,
 								EventsService $EventsService,
+								TasksService $TasksService,
 								CardDavBackend $LocalContactsStore,
 								CalDavBackend $LocalEventsStore) {
 		$this->logger = $logger;
@@ -121,11 +135,14 @@ class HarmonizationService {
 		$this->CorrelationsService = $CorrelationsService;
 		$this->LocalContactsService = $LocalContactsService;
 		$this->LocalEventsService = $LocalEventsService;
+		$this->LocalTasksService = $LocalTasksService;
 		$this->RemoteContactsService = $RemoteContactsService;
 		$this->RemoteEventsService = $RemoteEventsService;
+		$this->RemoteTasksService = $RemoteTasksService;
 		$this->RemoteCommonService = $RemoteCommonService;
 		$this->ContactsService = $ContactsService;
 		$this->EventsService = $EventsService;
+		$this->TasksService = $TasksService;
 		$this->LocalContactsStore = $LocalContactsStore;
 		$this->LocalEventsStore = $LocalEventsStore;
 		$this->ActionManager = $ActionManager;
@@ -208,6 +225,28 @@ class HarmonizationService {
 					} while ($statistics->total() > 0);
 				}
 			}
+			// tasks harmonization
+			if ($this->ConfigurationService->isTasksAppAvailable() &&
+				(($mode === 'S' && $Configuration->TasksHarmonize > 0) ||
+				($mode === 'M' && $Configuration->TasksHarmonize > -1))) {
+				$this->TasksService->RemoteStore = $RemoteStore;
+				// retrieve list of correlations
+				$correlations = $this->CorrelationsService->findByType($uid, 'TC');
+				// iterate through correlation items
+				foreach ($correlations as $correlation) {
+					// execute tasks harmonization loop
+					do {
+						// update harmonization heart beat
+						$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+						// harmonize tasks collections
+						$statistics = $this->TasksService->performHarmonization($correlation, $Configuration);
+						// evaluate if anything was done and publish notice if needed
+						if ($statistics->total() > 0) {
+							$this->CoreService->publishNotice($uid,'tasks_harmonized', (array)$statistics);
+						}
+					} while ($statistics->total() > 0);
+				}
+			}
 		} catch (Exception $e) {
 			
 			throw new Exception($e, 1);
@@ -262,6 +301,18 @@ class HarmonizationService {
 				// evaluate if anything was done and publish notice if needed
 				if ($statistics->total() > 0) {
 					$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
+				}
+			}
+			// tasks harmonization
+			if ($this->ConfigurationService->isTasksAppAvailable() && $Configuration->TasksHarmonize > -1) {
+				$this->TasksService->RemoteStore = $RemoteStore;
+				// update harmonization heart beat
+				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+				// harmonize tasks collections
+				$statistics = $this->TasksService->performActions($ttl, $Configuration);
+				// evaluate if anything was done and publish notice if needed
+				if ($statistics->total() > 0) {
+					$this->CoreService->publishNotice($uid,'tasks_harmonized', (array)$statistics);
 				}
 			}
 		} catch (Exception $e) {

@@ -821,8 +821,12 @@ class RemoteCommonService {
 		$request->Items = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfAllItemsType();
 		if (is_a($data, 'OCA\EWS\Components\EWS\Type\ContactItemType')) {
 			$request->Items->Contact[] = $data;
-		} elseif (is_a($data, 'OCA\EWS\Components\EWS\Type\CalendarItemType')) {
+		}
+		elseif (is_a($data, 'OCA\EWS\Components\EWS\Type\CalendarItemType')) {
 			$request->Items->CalendarItem[] = $data;
+		}
+		elseif (is_a($data, 'OCA\EWS\Components\EWS\Type\TaskType')) {
+			$request->Items->Task[] = $data;
 		}
 		// execute request
 		$response = $DataStore->CreateItem($request);

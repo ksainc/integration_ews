@@ -44,11 +44,14 @@ use OCA\EWS\Service\ConfigurationService;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
 use OCA\EWS\Service\EventsService;
+use OCA\EWS\Service\TasksService;
 use OCA\EWS\Service\HarmonizationThreadService;
 use OCA\EWS\Service\Local\LocalContactsService;
 use OCA\EWS\Service\Local\LocalEventsService;
+use OCA\EWS\Service\Local\LocalTasksService;
 use OCA\EWS\Service\Remote\RemoteContactsService;
 use OCA\EWS\Service\Remote\RemoteEventsService;
+use OCA\EWS\Service\Remote\RemoteTasksService;
 use OCA\EWS\Service\Remote\RemoteCommonService;
 use OCA\EWS\Tasks\HarmonizationLauncher;
 
@@ -91,6 +94,10 @@ class CoreService {
 	 */
 	private $LocalEventsService;
 	/**
+	 * @var LocalTasksService
+	 */
+	private $LocalTasksService;
+	/**
 	 * @var RemoteContactsService
 	 */
 	private $RemoteContactsService;
@@ -99,6 +106,10 @@ class CoreService {
 	 */
 	private $RemoteEventsService;
 	/**
+	 * @var RemoteTasksService
+	 */
+	private $RemoteTasksService;
+	/**
 	 * @var CardDavBackend
 	 */
 	private $LocalContactsStore;
@@ -106,6 +117,10 @@ class CoreService {
 	 * @var CalDavBackend
 	 */
 	private $LocalEventsStore;
+	/**
+	 * @var CalDavBackend
+	 */
+	private $LocalTasksStore;
 	/**
 	 * @var EWSClient
 	 */
@@ -121,13 +136,16 @@ class CoreService {
 								HarmonizationThreadService $HarmonizationThreadService,
 								LocalContactsService $LocalContactsService,
 								LocalEventsService $LocalEventsService,
+								LocalTasksService $LocalTasksService,
 								RemoteContactsService $RemoteContactsService,
 								RemoteEventsService $RemoteEventsService,
+								RemoteTasksService $RemoteTasksService,
 								RemoteCommonService $RemoteCommonService,
 								ContactsService $ContactsService,
 								EventsService $EventsService,
-								CardDavBackend $LocalContactsStore,
-								CalDavBackend $LocalEventsStore) {
+								TasksService $TasksService,
+								CardDavBackend $CardDavBackend,
+								CalDavBackend $CalDavBackend) {
 		$this->logger = $logger;
 		$this->TaskService = $TaskService;
 		$this->notificationManager = $notificationManager;
@@ -137,13 +155,17 @@ class CoreService {
 		$this->HarmonizationThreadService = $HarmonizationThreadService;
 		$this->LocalContactsService = $LocalContactsService;
 		$this->LocalEventsService = $LocalEventsService;
+		$this->LocalTasksService = $LocalTasksService;
 		$this->RemoteContactsService = $RemoteContactsService;
 		$this->RemoteEventsService = $RemoteEventsService;
+		$this->RemoteTasksService = $RemoteTasksService;
 		$this->RemoteCommonService = $RemoteCommonService;
 		$this->ContactsService = $ContactsService;
 		$this->EventsService = $EventsService;
-		$this->LocalContactsStore = $LocalContactsStore;
-		$this->LocalEventsStore = $LocalEventsStore;
+		$this->TasksService = $TasksService;
+		$this->LocalContactsStore = $CardDavBackend;
+		$this->LocalEventsStore = $CalDavBackend;
+		$this->LocalTasksStore = $CalDavBackend;
 
 	}
 
@@ -430,14 +452,19 @@ class CoreService {
 		// assign local data store
 		$this->LocalContactsService->DataStore = $this->LocalContactsStore;
 		$this->LocalEventsService->DataStore = $this->LocalEventsStore;
+		$this->LocalTasksService->DataStore = $this->LocalTasksStore;
+
 		// construct response object
-		$response = ['ContactCollections' => [], 'EventCollections' => []];
+		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve local collections
 		if ($this->ConfigurationService->isContactsAppAvailable()) {
 			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid);;
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable()) {
 			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid);
+		}
+		if ($this->ConfigurationService->isTasksAppAvailable()) {
+			$response['TaskCollections'] = $this->LocalTasksService->listCollections($uid);
 		}
 		// return response
 		return $response;
@@ -460,15 +487,19 @@ class CoreService {
 		// assign remote data store and settings
 		$this->RemoteContactsService->DataStore = $RemoteStore;
 		$this->RemoteEventsService->DataStore = $RemoteStore;
+		$this->RemoteTasksService->DataStore = $RemoteStore;
 		
 		// construct response object
-		$response = ['ContactCollections' => [], 'EventCollections' => []];
+		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve local collections
 		if ($this->ConfigurationService->isContactsAppAvailable()) {
 			$response['ContactCollections'] = $this->RemoteContactsService->listCollections();
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable()) {
 			$response['EventCollections'] = $this->RemoteEventsService->listCollections();
+		}
+		if ($this->ConfigurationService->isTasksAppAvailable()) {
+			$response['TaskCollections'] = $this->RemoteTasksService->listCollections();
 		}
 		// return response
 		return $response;
@@ -487,13 +518,16 @@ class CoreService {
 	public function fetchCorrelations(string $uid): array {
 
 		// construct response object
-		$response = ['ContactCorrelations' => [], 'EventCorrelations' => []];
+		$response = ['ContactCorrelations' => [], 'EventCorrelations' => [], 'TaskCorrelations' => []];
 		// retrieve local collections
 		if ($this->ConfigurationService->isContactsAppAvailable()) {
 			$response['ContactCorrelations'] = $this->CorrelationsService->findByType($uid, 'CC');
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable()) {
 			$response['EventCorrelations'] = $this->CorrelationsService->findByType($uid, 'EC');
+		}
+		if ($this->ConfigurationService->isTasksAppAvailable()) {
+			$response['TaskCorrelations'] = $this->CorrelationsService->findByType($uid, 'TC');
 		}
 		// return response
 		return $response;
@@ -508,10 +542,11 @@ class CoreService {
 	 * @param string $uid	nextcloud user id
 	 * @param array $cc		contacts collection(s) correlations
 	 * @param array $ec		events collection(s) correlations
+	 * @param array $tc		tasks collection(s) correlations
 	 * 
 	 * @return array of collection correlation(s) and attributes
 	 */
-	public function depositCorrelations(string $uid, array $cc, array $ec): void {
+	public function depositCorrelations(string $uid, array $cc, array $ec, array $tc): void {
 		
 		// terminate harmonization thread, in case the user changed any correlations
 		$this->HarmonizationThreadService->terminate($uid);
@@ -591,7 +626,44 @@ class CoreService {
 				}
 			}
 		}
-
+		// deposit tasks correlations
+		if ($this->ConfigurationService->isTasksAppAvailable()) {
+			foreach ($tc as $entry) {
+				if (!empty($entry['action'])) {
+					try {
+						switch ($entry['action']) {
+							case 'D':
+								$cc = $this->CorrelationsService->fetch($entry['id']);
+								if ($this->UserId == $entry['uid']) {
+									$this->CorrelationsService->deleteByCollectionId($cc->getuid(), $cc->getloid(), $cc->getroid());
+									$this->CorrelationsService->delete($cc);
+								}
+								break;
+							case 'C':
+								$cc = new \OCA\EWS\Db\Correlation();
+								$cc->settype('TC'); // Correlation Type
+								$cc->setuid($uid); // User ID
+								$cc->setloid($entry['loid']); // Local ID
+								$cc->setroid($entry['roid']); // Remote ID
+								$this->CorrelationsService->create($cc);
+								break;
+							case 'U':
+								$cc = $this->CorrelationsService->fetch($entry['id']);
+								if ($this->UserId == $entry['uid']) {
+									$cc->settype('TC'); // Correlation Type
+									$cc->setloid($entry['loid']); // Local ID
+									$cc->setroid($entry['roid']); // Remote ID
+									$this->CorrelationsService->update($cc);
+								}
+								break;
+						}
+					}
+					catch (Exception $e) {
+						
+					}
+				}
+			}
+		}
 	}
 
 	/**

@@ -25,25 +25,18 @@
 
 namespace OCA\EWS\Objects;
 
-use DateTime;
-use DateTimeZone;
+class TaskNotificationObject {
+    public ?string $Type = null;
+    public ?string $Pattern = null;
+    public $When = null;
 
-class ConfigurationObject {
-
-	public ?DateTimeZone $SystemTimeZone = null;
-	public string $UserId = '';						// nextcloud user id
-	public ?DateTimeZone $UserTimeZone = null; 		// nextcloud user timezone
-	public int $ContactsHarmonize = -1;				// contacts harmonize
-	public string $ContactsPrevalence = '';			// contacts prevalence
-	public string $ContactsPresentation = '';
-	public int $EventsHarmonize = -1;				// events harmonize
-	public string $EventsPrevalence = '';			// events prevalence
-	public int $TasksHarmonize = -1;				// tasks harmonize
-	public string $TasksPrevalence = '';			// tasks prevalence
-	public ?DateTimeZone $EventsTimezone = null;
-	public string $AccountProvider = '';
-	public string $AccountId = '';
-	public string $AccountProtocol = '';
-	public string $AccountConnected = '';
-	
+    public function __construct(
+        string $Type = null,
+        string $Pattern = null,
+        mixed $When = null
+    ) {
+        $this->Type = $Type;
+        $this->Pattern = $Pattern;
+        $this->When = $When;
+	}
 }

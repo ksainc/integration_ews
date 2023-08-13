@@ -246,14 +246,14 @@ class UserConfigurationController extends Controller {
 	 * 
 	 * @return DataResponse
 	 */
-	public function depositCorrelations(array $ContactCorrelations, array $EventCorrelations): DataResponse {
+	public function depositCorrelations(array $ContactCorrelations, array $EventCorrelations, array $TaskCorrelations): DataResponse {
 		
 		// evaluate if user id is present
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
 		// execute command
-		$rs = $this->CoreService->depositCorrelations($this->userId, $ContactCorrelations, $EventCorrelations);
+		$rs = $this->CoreService->depositCorrelations($this->userId, $ContactCorrelations, $EventCorrelations, $TaskCorrelations);
 		// return response
 		return $this->fetchCorrelations();
 
