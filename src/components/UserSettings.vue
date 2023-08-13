@@ -33,19 +33,6 @@
 					{{ t('integration_ews', 'Enter your Exchange Server and account information then press connect.') }}
 				</div>
 				<div class="fields">
-					<div class="external-label">
-						<label for="ews-server">
-							<EwsIcon />
-							{{ t('integration_ews', 'Server') }}
-						</label>
-						<input id="ews-server"
-							v-model="state.account_provider"
-							type="text"
-							:placeholder="t('integration_ews', 'Server Address')"
-							autocomplete="off"
-							autocorrect="off"
-							autocapitalize="none">
-					</div>
 					<div class="line">
 						<label for="ews-account-id">
 							<EwsIcon />
@@ -72,6 +59,33 @@
 							autocorrect="off"
 							autocapitalize="none">
 					</div>
+					<div v-if="configureManually" class="line">
+						<label for="ews-server">
+							<EwsIcon />
+							{{ t('integration_ews', 'Account Server') }}
+						</label>
+						<input id="ews-server"
+							v-model="state.account_provider"
+							type="text"
+							:placeholder="t('integration_ews', 'Account Server Address')"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="none">
+					</div>
+					<template>
+						<div>
+							<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
+								{{ t('integration_ews', 'Configure server manually') }}
+							</NcCheckboxRadioSwitch>
+						</div>
+					</template>
+					<template>
+						<div>
+							<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
+								{{ t('integration_ews', 'Configure mail app on successful connection') }}
+							</NcCheckboxRadioSwitch>
+						</div>
+					</template>
 					<div class="line">
 						<label class="ews-connect">
 							&nbsp;
@@ -344,6 +358,9 @@ export default {
 			availableRemoteContactCollections: [],
 			availableLocalContactCollections: [],
 			establishedContactCorrelations: [],
+
+			configureManually: false,
+			configureMail: false,
 		}
 	},
 
@@ -376,6 +393,7 @@ export default {
 					account_provider: this.state.account_provider,
 					account_id: this.state.account_id,
 					account_secret: this.state.account_secret,
+					flag: this.configureMail,
 				},
 			}
 			axios.get(uri, data)

@@ -79,19 +79,8 @@ try {
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 	$HarmonizationThreadService = \OC::$server->get(\OCA\EWS\Service\HarmonizationThreadService::class);
 
-	// retrieve user configuration
-	$configuration = $ConfigurationService->retrieveUser($uid);
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');
-
-	//$cs = $HarmonizationService->connectEvents($uid, 5, 'CC');
-	//$es = $HarmonizationService->connectEvents($uid, 5, 'EC');
-	
-	//$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CO');
-	//$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
-
-	//$cs = $HarmonizationService->disconnectEvents($uid, $cs->Id);
-	//$es = $HarmonizationService->disconnectEvents($uid, $es->Id);
 
 	// execute actions
 	//$HarmonizationService->performActions($uid);

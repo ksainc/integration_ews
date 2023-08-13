@@ -800,6 +800,27 @@ class ConfigurationService {
 	 * 
 	 * @return bool
 	 */
+	public function isMailAppAvailable(): bool {
+
+		// retrieve contacts app status
+		$status = $this->_ds->getAppValue('mail', 'enabled');
+		// evaluate status
+		if ($status == 'yes') {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * retrieve contacts app status
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return bool
+	 */
 	public function isContactsAppAvailable(): bool {
 
 		// retrieve contacts app status
@@ -846,6 +867,32 @@ class ConfigurationService {
 
 		// retrieve account status
 		return filter_var($this->retrieveUserValue($uid, 'account_connected'), FILTER_VALIDATE_BOOLEAN);
+
+	}
+
+	/**
+	 * encrypt string
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return string
+	 */
+	public function encrypt(string $value): string {
+
+		return $this->_cs->encrypt($value);
+
+	}
+
+	/**
+	 * decrypt string
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return string
+	 */
+	public function decrypt(string $value): string {
+
+		return $this->_cs->decrypt($value);
 
 	}
 }

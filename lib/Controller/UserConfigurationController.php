@@ -80,14 +80,19 @@ class UserConfigurationController extends Controller {
 	 * 
 	 * @return DataResponse
 	 */
-	public function Connect(string $account_provider, string $account_id, string $account_secret): DataResponse {
+	public function Connect(string $account_id, string $account_secret, string $account_provider, string $flag): DataResponse {
 		
 		// evaluate if user id is present
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
+		// assign flags
+		$flags = ['VALIDATE'];
+		if (filter_var($flag, FILTER_VALIDATE_BOOLEAN)) {
+			$flags[] = 'CONNECT_MAIL';
+		}
 		// execute command
-		$rs = $this->CoreService->connectAccount($this->userId, $account_provider, $account_id, $account_secret);
+		$rs = $this->CoreService->connectAccount($this->userId, $account_id, $account_secret, $account_provider, $flags);
 		// return response
 		if (isset($rs)) {
 			return new DataResponse('success');

@@ -60,7 +60,7 @@ class Connect extends Command {
                 'The password of the account to connect to on the EWS Server')
             ->addArgument('validate',
                 InputArgument::OPTIONAL,
-                'Should we validate the credentials with EWS Server. (Default false)');
+                'Should we validate the credentials with EWS Server. (default true)');
 	}
 
 	/**
@@ -73,13 +73,18 @@ class Connect extends Command {
         $account_id = $input->getArgument('accountid');
         $account_secret = $input->getArgument('accountsecret');
         $validate = filter_var($input->getArgument('validate'), FILTER_VALIDATE_BOOLEAN);
+		$flags = [];
 
         if (!$this->userManager->userExists($uid)) {
 			$output->writeln("<error>User $uid does not exist</error>");
 			return 1;
 		}
 
-        $this->CoreService->connectAccount($uid, $account_provider, $account_id, $account_secret, $validate);
+		if ($validate) {
+			$flags = ['VALIDATE'];
+		}
+		
+        $this->CoreService->connectAccount($uid, $account_id, $account_secret, $account_provider, $flags);
 
         $output->writeln("<info>User $uid connected to $account_provider as $account_id</info>");
 

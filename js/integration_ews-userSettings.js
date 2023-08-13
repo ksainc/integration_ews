@@ -10870,7 +10870,9 @@ __webpack_require__.r(__webpack_exports__);
       // contacts
       availableRemoteContactCollections: [],
       availableLocalContactCollections: [],
-      establishedContactCorrelations: []
+      establishedContactCorrelations: [],
+      configureManually: false,
+      configureMail: false
     };
   },
   computed: {},
@@ -10897,7 +10899,8 @@ __webpack_require__.r(__webpack_exports__);
         params: {
           account_provider: this.state.account_provider,
           account_id: this.state.account_id,
-          account_secret: this.state.account_secret
+          account_secret: this.state.account_secret,
+          flag: this.configureMail
         }
       };
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri, data).then(function (response) {
@@ -11288,36 +11291,6 @@ var render = function render() {
   }, [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Enter your Exchange Server and account information then press connect.")) + "\n\t\t\t")]), _vm._v(" "), _c("div", {
     staticClass: "fields"
   }, [_c("div", {
-    staticClass: "external-label"
-  }, [_c("label", {
-    attrs: {
-      for: "ews-server"
-    }
-  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Server")) + "\n\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
-    directives: [{
-      name: "model",
-      rawName: "v-model",
-      value: _vm.state.account_provider,
-      expression: "state.account_provider"
-    }],
-    attrs: {
-      id: "ews-server",
-      type: "text",
-      placeholder: _vm.t("integration_ews", "Server Address"),
-      autocomplete: "off",
-      autocorrect: "off",
-      autocapitalize: "none"
-    },
-    domProps: {
-      value: _vm.state.account_provider
-    },
-    on: {
-      input: function input($event) {
-        if ($event.target.composing) return;
-        _vm.$set(_vm.state, "account_provider", $event.target.value);
-      }
-    }
-  })]), _vm._v(" "), _c("div", {
     staticClass: "line"
   }, [_c("label", {
     attrs: {
@@ -11377,7 +11350,57 @@ var render = function render() {
         _vm.$set(_vm.state, "account_secret", $event.target.value);
       }
     }
-  })]), _vm._v(" "), _c("div", {
+  })]), _vm._v(" "), _vm.configureManually ? _c("div", {
+    staticClass: "line"
+  }, [_c("label", {
+    attrs: {
+      for: "ews-server"
+    }
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account Server")) + "\n\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.state.account_provider,
+      expression: "state.account_provider"
+    }],
+    attrs: {
+      id: "ews-server",
+      type: "text",
+      placeholder: _vm.t("integration_ews", "Account Server Address"),
+      autocomplete: "off",
+      autocorrect: "off",
+      autocapitalize: "none"
+    },
+    domProps: {
+      value: _vm.state.account_provider
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.state, "account_provider", $event.target.value);
+      }
+    }
+  })]) : _vm._e(), _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
+    attrs: {
+      checked: _vm.configureManually,
+      type: "switch"
+    },
+    on: {
+      "update:checked": function updateChecked($event) {
+        _vm.configureManually = $event;
+      }
+    }
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure server manually")) + "\n\t\t\t\t\t\t")])], 1)], _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
+    attrs: {
+      checked: _vm.configureMail,
+      type: "switch"
+    },
+    on: {
+      "update:checked": function updateChecked($event) {
+        _vm.configureMail = $event;
+      }
+    }
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure mail app on successful connection")) + "\n\t\t\t\t\t\t")])], 1)], _vm._v(" "), _c("div", {
     staticClass: "line"
   }, [_c("label", {
     staticClass: "ews-connect"
@@ -11392,7 +11415,7 @@ var render = function render() {
       },
       proxy: true
     }], null, false, 1355641774)
-  }, [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t")])], 1)])]) : _c("div", [_c("div", {
+  }, [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t")])], 1)], 2)]) : _c("div", [_c("div", {
     staticClass: "ews-connected"
   }, [_c("EwsIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connected as {0} to {1}", {
     0: _vm.state.account_id,

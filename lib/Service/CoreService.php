@@ -37,6 +37,7 @@ use OCA\DAV\CardDAV\CardDavBackend;
 use OCA\DAV\CalDAV\CalDavBackend;
 
 use OCA\EWS\AppInfo\Application;
+use OCA\EWS\Components\EWS\Autodiscover;
 use OCA\EWS\Components\EWS\EWSClient;
 use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Service\ConfigurationService;
@@ -146,24 +147,134 @@ class CoreService {
 
 	}
 
+
 	/**
 	 * Connects to account to verify details, on success saves details to user settings
 	 * 
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid				nextcloud user id
-	 * @param string $account_provider	FQDN or IP
 	 * @param string $account_id		account username
 	 * @param string $account_secret	account secret
 	 * 
+	 * @return object
+	 */
+	public function locateAccount(string $account_id, string $account_secret): ?object {
+
+		// construct locator
+		$locator = new Autodiscover($account_id, $account_secret);
+		// find configuration
+		$result = $locator->discover();
+
+		if ($result > 0) {
+			$data = $locator->discovered;
+
+			$o = new \stdClass();
+			$o->UserDisplayName = $data['User']['DisplayName'];
+			$o->UserEMailAddress = $data['User']['EMailAddress'];
+			$o->UserSMTPAddress = $data['User']['AutoDiscoverSMTPAddress'];
+			$o->UserSecret = $account_secret;
+
+			foreach ($data['Account']['Protocol'] as $entry) {
+				// evaluate if type is EXCH
+				if ($entry['Type'] == 'EXCH') {
+					$o->EXCH = new \stdClass();
+					$o->EXCH->Server = $entry['Server'];
+					$o->EXCH->AD = $entry['AD'];
+					$o->EXCH->ASUrl = $entry['ASUrl'];
+					$o->EXCH->EwsUrl = $entry['EwsUrl'];
+					$o->EXCH->OOFUrl = $entry['OOFUrl'];
+				}
+				// evaluate if type is IMAP
+				elseif ($entry['Type'] == 'IMAP') {
+					if ($entry['SSL'] == 'on') {
+						$o->IMAPS = new \stdClass();
+						$o->IMAPS->Server = $entry['Server'];
+						$o->IMAPS->Port = (int) $entry['Port'];
+						$o->IMAPS->AuthMode = 'ssl';
+						$o->IMAPS->AuthId = $entry['LoginName'];
+					} else {
+						$o->IMAP = new \stdClass();
+						$o->IMAP->Server = $entry['Server'];
+						$o->IMAP->Port = (int) $entry['Port'];
+						$o->IMAP->AuthMode = 'tls';
+						$o->IMAP->AuthId = $entry['LoginName'];
+					}
+				}
+				// evaluate if type is SMTP
+				elseif ($entry['Type'] == 'SMTP') {
+					if ($entry['SSL'] == 'on') {
+						$o->SMTPS = new \stdClass();
+						$o->SMTPS->Server = $entry['Server'];
+						$o->SMTPS->Port = (int) $entry['Port'];
+						$o->SMTPS->AuthMode = 'ssl';
+						$o->SMTPS->AuthId = $entry['LoginName'];
+					}
+					else {
+						$o->SMTP = new \stdClass();
+						$o->SMTP->Server = $entry['Server'];
+						$o->SMTP->Port = (int) $entry['Port'];
+						$o->SMTP->AuthMode = 'tls';
+						$o->SMTP->AuthId = $entry['LoginName'];
+					}
+				}
+			}
+
+			return $o;
+
+		} else {
+			return null;
+		}
+
+	}
+
+	/**
+	 * Connects to account, verifies details, on success saves details to user settings
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid				nextcloud user id
+	 * @param string $account_id		account username
+	 * @param string $account_secret	account secret
+	 * @param string $account_provider	FQDN or IP
+	 * @param array $flags
+	 * 
 	 * @return bool
 	 */
-	public function connectAccount(string $uid, string $account_provider, string $account_id, string $account_secret, bool $validate = true): bool {
+	public function connectAccount(string $uid, string $account_id, string $account_secret, string $account_provider = '', array $flags = []): bool {
 
 		// define connect status place holder
-		$connected = false;
+		$connect = false;
+		$configuration = null;
+
+		// evaluate if provider is empty
+		if (empty($account_provider) || in_array('CONNECT_MAIL', $flags)) {
+			// locate provider
+			$configuration = $this->locateAccount($account_id, $account_secret);
+			//
+			if (isset($configuration->EXCH->Server)) {
+				$account_provider = $configuration->EXCH->Server;
+			}
+		}
+
+		// validate provider
+		if (!\OCA\EWS\Utile\Validator::host($account_provider)) {
+			return false;
+		}
+
+		// validate id
+		if (!\OCA\EWS\Utile\Validator::username($account_id)) {
+			return false;
+		}
+
+		// validate secret
+		if (empty($account_secret)) {
+			return false;
+		}
+
+
 		// evaluate validate flag
-		if ($validate) {
+		if (in_array("VALIDATE", $flags)) {
 			// construct remote data store client
 			$RemoteStore = new EWSClient($account_provider, $account_id, $account_secret, 'Exchange2007');
 			// retrieve root folder attributes
@@ -177,23 +288,30 @@ class CoreService {
 					$match
 				);
 				$account_protocol = $match[2][0];
-				$connected = true;
+				$connect = true;
 			}
 		}
 		else {
-			$connected = true;
+			$connect = true;
 			$account_protocol = 'Exchange2010';
 		}
+
 		// evaluate connect status
-		if ($connected) {
+		if ($connect) {
 			// deposit authentication to datastore
 			$this->ConfigurationService->depositAuthentication($uid, $account_provider, $account_id, $account_secret, $account_protocol);
 			// deposit configuration to datastore
 			$this->ConfigurationService->depositUser($uid, ['account_connected' => '1']);
-
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
+		}
 
+		// evaluate validate flag
+		if (in_array("CONNECT_MAIL", $flags)) {
+			$this->connectMail($uid, $configuration);
+		}
+
+		if ($connect) {
 			return true;
 		} else {
 			return false;
@@ -224,6 +342,80 @@ class CoreService {
 
 	}
 
+	/**
+	 * Connects Mail App
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id
+	 * 
+	 * @return void
+	 */
+	public function connectMail(string $uid, object $configuration): void {
+
+		// evaluate if mail app exists
+		if (!$this->ConfigurationService->isMailAppAvailable()) {
+			return;
+		}
+		// evaluate if configuration contains the accounts email address
+		if (empty($configuration->UserEMailAddress) && empty($configuration->UserSMTPAddress)) {
+			return;
+		}
+		// evaluate if configuration contains IMAP parameters
+		if (!isset($configuration->IMAP) && !isset($configuration->IMAPS)) {
+			return;
+		}
+		// evaluate if configuration contains SMTP parameters
+		if (!isset($configuration->SMTP) && !isset($configuration->SMTPS)) {
+			return;
+		}
+		//construct mail account manager 
+		$mam = \OC::$server->get(\OCA\Mail\Service\AccountService::class);
+		// retrieve configured mail account
+		$accounts = $mam->findByUserId($uid);
+		// search for existing account that matches
+		foreach ($accounts as $entry) {
+			if ($configuration->UserEMailAddress == $entry->getEmail() || 
+			    $configuration->UserSMTPAddress == $entry->getEmail()) {
+				return;
+			}
+		}
+
+		$account = \OC::$server->get(\OCA\Mail\Db\MailAccount::class);
+		$account->setUserId($uid);
+		$account->setName($configuration->UserDisplayName);
+		$account->setEmail($configuration->UserEMailAddress);
+		$account->setAuthMethod('password');
+
+		// evaluate if type is IMAPS is present
+		if (isset($configuration->IMAPS)) {
+			$imap = $configuration->IMAPS;
+		} else{
+			$imap = $configuration->IMAP;
+		}
+
+		$account->setInboundHost($imap->Server);
+		$account->setInboundPort($imap->Port);
+		$account->setInboundSslMode($imap->AuthMode);
+		$account->setInboundUser($imap->AuthId);
+		$account->setInboundPassword($this->ConfigurationService->encrypt($configuration->UserSecret));
+		
+		// evaluate if type is SMTPS is present
+		if (isset($configuration->SMTPS)) {
+			$smtp = $configuration->SMTPS;
+		} else{
+			$smtp = $configuration->SMTP;
+		}
+
+		$account->setOutboundHost($smtp->Server);
+		$account->setOutboundPort($smtp->Port);
+		$account->setOutboundSslMode($smtp->AuthMode);
+		$account->setOutboundUser($smtp->AuthId);
+		$account->setOutboundPassword($this->ConfigurationService->encrypt($configuration->UserSecret));
+
+		$account = $mam->save($account);
+
+	}
 	/**
 	 * Retrieves local collections for all modules
 	 * 
