@@ -39,6 +39,8 @@ class CorrelationsService {
 	const ContactObject = 'CO';
 	const EventCollection = 'EC';
 	const EventObject = 'EO';
+	const TaskCollection = 'TC';
+	const TaskObject = 'TO';
 
 	private CorrelationMapper $mapper;
 

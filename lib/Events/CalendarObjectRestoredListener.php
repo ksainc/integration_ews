@@ -57,24 +57,33 @@ class CalendarObjectRestoredListener implements IEventListener {
 				$eo = $event->getObjectData();
 				// evaluate object type
 				if (strtoupper($eo['component']) == 'VEVENT') {
+					$ccs = 'EC';
+					$cos = 'EO';
+				}
+				elseif (strtoupper($eo['component']) == 'VTODO') {
+					$ccs = 'TC';
+					$cos = 'TO';
+				}
+				// evaluate if collection and object selector is populated
+				if (isset($ccs) && isset($cos)) {
 					// determine ids and state  
 					$uid = str_replace('principals/users/', '', $ec['principaluri']);
 					$cid = (string) $ec['id'];
 					$oid = str_replace('-deleted', '', $eo['uri']);
 					$ostate = trim($eo['etag'],'"');
 					// retrieve collection corrollation
-					$cc = $this->CorrelationsService->findByLocalId($uid, 'EC', $cid);
+					$cc = $this->CorrelationsService->findByLocalId($uid, $ccs, $cid);
 					// evaluate corrollation, if corrollation exists for the local collection create action
 					if ($cc instanceof \OCA\EWS\Db\Correlation) {
 						// retrieve object corrollation
-						$ci = $this->CorrelationsService->findByLocalId($uid, 'EO', $oid, $cid);
+						$ci = $this->CorrelationsService->findByLocalId($uid, $cos, $oid, $cid);
 						// evaluate corrollation, if dose not exists or state does not match, create action
 						// work around to filter out harmonization generated events
 						if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getlostate() != $ostate) {
 							// construct action entry
 							$a = new Action();
 							$a->setuid($uid);
-							$a->settype('EO');
+							$a->settype($cos);
 							$a->setaction('C');
 							$a->setorigin('L');
 							$a->setlcid($cid);
@@ -82,7 +91,7 @@ class CalendarObjectRestoredListener implements IEventListener {
 							$a->setlostate($ostate);
 							$a->setcreatedon(date(DATE_W3C));
 							// deposit action entry
-							//$this->ActionManager->insert($a);
+							$this->ActionManager->insert($a);
 						}
 					}
 				}	

@@ -57,18 +57,25 @@ class CalendarObjectMovedToTrashListener implements IEventListener {
 				$eo = $event->getObjectData();
 				// evaluate object type
 				if (strtoupper($eo['component']) == 'VEVENT') {
+					$cos = 'EO';
+				}
+				elseif (strtoupper($eo['component']) == 'VTODO') {
+					$cos = 'TO';
+				}
+				// evaluate if collection and object selector is populated
+				if (isset($cos)) {
 					// determine ids and state  
 					$uid = str_replace('principals/users/', '', $ec['principaluri']);
 					$cid = (string) $ec['id'];
 					$oid = str_replace('-deleted', '', $eo['uri']);
 					// retrieve object corrollation
-					$ci = $this->CorrelationsService->findByLocalId($uid, 'EO', $oid, $cid);
+					$ci = $this->CorrelationsService->findByLocalId($uid, $cos, $oid, $cid);
 					// evaluate corrollation, if exists, create action
 					if ($ci instanceof \OCA\EWS\Db\Correlation) {
 						// construct action entry
 						$a = new Action();
 						$a->setuid($uid);
-						$a->settype('EO');
+						$a->settype($cos);
 						$a->setaction('D');
 						$a->setorigin('L');
 						$a->setlcid($cid);

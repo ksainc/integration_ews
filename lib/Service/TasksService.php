@@ -297,7 +297,7 @@ class TasksService {
 		// construct statistics object
 		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
 		// retrieve list of actions
-		$actions = $this->ActionsManager->findByType($this->Configuration->UserId, 'TO');
+		$actions = $this->ActionsManager->findByType($this->Configuration->UserId, CorrelationsService::TaskObject);
 		// iterate through correlation items
 		foreach ($actions as $action) {
 			// evaluate action, if action was created before last harmonization ignore it and delete it.
@@ -309,7 +309,11 @@ class TasksService {
 			// evaluate, action origin
 			if ($action->getorigin() == "L") {
 				// retrieve collection corrollation
-				$cc = $this->CorrelationsService->findByLocalId($this->Configuration->UserId, 'TC', $action->getlcid());
+				$cc = $this->CorrelationsService->findByLocalId(
+					$this->Configuration->UserId, 
+					CorrelationsService::TaskCollection, 
+					$action->getlcid()
+				);
 				// evaluate corrollation, if corrollation exists for the local collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
@@ -352,7 +356,11 @@ class TasksService {
 			}
 			elseif ($action->getorigin() == "R") {
 				// retrieve collection corrollation
-				$cc = $this->CorrelationsService->findByRemoteId($this->Configuration->UserId, 'TC', $action->getrcid());
+				$cc = $this->CorrelationsService->findByRemoteId(
+					$this->Configuration->UserId, 
+					CorrelationsService::TaskCollection, 
+					$action->getrcid()
+				);
 				// evaluate corrollation, if corrollation exists for the remote collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
@@ -431,7 +439,7 @@ class TasksService {
 			return $status;
 		}
 		// try to retrieve correlation for remote and local object
-		$ci = $this->CorrelationsService->findByLocalId($uid, 'TO', $loid, $lcid);
+		$ci = $this->CorrelationsService->findByLocalId($uid, CorrelationsService::TaskObject, $loid, $lcid);
 		// if correlation exists
 		// compare local state to correlation state and stop processing if they match to prevent sync loop
 		if ($ci instanceof \OCA\EWS\Db\Correlation && 
@@ -550,7 +558,7 @@ class TasksService {
 		}
 		elseif (isset($lo) && isset($ro)) {
 			$ci = new \OCA\EWS\Db\Correlation();
-			$ci->settype('TO'); // Correlation Type
+			$ci->settype(CorrelationsService::TaskObject); // Correlation Type
 			$ci->setuid($uid); // User ID
 			$ci->setaid($caid); //Affiliation ID
 			$ci->setloid($lo->ID); // Local ID
@@ -580,7 +588,7 @@ class TasksService {
 	function harmonizeLocalDelete ($uid, $lcid, $loid): string {
 		
 		// retrieve correlation
-		$ci = $this->CorrelationsService->findByLocalId($uid, 'TO', $loid, $lcid);
+		$ci = $this->CorrelationsService->findByLocalId($uid, CorrelationsService::TaskObject, $loid, $lcid);
 		// evaluate correlation object
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
 			// destroy remote object
@@ -626,7 +634,7 @@ class TasksService {
 			return $status;
 		}
 		// retrieve correlation for remote and local object
-		$ci = $this->CorrelationsService->findByRemoteId($uid, 'TO', $roid, $rcid);
+		$ci = $this->CorrelationsService->findByRemoteId($uid, CorrelationsService::TaskObject, $roid, $rcid);
 		// if correlation exists, compare update state to correlation state and stop processing if they match
 		if ($ci instanceof \OCA\EWS\Db\Correlation && 
 			$ci->getrostate() == $ro->State) {
@@ -736,7 +744,7 @@ class TasksService {
 		}
 		elseif (isset($ro) && isset($lo)) {
 			$ci = new \OCA\EWS\Db\Correlation();
-			$ci->settype('TO'); // Correlation Type
+			$ci->settype(CorrelationsService::TaskObject); // Correlation Type
 			$ci->setuid($uid); // User ID
 			$ci->setaid($caid); //Affiliation ID
 			$ci->setloid($lo->ID); // Local ID
@@ -765,7 +773,7 @@ class TasksService {
 	function harmonizeRemoteDelete ($uid, $rcid, $roid): string {
 
 		// retrieve correlation
-		$ci = $this->CorrelationsService->findByRemoteId($uid, 'TO', $roid, $rcid);
+		$ci = $this->CorrelationsService->findByRemoteId($uid, CorrelationsService::TaskObject, $roid, $rcid);
 		// evaluate correlation object
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
 			// destroy local object
@@ -846,7 +854,7 @@ class TasksService {
 		// create correlation if none was found
 		if (!isset($ci)) {
 			$ci = new \OCA\EWS\Db\Correlation();
-			$ci->settype('TC'); // Correlation Type
+			$ci->settype(CorrelationsService::TaskCollection); // Correlation Type
 			$ci->setuid($this->Configuration->UserId); // User ID
 			$ci->setloid($lcid); // Local ID
 			$ci->setroid($rcid); // Remote ID

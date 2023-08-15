@@ -150,6 +150,7 @@ try {
 	// connect to remote events queue(s)
 	$cs = $HarmonizationService->connectEvents($uid, 60, 'CC');
 	$es = $HarmonizationService->connectEvents($uid, 60, 'EC');
+	$ts = $HarmonizationService->connectEvents($uid, 60, 'TC');
 
 	while ((time() - $executionStart) < $executionDuration) {
 		
@@ -174,6 +175,7 @@ try {
 		 // consume events from feed and create actions
 		$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CO');
 		$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
+		$ts = $HarmonizationService->consumeEvents($uid, $ts->Id, $ts->Token, 'TO');
 		// execute actions
 		$HarmonizationService->performActions($uid);
 
