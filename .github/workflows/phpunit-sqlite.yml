@@ -1,6 +1,5 @@
 
-# SPDX-FileCopyrightText: Nextcloud contributors
-# SPDX-License-Identifier: AGPL-3.0-or-later
+
 name: PHPUnit
 
 on:
@@ -102,4 +101,3 @@ jobs:
     steps:
       - name: Summary status
         run: if ${{ needs.phpunit-sqlite.result != 'success' }}; then exit 1; fi
-

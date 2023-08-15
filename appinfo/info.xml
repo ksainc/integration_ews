@@ -1,21 +1,22 @@
 <?xml version="1.0"?>
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>integration_ews</id>
-    <namespace>EWS</namespace>
-    <category>integration</category>
     <name>EWS Connector</name>
     <summary>Exchange Server data sync with Nextcloud</summary>
     <description><![CDATA[EWS Connector allows you to automatically sync your calendars and contacts with Nextcloud.]]></description>
     <version>1.0.0</version>
     <licence>agpl</licence>
     <author mail="krupinski01@gmail.com">Sebastian Krupinski</author>
+    <namespace>EWS</namespace>
     <documentation>
         <developer>https://github.com/ksainc/integration_ews</developer>
     </documentation>
-    <repository>https://github.com/ksainc/integration_ews</repository>
+    <category>integration</category>
     <website>https://github.com/ksainc/integration_ews</website>
+    <discussion></discussion>
     <bugs>https://github.com/ksainc/integration_ews/issues</bugs>
-    <discussion></discussion>    
+    <repository>https://github.com/ksainc/integration_ews</repository>
+    <screenshot>https://github.com/ksainc/integration_ews/blob/main/img/EWS%20Notification%20Screen.png?raw=true</screenshot>
     <dependencies>
         <nextcloud min-version="25" max-version="28"/>
         <php min-version="7.4" max-version="8.2"  min-int-size="64" />
