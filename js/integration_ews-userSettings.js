@@ -10890,7 +10890,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     loadData: function loadData() {
       // get collections list if we are connected
-      if (this.state.account_connected == 1) {
+      if (this.state.account_connected === '1') {
         this.fetchCorrelations();
         this.fetchLocalCollections();
         this.fetchRemoteCollections();

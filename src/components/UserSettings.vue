@@ -116,7 +116,7 @@
 					{{ t('integration_ews', 'Synchronization was last started on ') }} {{ formatDate(state.account_harmonization_start) }}
 					{{ t('integration_ews', 'and finished on ') }} {{ formatDate(state.account_harmonization_end) }}
 				</div>
-				<br />
+				<br>
 				<div class="ews-correlations-contacts">
 					<h3>{{ t('integration_ews', 'Contacts') }}</h3>
 					<div class="settings-hint">
@@ -173,7 +173,7 @@
 								{{ t('integration_ews', 'prevails') }}
 							</label>
 						</div>
-						<br />
+						<br>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
@@ -194,7 +194,7 @@
 					<div v-else>
 						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
-					<br />
+					<br>
 				</div>
 				<div class="ews-correlations-events">
 					<h3>{{ t('integration_ews', 'Calendars') }}</h3>
@@ -252,7 +252,7 @@
 								{{ t('integration_ews', 'prevails') }}
 							</label>
 						</div>
-						<br />
+						<br>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
@@ -273,7 +273,7 @@
 					<div v-else>
 						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
-					<br />
+					<br>
 				</div>
 				<div class="ews-correlations-tasks">
 					<h3>{{ t('integration_ews', 'Tasks') }}</h3>
@@ -331,7 +331,7 @@
 								{{ t('integration_ews', 'prevails') }}
 							</label>
 						</div>
-						<br />
+						<br>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
@@ -352,7 +352,7 @@
 					<div v-else>
 						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
-					<br />
+					<br>
 				</div>
 				<div class="ews-actions">
 					<NcButton @click="onSaveClick()">
@@ -463,7 +463,7 @@ export default {
 		},
 		loadData() {
 			// get collections list if we are connected
-			if (this.state.account_connected == 1) {
+			if (this.state.account_connected === '1') {
 				this.fetchCorrelations()
 				this.fetchLocalCollections()
 				this.fetchRemoteCollections()
@@ -561,7 +561,7 @@ export default {
 			const uri = generateUrl('/apps/integration_ews/test')
 			const data = {
 				params: {
-					action: action,
+					action,
 				},
 			}
 			axios.get(uri, data)
@@ -725,7 +725,7 @@ export default {
 			const cid = this.establishedContactCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid === -1) {
-				this.establishedContactCorrelations.push({ id: null, roid: roid, loid: loid, type: 'CC', action: 'C' })
+				this.establishedContactCorrelations.push({ id: null, roid, loid, type: 'CC', action: 'C' })
 			} else {
 				this.establishedContactCorrelations[cid].loid = loid
 				this.establishedContactCorrelations[cid].action = 'U'
@@ -735,7 +735,7 @@ export default {
 			const cid = this.establishedEventCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid === -1) {
-				this.establishedEventCorrelations.push({ id: null, roid: roid, loid: loid, type: 'EC', action: 'C' })
+				this.establishedEventCorrelations.push({ id: null, roid, loid, type: 'EC', action: 'C' })
 			} else {
 				this.establishedEventCorrelations[cid].loid = loid
 				this.establishedEventCorrelations[cid].action = 'U'
@@ -745,7 +745,7 @@ export default {
 			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid === -1) {
-				this.establishedTaskCorrelations.push({ id: null, roid: roid, loid: loid, type: 'TC', action: 'C' })
+				this.establishedTaskCorrelations.push({ id: null, roid, loid, type: 'TC', action: 'C' })
 			} else {
 				this.establishedTaskCorrelations[cid].loid = loid
 				this.establishedTaskCorrelations[cid].action = 'U'
