@@ -187,7 +187,7 @@ class HarmonizationService {
 				($mode === 'M' && $Configuration->ContactsHarmonize > -1))) {
 				$this->ContactsService->RemoteStore = $RemoteStore;
 				// retrieve list of collections correlations
-				$correlations = $this->CorrelationsService->findByType($uid, 'CC');
+				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::ContactCollection);
 				// iterate through correlation items
 				foreach ($correlations as $correlation) {
 					// execute contacts harmonization loop
@@ -209,7 +209,7 @@ class HarmonizationService {
 				($mode === 'M' && $Configuration->EventsHarmonize > -1))) {
 				$this->EventsService->RemoteStore = $RemoteStore;
 				// retrieve list of correlations
-				$correlations = $this->CorrelationsService->findByType($uid, 'EC');
+				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::EventCollection);
 				// iterate through correlation items
 				foreach ($correlations as $correlation) {
 					// execute events harmonization loop
@@ -231,7 +231,7 @@ class HarmonizationService {
 				($mode === 'M' && $Configuration->TasksHarmonize > -1))) {
 				$this->TasksService->RemoteStore = $RemoteStore;
 				// retrieve list of correlations
-				$correlations = $this->CorrelationsService->findByType($uid, 'TC');
+				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::TaskCollection);
 				// iterate through correlation items
 				foreach ($correlations as $correlation) {
 					// execute tasks harmonization loop
