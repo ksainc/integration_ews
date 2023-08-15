@@ -36,84 +36,72 @@ use RuntimeException;
  */
 class EWSClient extends \SoapClient
 {
+    /**
+     * Http Transport Version
+     *
+     * @var string
+     */
+    const TRANSPORT_VERSION_1 = CURL_HTTP_VERSION_1_0;
+    const TRANSPORT_VERSION_1_1 = CURL_HTTP_VERSION_1_1;
+    const TRANSPORT_VERSION_2 = CURL_HTTP_VERSION_2_0;
+    /**
+     * Http Transport Scheme
+     *
+     * @var string
+     */
+    const TRANSPORT_STANDARD = 'http://';
+    const TRANSPORT_SECURE = 'https://';
 
     /**
-     * URI Scheme
+     * Http Transport Authentication Mode
      *
      * @var string
      */
-    const URI_SCHEME_HTTP = 'http://';
+    const TRANSPORT_AUTHENTICATION_BASIC = CURLAUTH_BASIC;
+    const TRANSPORT_AUTHENTICATION_DIGEST = CURLAUTH_DIGEST;
+    const TRANSPORT_AUTHENTICATION_NTLM = CURLAUTH_NTLM;
+    const TRANSPORT_AUTHENTICATION_OAUTH = CURLAUTH_BEARER;
+
     /**
-     * URI Scheme
+     * Soap Messaging Version
      *
      * @var string
      */
-    const URI_SCHEME_HTTPS = 'https://';
+    const MESSAGE_VERSION_1_1 = SOAP_1_1;
+    const MESSAGE_VERSION_1_2 = SOAP_1_2;
+
     /**
-     * URI Path
+     * Exchange Web Services Version
      *
      * @var string
      */
-    const URI_PATH = '/EWS/Exchange.asmx';
+    const SERVICE_VERSION_2007 = 'Exchange2007';
+    const SERVICE_VERSION_2007_SP1 = 'Exchange2007_SP1';
+    const SERVICE_VERSION_2009 = 'Exchange2009';
+    const SERVICE_VERSION_2010 = 'Exchange2010';
+    const SERVICE_VERSION_2010_SP1 = 'Exchange2010_SP1';
+    const SERVICE_VERSION_2010_SP2 = 'Exchange2010_SP2';
+    const SERVICE_VERSION_2013 = 'Exchange2013';
+    const SERVICE_VERSION_2013_SP1 = 'Exchange2013_SP1';
+    const SERVICE_VERSION_2016 = 'Exchange2016';
+
     /**
-     * Exchange Web Services Version 2007
+     * Transport Type
      *
      * @var string
      */
-    const VERSION_2007 = 'Exchange2007';
+    protected string $_transport_mode = self::TRANSPORT_SECURE;
+
     /**
-     * Exchange Web Services Version 2007 SP1
+     * Transport Path
      *
      * @var string
      */
-    const VERSION_2007_SP1 = 'Exchange2007_SP1';
-    /**
-     * Exchange Web Services Version 2007 SP2
-     *
-     * @var string
-     */
-    const VERSION_2009 = 'Exchange2009';
-    /**
-     * Exchange Web Services Version 2010
-     *
-     * @var string
-     */
-    const VERSION_2010 = 'Exchange2010';
-    /**
-     * Exchange Web Services Version 2010 SP1
-     *
-     * @var string
-     */
-    const VERSION_2010_SP1 = 'Exchange2010_SP1';
-    /**
-     * Exchange Web Services Version 2010 SP2
-     *
-     * @var string
-     */
-    const VERSION_2010_SP2 = 'Exchange2010_SP2';
-    /**
-     * Exchange Web Services Version 2013.
-     *
-     * @var string
-     */
-    const VERSION_2013 = 'Exchange2013';
-    /**
-     * Exchange Web Services Version 2013 SP1.
-     *
-     * @var string
-     */
-    const VERSION_2013_SP1 = 'Exchange2013_SP1';
-    /**
-     * Exchange Web Services Version Version 2016.
-     *
-     * @var string
-     */
-    const VERSION_2016 = 'Exchange2016';
+    protected string $_transport_path = '/EWS/Exchange.asmx';
 
     /**
      * Class Variables
      */
-    protected array $_http_headers = [];
     protected array $_http_options = [
         CURLOPT_USERAGENT => 'NextCloud EWS Client',
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
@@ -123,8 +111,6 @@ class EWSClient extends \SoapClient
         CURLOPT_POST => true,
         CURLOPT_HTTPAUTH => CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM,
     ];
-    protected array $_soap_headers = [];
-    protected array $_soap_options = [];
     protected string $_soap_description_file = DIRECTORY_SEPARATOR . 'Assets' . DIRECTORY_SEPARATOR . 'services.wsdl';
 
      /**
@@ -165,11 +151,11 @@ class EWSClient extends \SoapClient
     protected $impersonation;
 
     /**
-     * cURL resource used to make the SOAP request
+     * cURL resource used to make the request
      *
      * @var CurlHandle
      */
-    protected $ch;
+    protected $_client;
     
     /**
      * Constructor for the ExchangeWebServices class
@@ -183,7 +169,7 @@ class EWSClient extends \SoapClient
         $server = null,
         $username = null,
         $password = null,
-        $version = self::VERSION_2010_SP2,
+        $version = self::SERVICE_VERSION_2010_SP2,
         $timezone = null,
         $impersonation = null
     ) {
@@ -238,12 +224,12 @@ class EWSClient extends \SoapClient
         $this->__last_response = '';
 
         // evaluate if http client is initilized and location is the same
-        if (!isset($this->ch) || curl_getinfo($this->ch, CURLINFO_EFFECTIVE_URL) != $location) {
-            $this->ch = curl_init($location);
-            curl_setopt_array($this->ch, $this->_http_options);
+        if (!isset($this->_client) || curl_getinfo($this->_client, CURLINFO_EFFECTIVE_URL) != $location) {
+            $this->_client = curl_init($location);
+            curl_setopt_array($this->_client, $this->_http_options);
         }
         // set request header
-        curl_setopt($this->ch, CURLOPT_HTTPHEADER, array (
+        curl_setopt($this->_client, CURLOPT_HTTPHEADER, array (
                 'Connection: Keep-Alive',
                 'Content-Type: text/xml; charset=utf-8',
                 'SOAPAction: "' . $action . '"',
@@ -251,17 +237,17 @@ class EWSClient extends \SoapClient
             )
         );
         // set request data
-        curl_setopt($this->ch, CURLOPT_POSTFIELDS, $request);
+        curl_setopt($this->_client, CURLOPT_POSTFIELDS, $request);
         // execute request
-        $response = curl_exec($this->ch);
+        $response = curl_exec($this->_client);
         // evealuate execution errors
-        $code = curl_errno($this->ch);
+        $code = curl_errno($this->_client);
         if ($code > 0) {
-            throw new RuntimeException(curl_error($this->ch), $code);
+            throw new RuntimeException(curl_error($this->_client), $code);
         }
 
         // evaluate http responses
-        $code = (int) curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
+        $code = (int) curl_getinfo($this->_client, CURLINFO_RESPONSE_CODE);
         if ($code > 400) {
             switch ($code) {
                 case 401:
@@ -283,13 +269,21 @@ class EWSClient extends \SoapClient
         }
 
         // Then, after your curl_exec call:
-        $size = curl_getinfo($this->ch, CURLINFO_HEADER_SIZE);
+        $size = curl_getinfo($this->_client, CURLINFO_HEADER_SIZE);
         $this->__last_headers = substr($response, 0, $size);
         $this->__last_response = substr($response, $size);
 
         $this->cleanResponse();
 
         return $this->__last_response;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __getLastRequestHeaders(): null|string
+    {
+        return implode("\n", $this->__last_headers) . "\n";
     }
 
     /**
@@ -332,7 +326,7 @@ class EWSClient extends \SoapClient
     protected function constructLocation()
     {
         // set service location
-        self::__setLocation(self::URI_SCHEME_HTTPS . $this->server . self::URI_PATH);
+        self::__setLocation($this->_transport_mode . $this->server . $this->_transport_path);
 
     }
 
@@ -340,17 +334,9 @@ class EWSClient extends \SoapClient
     {
         // set service authentication
         $this->_http_options[CURLOPT_USERPWD] = $this->username . ':' . $this->password;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
 
-    }
-
-    /**
-     * Sets the cURL options
-     *
-     * @param array $options
-     */
-    public function setHttpOptions(array $options)
-    {
-        $this->_http_options += $options;
     }
 
     /**
@@ -431,12 +417,57 @@ class EWSClient extends \SoapClient
         $this->constructSoapHeaders();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __getLastRequestHeaders(): null|string
+    public function configureTransportVersion(int $value)
     {
-        return implode("\n", $this->__last_headers) . "\n";
+        $this->_http_options[CURLOPT_HTTP_VERSION] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+    }
+    
+    public function configureTransportMode(string $value)
+    {
+        $this->_transport_mode = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+        // reconstruct service location
+        $this->constructLocation();
+    }
+
+    public function configureTransportPath(string $value)
+    {
+        $this->_transport_path = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+        // reconstruct service location
+        $this->constructLocation();
+    }
+
+    public function configureTransportAgent(string $value)
+    {
+        $this->_http_options[CURLOPT_USERAGENT] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+    }
+
+    public function configureTransportOptions(array $options)
+    {
+        $this->_http_options = array_replace($this->_http_options, $options);
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+    }
+
+    public function configureTransportAuthenticationMode(int $value)
+    {
+        $this->_http_options[CURLOPT_SSL_VERIFYPEER] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+    }
+
+    public function configureTransportVerification(bool $value)
+    {
+        $this->_http_options[CURLOPT_SSL_VERIFYPEER] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
     }
 
     /**

@@ -78,22 +78,6 @@ try {
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 
-	$client = new \OCA\EWS\Components\EWS\EWSClient('test', 'test', 'test');
-	
-	// construct request
-	$request = new \OCA\EWS\Components\EWS\Request\GetFolderType();
-	// define target
-	$request->FolderIds = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfBaseFolderIdsType();
-	$request->FolderIds->DistinguishedFolderId[] = new \OCA\EWS\Components\EWS\Type\DistinguishedFolderIdType('root');
-	// define required base properties
-	$request->FolderShape = new \OCA\EWS\Components\EWS\Type\FolderResponseShapeType();
-	$request->FolderShape->BaseShape = 'AllProperties';
-	
-	// execute request
-	$response = $client->GetFolder($request);
-
-	$response = $client->GetFolder($request);
-
 	// execute retrieve local collections harmonization
 	//$test = $CoreService->fetchLocalCollections($uid);
 
@@ -104,7 +88,7 @@ try {
 	//$test = $CoreService->fetchCorrelations($uid);
 
 	// execute initial harmonization
-	//$HarmonizationService->performHarmonization($uid, 'S');
+	$HarmonizationService->performHarmonization($uid, 'S');
 
 	// execute actions
 	//$HarmonizationService->performActions($uid);
