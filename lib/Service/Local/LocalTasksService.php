@@ -570,11 +570,37 @@ class LocalTasksService {
         }
         // Starts Date/Time
         if (isset($vo->DTSTART)) {
-            $to->StartsOn = new DateTime($vo->DTSTART->getValue());
+            if (isset($vo->DTSTART->parameters['TZID'])) {
+                $tz = new DateTimeZone($vo->DTSTART->parameters['TZID']->getValue());
+            }
+            elseif (str_contains($vo->DTSTART, 'Z')) {
+                $tz = new DateTimeZone('UTC');
+            }
+            elseif ($this->UserTimeZone instanceof \DateTimeZone) {
+                $tz = $this->UserTimeZone;
+            }
+            else {
+                $tz = $this->DefaultTimeZone;
+            }
+            $to->StartsOn = new DateTime($vo->DTSTART->getValue(), $tz);
+            unset($tz);
         }
         // DUE Date/Time
         if (isset($vo->DUE)) {
-            $to->DueOn = new DateTime($vo->DUE->getValue());
+            if (isset($vo->DUE->parameters['TZID'])) {
+                $tz = new DateTimeZone($vo->DUE->parameters['TZID']->getValue());
+            }
+            elseif (str_contains($vo->DUE, 'Z')) {
+                $tz = new DateTimeZone('UTC');
+            }
+            elseif ($this->UserTimeZone instanceof \DateTimeZone) {
+                $tz = $this->UserTimeZone;
+            }
+            else {
+                $tz = $this->DefaultTimeZone;
+            }
+            $to->DueOn = new DateTime($vo->DUE->getValue(), $tz);
+            unset($tz);
         }
         // Label
         if (isset($vo->SUMMARY)) {

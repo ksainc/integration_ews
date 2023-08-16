@@ -833,29 +833,9 @@ class RemoteTasksService {
 			}
 			
 			$rm[] = $this->updateFieldUnindexed('task:Recurrence', 'Recurrence', $f);
-
-			// Occurrence Exclusions
-			if (count($so->Occurrence->Excludes) > 0) {
-				$f = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfDeletedOccurrencesType();
-				foreach ($so->Occurrence->Excludes as $entry) {
-					// clone start date
-					$dt = clone $entry;
-					// change timezone on cloned date
-					$dt->setTimezone(new DateTimeZone('UTC'));
-					// construct start time property
-					$f->DeletedOccurrence[] = new \OCA\EWS\Components\EWS\Type\DeletedOccurrenceInfoType(
-						$dt->format('Y-m-d\\TH:i:s\Z')
-					);
-					unset($dt);
-				}
-				$rm[] = $this->updateFieldUnindexed('task:DeletedOccurrences', 'DeletedOccurrences', $f);
-			} else {
-				$rd[] = $this->deleteFieldUnindexed('task:DeletedOccurrences');	
-			}
 		}
 		else {
 			$rd[] = $this->deleteFieldUnindexed('task:Recurrence');
-			$rd[] = $this->deleteFieldUnindexed('task:DeletedOccurrences');
 		}
         // execute command
         $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, $rd);
