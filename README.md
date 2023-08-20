@@ -70,15 +70,17 @@ Once the files are in place, proceed to the apps administration screen and enabl
 
 The following is a very long list of things that work and limitations.
 
+- Supported On-Premise Exchange Systems: Echange 2007-2022, GFI Kerio Connect, SmarterMail, Etc
+- Supported Off-Premise Exchange Systems: Microsoft Exchage 365, OVH Cloud, Etc
+- Supported Authentications: Basic, NTLM, OAuth2
 - Passive (scheduled) and Active (live) Syncronization
 - Account Auto Discovery
 - Calendar Syncronization
 - Contacts Syncronization
+- Tasks Syncronization
 - Mail App Integration
 
-About 95% of the properties between Nextcloud and EWS are transferable and supported for both Contacts and Calendars, some properties are limited due to the limitations of both systems.
-
-Please note that at the moment the app only supports basic and NTLM authentication. 
+About 95% of the properties between Nextcloud and EWS are transferable and supported for both Contacts, Calendars and Tasks, some properties are limited due to the limitations of both systems.
 
 ### Contacts
 
@@ -146,7 +148,4 @@ Limited to single month of the year |
 | Reminders | Limited | EWS Limitation<br />Relative And Absolute with negative value only. Absolute is converted to Relative. |
 
 ## Future Features
-- Add Oauth2 Support
-- Add MFA Support
-- Add Tasks Syncronization Support
 - Add Notes Syncronization Support
