@@ -772,8 +772,7 @@ export default {
 				})
 		},
 		changeContactCorrelation(roid, loid) {
-			
-			const cid = this.establishedContactCorrelations.findIndex(i => i.roid == roid)
+			const cid = this.establishedContactCorrelations.findIndex(i => String(i.roid) === String(roid))
 
 			if (cid === -1) {
 				this.establishedContactCorrelations.push({ id: null, roid, loid, type: 'CC', action: 'C' })
@@ -783,8 +782,7 @@ export default {
 			}
 		},
 		changeEventCorrelation(roid, loid) {
-			
-			const cid = this.establishedEventCorrelations.findIndex(i => i.roid == roid)
+			const cid = this.establishedEventCorrelations.findIndex(i => String(i.roid) === String(roid))
 
 			if (cid === -1) {
 				this.establishedEventCorrelations.push({ id: null, roid, loid, type: 'EC', action: 'C' })
@@ -794,8 +792,7 @@ export default {
 			}
 		},
 		changeTaskCorrelation(roid, loid) {
-			
-			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
+			const cid = this.establishedTaskCorrelations.findIndex(i => String(i.roid) === String(roid))
 
 			if (cid === -1) {
 				this.establishedTaskCorrelations.push({ id: null, roid, loid, type: 'TC', action: 'C' })
@@ -805,8 +802,7 @@ export default {
 			}
 		},
 		clearContactCorrelation(roid) {
-			
-			const cid = this.establishedContactCorrelations.findIndex(i => i.roid == roid)
+			const cid = this.establishedContactCorrelations.findIndex(i => String(i.roid) === String(roid))
 
 			if (cid > -1) {
 				this.establishedContactCorrelations[cid].roid = null
@@ -816,8 +812,7 @@ export default {
 			}
 		},
 		clearEventCorrelation(roid) {
-			
-			const cid = this.establishedEventCorrelations.findIndex(i => i.roid == roid)
+			const cid = this.establishedEventCorrelations.findIndex(i => String(i.roid) === String(roid))
 
 			if (cid > -1) {
 				this.establishedEventCorrelations[cid].roid = null
@@ -827,8 +822,7 @@ export default {
 			}
 		},
 		clearTaskCorrelation(roid) {
-			
-			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
+			const cid = this.establishedTaskCorrelations.findIndex(i => String(i.roid) === String(roid))
 
 			if (cid > -1) {
 				this.establishedTaskCorrelations[cid].roid = null
@@ -838,8 +832,7 @@ export default {
 			}
 		},
 		establishedContactCorrelationDisable(roid, loid) {
-			
-			const citem = this.establishedContactCorrelations.find(i => i.loid == loid)
+			const citem = this.establishedContactCorrelations.find(i => String(i.loid) === String(loid))
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)
@@ -859,8 +852,7 @@ export default {
 			}
 		},
 		establishedContactCorrelationSelect(roid, loid) {
-			
-			const citem = this.establishedContactCorrelations.find(i => i.loid == loid)
+			const citem = this.establishedContactCorrelations.find(i => String(i.loid) === String(loid))
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)
@@ -880,8 +872,7 @@ export default {
 			}
 		},
 		establishedEventCorrelationDisable(roid, loid) {
-			
-			const citem = this.establishedEventCorrelations.find(i => i.loid == loid)
+			const citem = this.establishedEventCorrelations.find(i => String(i.loid) === String(loid))
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)
@@ -901,8 +892,7 @@ export default {
 			}
 		},
 		establishedEventCorrelationSelect(roid, loid) {
-			
-			const citem = this.establishedEventCorrelations.find(i => i.loid == loid)
+			const citem = this.establishedEventCorrelations.find(i => String(i.loid) === String(loid))
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)
@@ -922,8 +912,7 @@ export default {
 			}
 		},
 		establishedTaskCorrelationDisable(roid, loid) {
-			
-			const citem = this.establishedTaskCorrelations.find(i => i.loid == loid)
+			const citem = this.establishedTaskCorrelations.find(i => String(i.loid) === String(loid))
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)
@@ -943,8 +932,7 @@ export default {
 			}
 		},
 		establishedTaskCorrelationSelect(roid, loid) {
-			
-			const citem = this.establishedTaskCorrelations.find(i => i.loid == loid)
+			const citem = this.establishedTaskCorrelations.find(i => String(i.loid) === String(loid))
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
 			// console.log('R Item ID ' + roid)

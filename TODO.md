@@ -1,5 +1,4 @@
 // Major
-EWSClient - Rewrite
 
 // Minor
 Notifications - improve notification apperance

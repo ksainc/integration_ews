@@ -11118,7 +11118,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     changeContactCorrelation: function changeContactCorrelation(roid, loid) {
       var cid = this.establishedContactCorrelations.findIndex(function (i) {
-        return i.roid == roid;
+        return String(i.roid) === String(roid);
       });
       if (cid === -1) {
         this.establishedContactCorrelations.push({
@@ -11135,7 +11135,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     changeEventCorrelation: function changeEventCorrelation(roid, loid) {
       var cid = this.establishedEventCorrelations.findIndex(function (i) {
-        return i.roid == roid;
+        return String(i.roid) === String(roid);
       });
       if (cid === -1) {
         this.establishedEventCorrelations.push({
@@ -11152,7 +11152,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     changeTaskCorrelation: function changeTaskCorrelation(roid, loid) {
       var cid = this.establishedTaskCorrelations.findIndex(function (i) {
-        return i.roid == roid;
+        return String(i.roid) === String(roid);
       });
       if (cid === -1) {
         this.establishedTaskCorrelations.push({
@@ -11169,7 +11169,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     clearContactCorrelation: function clearContactCorrelation(roid) {
       var cid = this.establishedContactCorrelations.findIndex(function (i) {
-        return i.roid == roid;
+        return String(i.roid) === String(roid);
       });
       if (cid > -1) {
         this.establishedContactCorrelations[cid].roid = null;
@@ -11180,7 +11180,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     clearEventCorrelation: function clearEventCorrelation(roid) {
       var cid = this.establishedEventCorrelations.findIndex(function (i) {
-        return i.roid == roid;
+        return String(i.roid) === String(roid);
       });
       if (cid > -1) {
         this.establishedEventCorrelations[cid].roid = null;
@@ -11191,7 +11191,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     clearTaskCorrelation: function clearTaskCorrelation(roid) {
       var cid = this.establishedTaskCorrelations.findIndex(function (i) {
-        return i.roid == roid;
+        return String(i.roid) === String(roid);
       });
       if (cid > -1) {
         this.establishedTaskCorrelations[cid].roid = null;
@@ -11202,7 +11202,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedContactCorrelationDisable: function establishedContactCorrelationDisable(roid, loid) {
       var citem = this.establishedContactCorrelations.find(function (i) {
-        return i.loid == loid;
+        return String(i.loid) === String(loid);
       });
 
       // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -11224,7 +11224,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedContactCorrelationSelect: function establishedContactCorrelationSelect(roid, loid) {
       var citem = this.establishedContactCorrelations.find(function (i) {
-        return i.loid == loid;
+        return String(i.loid) === String(loid);
       });
 
       // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -11246,7 +11246,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedEventCorrelationDisable: function establishedEventCorrelationDisable(roid, loid) {
       var citem = this.establishedEventCorrelations.find(function (i) {
-        return i.loid == loid;
+        return String(i.loid) === String(loid);
       });
 
       // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -11268,7 +11268,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedEventCorrelationSelect: function establishedEventCorrelationSelect(roid, loid) {
       var citem = this.establishedEventCorrelations.find(function (i) {
-        return i.loid == loid;
+        return String(i.loid) === String(loid);
       });
 
       // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -11290,7 +11290,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedTaskCorrelationDisable: function establishedTaskCorrelationDisable(roid, loid) {
       var citem = this.establishedTaskCorrelations.find(function (i) {
-        return i.loid == loid;
+        return String(i.loid) === String(loid);
       });
 
       // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -11312,7 +11312,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     establishedTaskCorrelationSelect: function establishedTaskCorrelationSelect(roid, loid) {
       var citem = this.establishedTaskCorrelations.find(function (i) {
-        return i.loid == loid;
+        return String(i.loid) === String(loid);
       });
 
       // console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
