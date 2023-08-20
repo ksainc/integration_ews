@@ -10876,10 +10876,7 @@ __webpack_require__.r(__webpack_exports__);
       availableLocalTaskCollections: [],
       establishedTaskCorrelations: [],
       configureManually: false,
-      configureMail: false,
-      o365_application_id: '42439587-9c39-4da2-81f3-cf647e3e6177',
-      o365_tenant_id: '897abca2-ac50-4d46-9486-27b76faeabef',
-      o365_redirect: 'http://localhost/apps/integration_ews/connect-o365'
+      configureMail: false
     };
   },
   computed: {},
@@ -10923,14 +10920,14 @@ __webpack_require__.r(__webpack_exports__);
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to authenticate with EWS server') + ': ' + ((_error$response = error.response) === null || _error$response === void 0 || (_error$response = _error$response.request) === null || _error$response === void 0 ? void 0 : _error$response.responseText));
       });
     },
-    onConnectO365Click: function onConnectO365Click() {
+    onConnectMS365Click: function onConnectMS365Click() {
       var _this2 = this;
-      var requestUrl = 'https://login.microsoftonline.com/' + this.o365_tenant_id + '/oauth2/v2.0/authorize' + '?client_id=' + encodeURIComponent(this.o365_application_id) + '&response_type=code' + '&scope=' + encodeURIComponent('https://outlook.office.com/EWS.AccessAsUser.All') + '&redirect_uri=' + encodeURIComponent(this.o365_redirect);
-      var ssoWindow = window.open(requestUrl, t('integration_onedrive', 'Sign in Nextcloud EWS Connector'), ' width=600, height=700');
+      var ssoWindow = window.open(this.state.system_ms365_authrization_uri, t('integration_onedrive', 'Sign in Nextcloud EWS Connector'), ' width=600, height=700');
       ssoWindow.focus();
       window.addEventListener('message', function (event) {
         console.debug('Child window message received', event);
-        _this2.state.user_name = event.data.username;
+        _this2.state.account_connected = 1;
+        _this2.fetchPreferences();
         _this2.loadData();
       });
     },
@@ -10940,11 +10937,12 @@ __webpack_require__.r(__webpack_exports__);
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Successfully disconnected from EWS account');
         // state
-        _this3.state.account_provider = '';
-        _this3.state.account_server = '';
-        _this3.state.account_id = '';
-        _this3.state.account_secret = '';
-        _this3.state.account_connected = '';
+        _this3.fetchPreferences();
+        // this.state.account_provider = ''
+        // this.state.account_server = ''
+        // this.state.account_id = ''
+        // this.state.account_secret = ''
+        // this.state.account_connected = ''
         // contacts
         _this3.availableRemoteContactCollections = [];
         _this3.availableLocalContactCollections = [];
@@ -11413,7 +11411,7 @@ var render = function render() {
         id: "A"
       }, {
         label: "Microsoft Exchange 365 Online",
-        id: "O365"
+        id: "MS365"
       }]
     },
     model: {
@@ -11423,13 +11421,13 @@ var render = function render() {
       },
       expression: "state.account_provider"
     }
-  })], 1), _vm._v(" "), _c("br"), _vm._v(" "), _vm.state.account_provider == "O365" ? _c("div", [_c("div", {
+  })], 1), _vm._v(" "), _c("br"), _vm._v(" "), _vm.state.account_provider == "MS365" ? _c("div", [_c("div", {
     staticClass: "fields"
-  }, [_c("div", {
-    staticClass: "ews-connect-o365"
+  }, [_vm.state.system_ms365_authrization_uri === "" ? _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 connected accounts admin section.")) + "\n\t\t\t\t\t")]) : _c("div", {
+    staticClass: "ews-connect-ms365"
   }, [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Press connect and enter your account information")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
     on: {
-      click: _vm.onConnectO365Click
+      click: _vm.onConnectMS365Click
     },
     scopedSlots: _vm._u([{
       key: "icon",
@@ -11532,7 +11530,7 @@ var render = function render() {
         _vm.$set(_vm.state, "account_server", $event.target.value);
       }
     }
-  })]) : _vm._e(), _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
+  })]) : _vm._e(), _vm._v(" "), _c("div", [_c("NcCheckboxRadioSwitch", {
     attrs: {
       checked: _vm.configureManually,
       type: "switch"
@@ -11542,7 +11540,7 @@ var render = function render() {
         _vm.configureManually = $event;
       }
     }
-  }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure server manually")) + "\n\t\t\t\t\t\t\t")])], 1)], _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure server manually")) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "), _c("div", [_c("NcCheckboxRadioSwitch", {
     attrs: {
       checked: _vm.configureMail,
       type: "switch"
@@ -11552,7 +11550,7 @@ var render = function render() {
         _vm.configureMail = $event;
       }
     }
-  }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure mail app on successful connection")) + "\n\t\t\t\t\t\t\t")])], 1)], _vm._v(" "), _c("div", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure mail app on successful connection")) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "), _c("div", {
     staticClass: "line"
   }, [_c("label", {
     staticClass: "ews-connect"
@@ -11567,7 +11565,7 @@ var render = function render() {
       },
       proxy: true
     }], null, false, 1355641774)
-  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t\t")])], 1)], 2)])]) : _c("div", [_c("div", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t\t")])], 1)])])]) : _c("div", [_c("div", {
     staticClass: "ews-connected"
   }, [_c("EwsIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connected as {0} to {1}", {
     0: _vm.state.account_id,

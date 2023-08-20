@@ -35,16 +35,19 @@
 					</label>
 					<NcSelect v-model="state.account_provider"
 						:reduce="item => item.id"
-						:options="[{label: 'On-Premises / Alternate', id: 'A'}, {label: 'Microsoft Exchange 365 Online', id: 'O365'}]" />
+						:options="[{label: 'On-Premises / Alternate', id: 'A'}, {label: 'Microsoft Exchange 365 Online', id: 'MS365'}]" />
 				</div>
 				<br>
-				<div v-if="state.account_provider == 'O365'">
+				<div v-if="state.account_provider == 'MS365'">
 					<div class="fields">
-						<div class="ews-connect-o365">
+						<div v-if="state.system_ms365_authrization_uri === ''">
+							{{ t('integration_ews', 'No Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 connected accounts admin section.') }}
+						</div>
+						<div v-else class="ews-connect-ms365">
 							<label>
 								{{ t('integration_ews', 'Press connect and enter your account information') }}
 							</label>
-							<NcButton @click="onConnectO365Click">
+							<NcButton @click="onConnectMS365Click">
 								<template #icon>
 									<CheckIcon />
 								</template>
@@ -97,20 +100,16 @@
 								autocorrect="off"
 								autocapitalize="none">
 						</div>
-						<template>
-							<div>
-								<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
-									{{ t('integration_ews', 'Configure server manually') }}
-								</NcCheckboxRadioSwitch>
-							</div>
-						</template>
-						<template>
-							<div>
-								<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
-									{{ t('integration_ews', 'Configure mail app on successful connection') }}
-								</NcCheckboxRadioSwitch>
-							</div>
-						</template>
+						<div>
+							<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
+								{{ t('integration_ews', 'Configure server manually') }}
+							</NcCheckboxRadioSwitch>
+						</div>
+						<div>
+							<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
+								{{ t('integration_ews', 'Configure mail app on successful connection') }}
+							</NcCheckboxRadioSwitch>
+						</div>
 						<div class="line">
 							<label class="ews-connect">
 								&nbsp;
@@ -204,13 +203,13 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="c" name="contacts_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.contacts_actions_local" value="c" name="contacts_actions_local">
 								Create
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="u" name="contacts_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.contacts_actions_local" value="u" name="contacts_actions_local">
 								Update
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="d" name="contacts_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.contacts_actions_local" value="d" name="contacts_actions_local">
 								Delete
 							</NcCheckboxRadioSwitch>
 						</div>
@@ -218,13 +217,13 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="c" name="contacts_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.contacts_actions_remote" value="c" name="contacts_actions_remote">
 								Create
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="u" name="contacts_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.contacts_actions_remote" value="u" name="contacts_actions_remote">
 								Update
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="d" name="contacts_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.contacts_actions_remote" value="d" name="contacts_actions_remote">
 								Delete
 							</NcCheckboxRadioSwitch>
 						</div>
@@ -295,13 +294,13 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="c" name="events_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.events_actions_local" value="c" name="events_actions_local">
 								Create
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="u" name="events_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.events_actions_local" value="u" name="events_actions_local">
 								Update
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="d" name="events_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.events_actions_local" value="d" name="events_actions_local">
 								Delete
 							</NcCheckboxRadioSwitch>
 						</div>
@@ -309,13 +308,13 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="c" name="events_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.events_actions_remote" value="c" name="events_actions_remote">
 								Create
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="u" name="events_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.events_actions_remote" value="u" name="events_actions_remote">
 								Update
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="d" name="events_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.events_actions_remote" value="d" name="events_actions_remote">
 								Delete
 							</NcCheckboxRadioSwitch>
 						</div>
@@ -386,13 +385,13 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="c" name="tasks_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.tasks_actions_local" value="c" name="tasks_actions_local">
 								Create
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="u" name="tasks_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.tasks_actions_local" value="u" name="tasks_actions_local">
 								Update
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="d" name="tasks_actions_local">
+							<NcCheckboxRadioSwitch :checked.sync="state.tasks_actions_local" value="d" name="tasks_actions_local">
 								Delete
 							</NcCheckboxRadioSwitch>
 						</div>
@@ -400,13 +399,13 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="c" name="tasks_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.tasks_actions_remote" value="c" name="tasks_actions_remote">
 								Create
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="u" name="tasks_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.tasks_actions_remote" value="u" name="tasks_actions_remote">
 								Update
 							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="d" name="tasks_actions_remote">
+							<NcCheckboxRadioSwitch :checked.sync="state.tasks_actions_remote" value="d" name="tasks_actions_remote">
 								Delete
 							</NcCheckboxRadioSwitch>
 						</div>
@@ -506,10 +505,6 @@ export default {
 
 			configureManually: false,
 			configureMail: false,
-
-			o365_application_id: '42439587-9c39-4da2-81f3-cf647e3e6177',
-			o365_tenant_id: '897abca2-ac50-4d46-9486-27b76faeabef',
-			o365_redirect: 'http://localhost/apps/integration_ews/connect-o365',
 		}
 	},
 
@@ -562,21 +557,17 @@ export default {
 					)
 				})
 		},
-		onConnectO365Click() {
-			const requestUrl = 'https://login.microsoftonline.com/' + this.o365_tenant_id + '/oauth2/v2.0/authorize'
-				+ '?client_id=' + encodeURIComponent(this.o365_application_id)
-				+ '&response_type=code'
-				+ '&scope=' + encodeURIComponent('https://outlook.office.com/EWS.AccessAsUser.All')
-				+ '&redirect_uri=' + encodeURIComponent(this.o365_redirect)
+		onConnectMS365Click() {
 			const ssoWindow = window.open(
-				requestUrl,
+				this.state.system_ms365_authrization_uri,
 				t('integration_onedrive', 'Sign in Nextcloud EWS Connector'),
 				' width=600, height=700'
 			)
 			ssoWindow.focus()
 			window.addEventListener('message', (event) => {
 				console.debug('Child window message received', event)
-				this.state.user_name = event.data.username
+				this.state.account_connected = 1
+				this.fetchPreferences()
 				this.loadData()
 			})
 		},
@@ -586,11 +577,7 @@ export default {
 				.then((response) => {
 					showSuccess(('Successfully disconnected from EWS account'))
 					// state
-					this.state.account_provider = ''
-					this.state.account_server = ''
-					this.state.account_id = ''
-					this.state.account_secret = ''
-					this.state.account_connected = ''
+					this.fetchPreferences()
 					// contacts
 					this.availableRemoteContactCollections = []
 					this.availableLocalContactCollections = []

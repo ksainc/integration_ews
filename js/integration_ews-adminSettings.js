@@ -10797,9 +10797,9 @@ __webpack_require__.r(__webpack_exports__);
           harmonization_mode: this.state.harmonization_mode,
           harmonization_thread_duration: this.state.harmonization_thread_duration,
           harmonization_thread_pause: this.state.harmonization_thread_pause,
-          microsoft_tenant_id: this.state.microsoft_tenant_id,
-          microsoft_application_id: this.state.microsoft_application_id,
-          microsoft_application_secret: this.state.microsoft_application_secret
+          ms365_tenant_id: this.state.ms365_tenant_id,
+          ms365_application_id: this.state.ms365_application_id,
+          ms365_application_secret: this.state.ms365_application_secret
         }
       };
       var url = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/admin-configuration');
@@ -10959,8 +10959,8 @@ var render = function render() {
     directives: [{
       name: "model",
       rawName: "v-model",
-      value: _vm.state.microsoft_tenant_id,
-      expression: "state.microsoft_tenant_id"
+      value: _vm.state.ms365_tenant_id,
+      expression: "state.ms365_tenant_id"
     }],
     attrs: {
       id: "ews-microsoft-tenant-id",
@@ -10971,12 +10971,12 @@ var render = function render() {
       autocapitalize: "none"
     },
     domProps: {
-      value: _vm.state.microsoft_tenant_id
+      value: _vm.state.ms365_tenant_id
     },
     on: {
       input: function input($event) {
         if ($event.target.composing) return;
-        _vm.$set(_vm.state, "microsoft_tenant_id", $event.target.value);
+        _vm.$set(_vm.state, "ms365_tenant_id", $event.target.value);
       }
     }
   })]), _vm._v(" "), _c("div", {
@@ -10989,8 +10989,8 @@ var render = function render() {
     directives: [{
       name: "model",
       rawName: "v-model",
-      value: _vm.state.microsoft_application_id,
-      expression: "state.microsoft_application_id"
+      value: _vm.state.ms365_application_id,
+      expression: "state.ms365_application_id"
     }],
     attrs: {
       id: "ews-microsoft-application-id",
@@ -11001,12 +11001,12 @@ var render = function render() {
       autocapitalize: "none"
     },
     domProps: {
-      value: _vm.state.microsoft_application_id
+      value: _vm.state.ms365_application_id
     },
     on: {
       input: function input($event) {
         if ($event.target.composing) return;
-        _vm.$set(_vm.state, "microsoft_application_id", $event.target.value);
+        _vm.$set(_vm.state, "ms365_application_id", $event.target.value);
       }
     }
   })]), _vm._v(" "), _c("div", {
@@ -11019,8 +11019,8 @@ var render = function render() {
     directives: [{
       name: "model",
       rawName: "v-model",
-      value: _vm.state.microsoft_application_secret,
-      expression: "state.microsoft_application_secret"
+      value: _vm.state.ms365_application_secret,
+      expression: "state.ms365_application_secret"
     }],
     attrs: {
       id: "ews-microsoft-application-secret",
@@ -11031,12 +11031,12 @@ var render = function render() {
       autocapitalize: "none"
     },
     domProps: {
-      value: _vm.state.microsoft_application_secret
+      value: _vm.state.ms365_application_secret
     },
     on: {
       input: function input($event) {
         if ($event.target.composing) return;
-        _vm.$set(_vm.state, "microsoft_application_secret", $event.target.value);
+        _vm.$set(_vm.state, "ms365_application_secret", $event.target.value);
       }
     }
   })])]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", {

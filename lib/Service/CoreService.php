@@ -353,25 +353,12 @@ class CoreService {
 	 * 
 	 * @return bool
 	 */
-	public function connectAccountO365(string $uid, string $code, array $flags): bool {
+	public function connectAccountMS365(string $uid, string $code, array $flags): bool {
 
-		$tid = $this->ConfigurationService->retrieveSystemValue('microsoft_tenant_id');
-		$aid = $this->ConfigurationService->retrieveSystemValue('microsoft_application_id');
-		$asecret = $this->ConfigurationService->retrieveSystemValue('microsoft_application_secret');
 		$code = rtrim($code,'#');
 
-		$httpClient = (\OC::$server->get(\OCP\Http\Client\IClientService::class))->newClient();
 		try {
-			$response = $httpClient->post("https://login.microsoftonline.com/$tid/oauth2/v2.0/token", [
-				'form_params' => [
-					'client_id' => $aid,
-					'client_secret' => $asecret,
-					'grant_type' => 'authorization_code',
-					'scope' => 'https://outlook.office.com/EWS.AccessAsUser.All offline_access',
-					'redirect_uri' => 'http://localhost/apps/integration_ews/connect-o365',
-					'code' => $code,
-				],
-			]);
+			$data = \OCA\EWS\Integration\Microsoft365::createAccess($code);
 		} catch (Exception $e) {
 			$this->logger->error('Could not link Microsoft account: ' . $e->getMessage(), [
 				'exception' => $e,
@@ -379,20 +366,18 @@ class CoreService {
 			return false;
 		}
 
-		$data = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-
-		$this->ConfigurationService->depositAuthenticationOAuth(
-			$uid,
-			'outlook.office365.com',
-			'Exchange2016',
-			$data['access_token'],
-			(int) $data['expires_in'] + time(),
-			$data['refresh_token']
-		);
-		$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderO365);
-		$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
-
 		if (is_array($data)) {
+			$this->ConfigurationService->depositAuthenticationOAuth(
+				$uid,
+				$data['service_server'],
+				$data['service_protocol'],
+				$data['access'],
+				(int) $data['expiry'],
+				$data['refresh']
+			);
+			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
+			$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
+
 			return true;
 		} else {
 			return false;
@@ -409,24 +394,10 @@ class CoreService {
 	 * 
 	 * @return bool
 	 */
-	public function refreshAccountO365(string $uid, string $code): bool {
+	public function refreshAccountMS365(string $uid, string $code): bool {
 
-		$tid = $this->ConfigurationService->retrieveSystemValue('microsoft_tenant_id');
-		$aid = $this->ConfigurationService->retrieveSystemValue('microsoft_application_id');
-		$asecret = $this->ConfigurationService->retrieveSystemValue('microsoft_application_secret');
-
-		$httpClient = (\OC::$server->get(\OCP\Http\Client\IClientService::class))->newClient();
 		try {
-			$response = $httpClient->post("https://login.microsoftonline.com/$tid/oauth2/v2.0/token", [
-				'form_params' => [
-					'client_id' => $aid,
-					'client_secret' => $asecret,
-					'grant_type' => 'refresh_token',
-					'scope' => 'https://outlook.office.com/EWS.AccessAsUser.All offline_access',
-					'redirect_uri' => 'http://localhost/apps/integration_ews/connect-o365',
-					'refresh_token' => $code,
-				],
-			]);
+			$data = \OCA\EWS\Integration\Microsoft365::createAccess($code);
 		} catch (Exception $e) {
 			$this->logger->error('Could not refresh Microsoft account access token: ' . $e->getMessage(), [
 				'exception' => $e,
@@ -434,20 +405,18 @@ class CoreService {
 			return false;
 		}
 
-		$data = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-
-		$this->ConfigurationService->depositAuthenticationOAuth(
-			$uid,
-			'outlook.office365.com',
-			'Exchange2016',
-			$data['access_token'],
-			(int) $data['expires_in'] + time(),
-			$data['refresh_token']
-		);
-		$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderO365);
-		$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
-
 		if (is_array($data)) {
+			$this->ConfigurationService->depositAuthenticationOAuth(
+				$uid,
+				$data['service_server'],
+				$data['service_protocol'],
+				$data['access'],
+				(int) $data['expiry'],
+				$data['refresh']
+			);
+			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
+			$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
+
 			return true;
 		} else {
 			return false;
@@ -794,19 +763,19 @@ class CoreService {
 
 		if (!$this->RemoteStore instanceof EWSClient) {
 			switch ($this->ConfigurationService->retrieveProvider($uid)) {
-				case ConfigurationService::ProviderO365:
+				case ConfigurationService::ProviderMS365:
 					// retrieve connection information
 					$ac = $this->ConfigurationService->retrieveAuthenticationOAuth($uid);
 
 					if ($ac['account_oauth_expiry'] < time()) {
-						$this->refreshAccountO365($uid, $ac['account_oauth_refresh']);
+						$this->refreshAccountMS365($uid, $ac['account_oauth_refresh']);
 						// retrieve connection information again
 						$ac = $this->ConfigurationService->retrieveAuthenticationOAuth($uid);
 					}
 					// construct remote data store client
 					$this->RemoteStore = new EWSClient(
 						$ac['account_server'], 
-						new \OCA\EWS\Components\EWS\AuthenticationBearer($ac['account_oauth_token']), 
+						new \OCA\EWS\Components\EWS\AuthenticationBearer($ac['account_oauth_access']), 
 						$ac['account_protocol']);
 					break;
 				case ConfigurationService::ProviderAlternate:

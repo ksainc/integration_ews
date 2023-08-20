@@ -79,7 +79,7 @@
 						{{ t('integration_ews', 'Tenant ID') }}
 					</label>
 					<input id="ews-microsoft-tenant-id"
-						v-model="state.microsoft_tenant_id"
+						v-model="state.ms365_tenant_id"
 						type="text"
 						:placeholder="t('integration_ews', '')"
 						autocomplete="off"
@@ -92,7 +92,7 @@
 						{{ t('integration_ews', 'Application ID') }}
 					</label>
 					<input id="ews-microsoft-application-id"
-						v-model="state.microsoft_application_id"
+						v-model="state.ms365_application_id"
 						type="text"
 						:placeholder="t('integration_ews', '')"
 						autocomplete="off"
@@ -105,7 +105,7 @@
 						{{ t('integration_ews', 'Application Secret') }}
 					</label>
 					<input id="ews-microsoft-application-secret"
-						v-model="state.microsoft_application_secret"
+						v-model="state.ms365_application_secret"
 						type="password"
 						:placeholder="t('integration_ews', '')"
 						autocomplete="off"
@@ -167,9 +167,9 @@ export default {
 					harmonization_mode: this.state.harmonization_mode,
 					harmonization_thread_duration: this.state.harmonization_thread_duration,
 					harmonization_thread_pause: this.state.harmonization_thread_pause,
-					microsoft_tenant_id: this.state.microsoft_tenant_id,
-					microsoft_application_id: this.state.microsoft_application_id,
-					microsoft_application_secret: this.state.microsoft_application_secret,
+					ms365_tenant_id: this.state.ms365_tenant_id,
+					ms365_application_id: this.state.ms365_application_id,
+					ms365_application_secret: this.state.ms365_application_secret,
 				},
 			}
 			const url = generateUrl('/apps/integration_ews/admin-configuration')

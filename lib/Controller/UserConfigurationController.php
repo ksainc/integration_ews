@@ -31,6 +31,7 @@ use Throwable;
 use OCP\IRequest;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\TemplateResponse;
 
 use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Service\ConfigurationService;
@@ -114,7 +115,7 @@ class UserConfigurationController extends Controller {
 	 * 
 	 * @return DataResponse
 	 */
-	public function ConnectO365(string $code): DataResponse {
+	public function ConnectMS365(string $code): TemplateResponse {
 		
 		// evaluate if user id is present
 		if ($this->userId === null) {
@@ -123,10 +124,10 @@ class UserConfigurationController extends Controller {
 		// assign flags
 		$flags = ['VALIDATE'];
 		// execute command
-		$rs = $this->CoreService->connectAccountO365($this->userId, $code, $flags);
+		$rs = $this->CoreService->connectAccountMS365($this->userId, $code, $flags);
 		// return response
 		if ($rs) {
-			return new DataResponse('success');
+			return new TemplateResponse(Application::APP_ID, 'popupSuccess', [], TemplateResponse::RENDER_AS_GUEST);
 		} else {
 			return new DataResponse($rs['error'], 401);
 		}

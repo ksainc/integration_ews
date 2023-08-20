@@ -78,6 +78,9 @@ try {
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 
+
+	$test = \OCA\EWS\Integration\Microsoft365::constructAuthorizationUrl();
+	
 	// execute retrieve local collections harmonization
 	//$test = $CoreService->fetchLocalCollections($uid);
 
@@ -88,7 +91,7 @@ try {
 	//$test = $CoreService->fetchCorrelations($uid);
 
 	// execute initial harmonization
-	$HarmonizationService->performHarmonization($uid, 'S');
+	//$HarmonizationService->performHarmonization($uid, 'S');
 
 	// execute actions
 	//$HarmonizationService->performActions($uid);

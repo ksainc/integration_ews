@@ -36,7 +36,8 @@ use OCA\EWS\AppInfo\Application;
 class ConfigurationService {
 
 	const ProviderAlternate = 'A';
-	const ProviderO365 = 'O365';
+	const ProviderMS365 = 'MS365';
+
 	/**
 	 * Default System Configuration 
 	 * @var array
@@ -45,9 +46,9 @@ class ConfigurationService {
 		'harmonization_mode' => 'P',
 		'harmonization_thread_duration' => '3600',
 		'harmonization_thread_pause' => '15',
-		'microsoft_tenant_id' => '',
-		'microsoft_application_id' => '',
-		'microsoft_application_secret' => '',
+		'ms365_tenant_id' => '',
+		'ms365_application_id' => '',
+		'ms365_application_secret' => '',
 	];
 
 	/**
@@ -66,6 +67,9 @@ class ConfigurationService {
 		'account_harmonization_end' => '0',
 		'account_harmonization_tid' => '0',
 		'account_harmonization_thb' => '0',
+		'account_oauth_access' => '',
+		'account_oauth_expiry' => '0',
+		'account_oauth_refresh' => '',
 		'contacts_harmonize' => '5',
 		'contacts_prevalence' => 'R',
 		'contacts_presentation' => 'DisplayName',
@@ -185,7 +189,7 @@ class ConfigurationService {
 		$parameters = [];
 		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
 		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
-		$parameters['account_oauth_token'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_token'));
+		$parameters['account_oauth_access'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_access'));
 		$parameters['account_oauth_expiry'] = $this->retrieveUserValue($uid, 'account_oauth_expiry');
 		$parameters['account_oauth_refresh'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_refresh'));
 		// return configuration parameters
@@ -211,7 +215,7 @@ class ConfigurationService {
 		// deposit user oauth authentication parameters
 		$this->depositUserValue($uid, 'account_server', $server);
 		$this->depositUserValue($uid, 'account_protocol', $protocol);
-		$this->depositUserValue($uid, 'account_oauth_token', $this->_cs->encrypt($token));
+		$this->depositUserValue($uid, 'account_oauth_access', $this->_cs->encrypt($token));
 		$this->depositUserValue($uid, 'account_oauth_expiry', $expiry);
 		$this->depositUserValue($uid, 'account_oauth_refresh', $this->_cs->encrypt($refresh));
 

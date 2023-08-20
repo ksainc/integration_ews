@@ -56,6 +56,7 @@ class UserSettings implements ISettings {
 		
 		// retrieve user configuration
 		$configuration = $this->ConfigurationService->retrieveUser($this->userId);
+		$configuration['system_ms365_authrization_uri'] = \OCA\EWS\Integration\Microsoft365::constructAuthorizationUrl();
 		
 		$this->initialStateService->provideInitialState('user-configuration', $configuration);
 
