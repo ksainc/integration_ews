@@ -10796,7 +10796,10 @@ __webpack_require__.r(__webpack_exports__);
         values: {
           harmonization_mode: this.state.harmonization_mode,
           harmonization_thread_duration: this.state.harmonization_thread_duration,
-          harmonization_thread_pause: this.state.harmonization_thread_pause
+          harmonization_thread_pause: this.state.harmonization_thread_pause,
+          microsoft_tenant_id: this.state.microsoft_tenant_id,
+          microsoft_application_id: this.state.microsoft_application_id,
+          microsoft_application_secret: this.state.microsoft_application_secret
         }
       };
       var url = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/admin-configuration');
@@ -10872,9 +10875,9 @@ var render = function render() {
     staticClass: "settings-hint"
   }, [_vm._v("\n\t\t" + _vm._s(_vm.t("integration_ews", "Select the system settings for Exchange Integration")) + "\n\t")]), _vm._v(" "), _c("div", {
     staticClass: "fields"
-  }, [_c("div", {
+  }, [_c("div", [_c("div", {
     staticClass: "line"
-  }, [_c("label", [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronization Mode")) + "\n\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }, [_c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronization Mode")) + "\n\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -10896,7 +10899,7 @@ var render = function render() {
     }
   })], 1), _vm._v(" "), _vm.state.harmonization_mode === "A" ? _c("div", {
     staticClass: "line"
-  }, [_c("label", [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronization Thread Duration")) + "\n\t\t\t")]), _vm._v(" "), _c("input", {
+  }, [_c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronization Thread Duration")) + "\n\t\t\t\t")]), _vm._v(" "), _c("input", {
     directives: [{
       name: "model",
       rawName: "v-model",
@@ -10919,9 +10922,9 @@ var render = function render() {
         _vm.$set(_vm.state, "harmonization_thread_duration", $event.target.value);
       }
     }
-  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Seconds")) + "\n\t\t\t")])]) : _vm._e(), _vm._v(" "), _vm.state.harmonization_mode === "A" ? _c("div", {
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Seconds")) + "\n\t\t\t\t")])]) : _vm._e(), _vm._v(" "), _vm.state.harmonization_mode === "A" ? _c("div", {
     staticClass: "line"
-  }, [_c("label", [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronization Thread Pause")) + "\n\t\t\t")]), _vm._v(" "), _c("input", {
+  }, [_c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Synchronization Thread Pause")) + "\n\t\t\t\t")]), _vm._v(" "), _c("input", {
     directives: [{
       name: "model",
       rawName: "v-model",
@@ -10944,7 +10947,99 @@ var render = function render() {
         _vm.$set(_vm.state, "harmonization_thread_pause", $event.target.value);
       }
     }
-  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Seconds")) + "\n\t\t\t")])]) : _vm._e(), _vm._v(" "), _c("div", {
+  }), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Seconds")) + "\n\t\t\t\t")])]) : _vm._e()]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", [_c("p", {
+    staticClass: "settings-hint"
+  }, [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Microsoft 365 Authentication Settings")) + "\n\t\t\t")]), _vm._v(" "), _c("div", {
+    staticClass: "line"
+  }, [_c("label", {
+    attrs: {
+      for: "ews-microsoft-tenant-id"
+    }
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Tenant ID")) + "\n\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.state.microsoft_tenant_id,
+      expression: "state.microsoft_tenant_id"
+    }],
+    attrs: {
+      id: "ews-microsoft-tenant-id",
+      type: "text",
+      placeholder: _vm.t("integration_ews", ""),
+      autocomplete: "off",
+      autocorrect: "off",
+      autocapitalize: "none"
+    },
+    domProps: {
+      value: _vm.state.microsoft_tenant_id
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.state, "microsoft_tenant_id", $event.target.value);
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "line"
+  }, [_c("label", {
+    attrs: {
+      for: "ews-microsoft-application-id"
+    }
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Application ID")) + "\n\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.state.microsoft_application_id,
+      expression: "state.microsoft_application_id"
+    }],
+    attrs: {
+      id: "ews-microsoft-application-id",
+      type: "text",
+      placeholder: _vm.t("integration_ews", ""),
+      autocomplete: "off",
+      autocorrect: "off",
+      autocapitalize: "none"
+    },
+    domProps: {
+      value: _vm.state.microsoft_application_id
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.state, "microsoft_application_id", $event.target.value);
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "line"
+  }, [_c("label", {
+    attrs: {
+      for: "ews-microsoft-application-secret"
+    }
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Application Secret")) + "\n\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.state.microsoft_application_secret,
+      expression: "state.microsoft_application_secret"
+    }],
+    attrs: {
+      id: "ews-microsoft-application-secret",
+      type: "password",
+      placeholder: _vm.t("integration_ews", ""),
+      autocomplete: "off",
+      autocorrect: "off",
+      autocapitalize: "none"
+    },
+    domProps: {
+      value: _vm.state.microsoft_application_secret
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.state, "microsoft_application_secret", $event.target.value);
+      }
+    }
+  })])]), _vm._v(" "), _c("br"), _vm._v(" "), _c("div", {
     staticClass: "ews-actions"
   }, [_c("NcButton", {
     on: {

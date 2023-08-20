@@ -30,42 +30,90 @@
 			{{ t('integration_ews', 'Select the system settings for Exchange Integration') }}
 		</p>
 		<div class="fields">
-			<div class="line">
-				<label>
-					{{ t('integration_ews', 'Synchronization Mode') }}
-				</label>
-				<NcSelect v-model="state.harmonization_mode"
-					:reduce="item => item.id"
-					:options="[{label: 'Passive', id: 'P'}, {label: 'Active', id: 'A'}]" />
+			<div>
+				<div class="line">
+					<label>
+						{{ t('integration_ews', 'Synchronization Mode') }}
+					</label>
+					<NcSelect v-model="state.harmonization_mode"
+						:reduce="item => item.id"
+						:options="[{label: 'Passive', id: 'P'}, {label: 'Active', id: 'A'}]" />
+				</div>
+				<div class="line" v-if="state.harmonization_mode === 'A'">
+					<label>
+						{{ t('integration_ews', 'Synchronization Thread Duration') }}
+					</label>
+					<input id="ews-thread-duration"
+						v-model="state.harmonization_thread_duration"
+						type="text"
+						:autocomplete="'off'"
+						:autocorrect="'off'"
+						:autocapitalize="'none'">
+					<label>
+						{{ t('integration_ews', 'Seconds') }}
+					</label>
+				</div>
+				<div class="line" v-if="state.harmonization_mode === 'A'">
+					<label>
+						{{ t('integration_ews', 'Synchronization Thread Pause') }}
+					</label>
+					<input id="ews-thread-pause"
+						v-model="state.harmonization_thread_pause"
+						type="text"
+						:autocomplete="off"
+						:autocorrect="off"
+						:autocapitalize="none">
+					<label>
+						{{ t('integration_ews', 'Seconds') }}
+					</label>
+				</div>
 			</div>
-			<div class="line" v-if="state.harmonization_mode === 'A'">
-				<label>
-					{{ t('integration_ews', 'Synchronization Thread Duration') }}
-				</label>
-				<input id="ews-thread-duration"
-					v-model="state.harmonization_thread_duration"
-					type="text"
-					:autocomplete="'off'"
-					:autocorrect="'off'"
-					:autocapitalize="'none'">
-				<label>
-					{{ t('integration_ews', 'Seconds') }}
-				</label>
+			<br>
+			<div>
+				<p class="settings-hint">
+					{{ t('integration_ews', 'Microsoft 365 Authentication Settings') }}
+				</p>
+				<div class="line">
+					<label for="ews-microsoft-tenant-id">
+						<EwsIcon />
+						{{ t('integration_ews', 'Tenant ID') }}
+					</label>
+					<input id="ews-microsoft-tenant-id"
+						v-model="state.microsoft_tenant_id"
+						type="text"
+						:placeholder="t('integration_ews', '')"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="none">
+				</div>
+				<div class="line">
+					<label for="ews-microsoft-application-id">
+						<EwsIcon />
+						{{ t('integration_ews', 'Application ID') }}
+					</label>
+					<input id="ews-microsoft-application-id"
+						v-model="state.microsoft_application_id"
+						type="text"
+						:placeholder="t('integration_ews', '')"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="none">
+				</div>
+				<div class="line">
+					<label for="ews-microsoft-application-secret">
+						<EwsIcon />
+						{{ t('integration_ews', 'Application Secret') }}
+					</label>
+					<input id="ews-microsoft-application-secret"
+						v-model="state.microsoft_application_secret"
+						type="password"
+						:placeholder="t('integration_ews', '')"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="none">
+				</div>
 			</div>
-			<div class="line" v-if="state.harmonization_mode === 'A'">
-				<label>
-					{{ t('integration_ews', 'Synchronization Thread Pause') }}
-				</label>
-				<input id="ews-thread-pause"
-					v-model="state.harmonization_thread_pause"
-					type="text"
-					:autocomplete="off"
-					:autocorrect="off"
-					:autocapitalize="none">
-				<label>
-					{{ t('integration_ews', 'Seconds') }}
-				</label>
-			</div>
+			<br>
 			<div class="ews-actions">
 				<NcButton @click="onSaveClick()">
 					<template #icon>
@@ -119,6 +167,9 @@ export default {
 					harmonization_mode: this.state.harmonization_mode,
 					harmonization_thread_duration: this.state.harmonization_thread_duration,
 					harmonization_thread_pause: this.state.harmonization_thread_pause,
+					microsoft_tenant_id: this.state.microsoft_tenant_id,
+					microsoft_application_id: this.state.microsoft_application_id,
+					microsoft_application_secret: this.state.microsoft_application_secret,
 				},
 			}
 			const url = generateUrl('/apps/integration_ews/admin-configuration')

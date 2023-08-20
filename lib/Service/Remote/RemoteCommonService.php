@@ -43,6 +43,8 @@ use OCA\EWS\Components\EWS\Enumeration\UnindexedFieldURIType;
 
 
 class RemoteCommonService {
+
+	const PS_PUBLIC_STRINGS	= '00020329-0000-0000-C000-000000000046';
 	/**
 	 * @var LoggerInterface
 	 */
@@ -391,6 +393,7 @@ class RemoteCommonService {
 			null,
 			'String'
 		);
+		/*
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			null,
 			null,
@@ -407,6 +410,7 @@ class RemoteCommonService {
 			'0x3008',
 			'SystemTime'
 		);
+		*/
 		// execute request
 		$response = $DataStore->SyncFolderItems($request);
 		// process response
@@ -551,6 +555,7 @@ class RemoteCommonService {
 			null,
 			'String'
 		);
+		/*
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			null,
 			null,
@@ -567,6 +572,7 @@ class RemoteCommonService {
 			'0x3008',
 			'SystemTime'
 		);
+		*/
 		// define paging
 		$request->IndexedPageItemView = new \OCA\EWS\Components\EWS\Type\IndexedPageViewType('Beginning', 0, 512);
 		// define criteria
@@ -653,6 +659,7 @@ class RemoteCommonService {
 			null,
 			'String'
 		);
+		/*
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			null,
 			null,
@@ -669,6 +676,7 @@ class RemoteCommonService {
 			'0x3008',
 			'SystemTime'
 		);
+		*/
 		// define paging
 		$request->IndexedPageItemView = new \OCA\EWS\Components\EWS\Type\IndexedPageViewType('Beginning', 0, 512);
 		// define criteria
@@ -763,6 +771,7 @@ class RemoteCommonService {
 			null,
 			'String'
 		);
+		/*
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			null,
 			null,
@@ -779,6 +788,7 @@ class RemoteCommonService {
 			'0x3008',
 			'SystemTime'
 		);
+		*/
 		// execute request
 		$response = $DataStore->GetItem($request);
 		// process response

@@ -1228,6 +1228,7 @@ class RemoteContactsService {
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
             $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:HasPicture');
             // Name Prefix
+            /*
             $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
                 null,
                 null,
@@ -1254,7 +1255,7 @@ class RemoteContactsService {
                 '0x802C',
                 'String'
             );
-
+            */
 			$this->DefaultItemProperties = $p;
 		}
 

@@ -76,22 +76,22 @@ class Version1000Date20230601 extends SimpleMigrationStep {
 			]);
 			// local object state
 			$table->addColumn('lostate', Types::STRING, [
-				'length' => 64,
+				'length' => 255,
 				'notnull' => false
 			]);
 			// remote object id
 			$table->addColumn('roid', Types::STRING, [
-				'length' => 255,
+				'length' => 512,
 				'notnull' => true
 			]);
 			// remote collection id
 			$table->addColumn('rcid', Types::STRING, [
-				'length' => 255,
+				'length' => 512,
 				'notnull' => false
 			]);
 			// remote object state
 			$table->addColumn('rostate', Types::STRING, [
-				'length' => 64,
+				'length' => 512,
 				'notnull' => false
 			]);
 			
@@ -142,17 +142,17 @@ class Version1000Date20230601 extends SimpleMigrationStep {
 			]);
 			// remote object id
 			$table->addColumn('roid', Types::STRING, [
-				'length' => 255,
+				'length' => 512,
 				'notnull' => false
 			]);
 			// remote collection id
 			$table->addColumn('rcid', Types::STRING, [
-				'length' => 255,
+				'length' => 512,
 				'notnull' => false
 			]);
 			// remote object state
 			$table->addColumn('rostate', Types::STRING, [
-				'length' => 255,
+				'length' => 512,
 				'notnull' => false
 			]);
 			// action date

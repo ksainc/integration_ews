@@ -35,6 +35,8 @@ use OCA\EWS\AppInfo\Application;
 
 class ConfigurationService {
 
+	const ProviderAlternate = 'A';
+	const ProviderO365 = 'O365';
 	/**
 	 * Default System Configuration 
 	 * @var array
@@ -43,6 +45,9 @@ class ConfigurationService {
 		'harmonization_mode' => 'P',
 		'harmonization_thread_duration' => '3600',
 		'harmonization_thread_pause' => '15',
+		'microsoft_tenant_id' => '',
+		'microsoft_application_id' => '',
+		'microsoft_application_secret' => '',
 	];
 
 	/**
@@ -50,7 +55,8 @@ class ConfigurationService {
 	 * @var array
 	 * */
 	private const _USER = [
-		'account_provider' => '',
+		'account_provider' => 'A',
+		'account_server' => '',
 		'account_id' => '',
 		'account_secret' => '',
 		'account_protocol' => 'Exchange2007',
@@ -87,7 +93,40 @@ class ConfigurationService {
 	}
 
 	/**
-	 * Retrieves user authentication parameters
+	 * Retrieves account provider
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id
+	 * 
+	 * @return string acount provider id
+	 */
+	public function retrieveProvider(string $uid): string {
+		
+		// retrieve and return account provider
+		return $this->retrieveUserValue($uid, 'account_provider');;
+
+	}
+
+	/**
+	 * Deposit accout provider
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * @param string $id		account provider id 
+	 * 
+	 * @return void
+	 */
+	public function depositProvider(string $uid, string $id): void {
+		
+		// deposit account provider
+		$this->depositUserValue($uid, 'account_provider', $id);
+
+	}
+
+	/**
+	 * Retrieves user basic authentication parameters
 	 * 
 	 * @since Release 1.0.0
 	 * 
@@ -95,41 +134,86 @@ class ConfigurationService {
 	 * 
 	 * @return array of key/value pairs, of parameters
 	 */
-	public function retrieveAuthentication(string $uid): array {
+	public function retrieveAuthenticationBasic(string $uid): array {
 		
-		// define defaults authentication parameters
-		$keys = ['account_provider', 'account_id', 'account_secret', 'account_protocol'];
 		// retrieve user authentication parameters
 		$parameters = [];
-		$parameters['account_provider'] = $this->retrieveUserValue($uid, 'account_provider');
+		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
+		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
 		$parameters['account_id'] = $this->retrieveUserValue($uid, 'account_id');
 		$parameters['account_secret'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_secret'));
-		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
 		// return configuration parameters
 		return $parameters;
 
 	}
 
 	/**
-	 * Deposit user authentication parameters
+	 * Deposit user basic authentication parameters
 	 * 
 	 * @since Release 1.0.0
 	 * 
-	 * @param string $uid				nextcloud user id
-	 * @param string $account_provider	FQDN or IP 
-	 * @param string $account_id		account username
-	 * @param string $account_secret	account secret
-	 * @param string $account_protocol	account protocol version
+	 * @param string $uid			nextcloud user id
+	 * @param string $server		FQDN or IP
+	 * @param string $protocol		account protocol version
+	 * @param string $id			account username
+	 * @param string $secret		account secret
 	 * 
 	 * @return void
 	 */
-	public function depositAuthentication(string $uid, string $account_provider, string $account_id, string $account_secret, string $account_protocol): void {
+	public function depositAuthenticationBasic(string $uid, string $server, string $protocol, string $id, string $secret): void {
 		
 		// deposit user authentication parameters
-		$this->depositUserValue($uid, 'account_provider', $account_provider);
-		$this->depositUserValue($uid, 'account_id', $account_id);
-		$this->depositUserValue($uid, 'account_secret', $this->_cs->encrypt($account_secret));
-		$this->depositUserValue($uid, 'account_protocol', $account_protocol);
+		$this->depositUserValue($uid, 'account_server', $server);
+		$this->depositUserValue($uid, 'account_protocol', $protocol);
+		$this->depositUserValue($uid, 'account_id', $id);
+		$this->depositUserValue($uid, 'account_secret', $this->_cs->encrypt($secret));
+		
+	}
+
+	/**
+	 * Retrieves user oauth authentication parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid	nextcloud user id
+	 * 
+	 * @return array of key/value pairs, of parameters
+	 */
+	public function retrieveAuthenticationOAuth(string $uid): array {
+		
+		// retrieve user authentication parameters
+		$parameters = [];
+		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
+		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
+		$parameters['account_oauth_token'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_token'));
+		$parameters['account_oauth_expiry'] = $this->retrieveUserValue($uid, 'account_oauth_expiry');
+		$parameters['account_oauth_refresh'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_refresh'));
+		// return configuration parameters
+		return $parameters;
+
+	}
+
+	/**
+	 * Deposit user oauth authentication parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid			nextcloud user id
+	 * @param string $server		FQDN or IP 
+	 * @param string $token			oauth token
+	 * @param string $expiry		oauth expiry timestamp
+	 * @param string $refresh		oauth refresh code
+	 * 
+	 * @return void
+	 */
+	public function depositAuthenticationOAuth(string $uid, string $server, string $protocol, string $token, string $expiry, string $refresh): void {
+		
+		// deposit user oauth authentication parameters
+		$this->depositUserValue($uid, 'account_server', $server);
+		$this->depositUserValue($uid, 'account_protocol', $protocol);
+		$this->depositUserValue($uid, 'account_oauth_token', $this->_cs->encrypt($token));
+		$this->depositUserValue($uid, 'account_oauth_expiry', $expiry);
+		$this->depositUserValue($uid, 'account_oauth_refresh', $this->_cs->encrypt($refresh));
 
 	}
 
@@ -462,6 +546,9 @@ class ConfigurationService {
 					break;
 				case 'account_provider':
 					$o->AccountProvider = $value;
+					break;
+				case 'account_server':
+					$o->AccountServer = $value;
 					break;
 				case 'account_id':
 					$o->AccountId = $value;

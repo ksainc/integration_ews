@@ -10876,7 +10876,10 @@ __webpack_require__.r(__webpack_exports__);
       availableLocalTaskCollections: [],
       establishedTaskCorrelations: [],
       configureManually: false,
-      configureMail: false
+      configureMail: false,
+      o365_application_id: '42439587-9c39-4da2-81f3-cf647e3e6177',
+      o365_tenant_id: '897abca2-ac50-4d46-9486-27b76faeabef',
+      o365_redirect: 'http://localhost/apps/integration_ews/connect-o365'
     };
   },
   computed: {},
@@ -10896,12 +10899,13 @@ __webpack_require__.r(__webpack_exports__);
         this.fetchRemoteCollections();
       }
     },
-    onConnectClick: function onConnectClick() {
+    onConnectAlternateClick: function onConnectAlternateClick() {
       var _this = this;
-      var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/connect');
+      var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/connect-alternate');
       var data = {
         params: {
           account_provider: this.state.account_provider,
+          account_server: this.state.account_server,
           account_id: this.state.account_id,
           account_secret: this.state.account_secret,
           flag: this.configureMail
@@ -10919,28 +10923,40 @@ __webpack_require__.r(__webpack_exports__);
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to authenticate with EWS server') + ': ' + ((_error$response = error.response) === null || _error$response === void 0 || (_error$response = _error$response.request) === null || _error$response === void 0 ? void 0 : _error$response.responseText));
       });
     },
-    onDisconnectClick: function onDisconnectClick() {
+    onConnectO365Click: function onConnectO365Click() {
       var _this2 = this;
+      var requestUrl = 'https://login.microsoftonline.com/' + this.o365_tenant_id + '/oauth2/v2.0/authorize' + '?client_id=' + encodeURIComponent(this.o365_application_id) + '&response_type=code' + '&scope=' + encodeURIComponent('https://outlook.office.com/EWS.AccessAsUser.All') + '&redirect_uri=' + encodeURIComponent(this.o365_redirect);
+      var ssoWindow = window.open(requestUrl, t('integration_onedrive', 'Sign in Nextcloud EWS Connector'), ' width=600, height=700');
+      ssoWindow.focus();
+      window.addEventListener('message', function (event) {
+        console.debug('Child window message received', event);
+        _this2.state.user_name = event.data.username;
+        _this2.loadData();
+      });
+    },
+    onDisconnectClick: function onDisconnectClick() {
+      var _this3 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/disconnect');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Successfully disconnected from EWS account');
         // state
-        _this2.state.account_provider = '';
-        _this2.state.account_id = '';
-        _this2.state.account_secret = '';
-        _this2.state.account_connected = '';
+        _this3.state.account_provider = '';
+        _this3.state.account_server = '';
+        _this3.state.account_id = '';
+        _this3.state.account_secret = '';
+        _this3.state.account_connected = '';
         // contacts
-        _this2.availableRemoteContactCollections = [];
-        _this2.availableLocalContactCollections = [];
-        _this2.establishedContactCorrelations = [];
+        _this3.availableRemoteContactCollections = [];
+        _this3.availableLocalContactCollections = [];
+        _this3.establishedContactCorrelations = [];
         // events
-        _this2.availableRemoteEventCollections = [];
-        _this2.availableLocalEventCollections = [];
-        _this2.establishedEventCorrelations = [];
+        _this3.availableRemoteEventCollections = [];
+        _this3.availableLocalEventCollections = [];
+        _this3.establishedEventCorrelations = [];
         // tasks
-        _this2.availableRemoteTaskCollections = [];
-        _this2.availableLocalTaskCollections = [];
-        _this2.establishedTaskCorrelations = [];
+        _this3.availableRemoteTaskCollections = [];
+        _this3.availableLocalTaskCollections = [];
+        _this3.establishedTaskCorrelations = [];
       }).catch(function (error) {
         var _error$response2;
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to disconnect from EWS account') + ': ' + ((_error$response2 = error.response) === null || _error$response2 === void 0 || (_error$response2 = _error$response2.request) === null || _error$response2 === void 0 ? void 0 : _error$response2.responseText));
@@ -10973,7 +10989,7 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     onTestClick: function onTestClick(action) {
-      var _this3 = this;
+      var _this4 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/test');
       var data = {
         params: {
@@ -10982,27 +10998,27 @@ __webpack_require__.r(__webpack_exports__);
       };
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri, data).then(function (response) {
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Test Successful');
-        _this3.loadData();
+        _this4.loadData();
       }).catch(function (error) {
         var _error$response4;
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Test Failed') + ': ' + ((_error$response4 = error.response) === null || _error$response4 === void 0 || (_error$response4 = _error$response4.request) === null || _error$response4 === void 0 ? void 0 : _error$response4.responseText));
       });
     },
     fetchRemoteCollections: function fetchRemoteCollections() {
-      var _this4 = this;
+      var _this5 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-remote-collections');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
         if (response.data.ContactCollections) {
-          _this4.availableRemoteContactCollections = response.data.ContactCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteContactCollections.length + ' Remote Contacts Collections');
+          _this5.availableRemoteContactCollections = response.data.ContactCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableRemoteContactCollections.length + ' Remote Contacts Collections');
         }
         if (response.data.EventCollections) {
-          _this4.availableRemoteEventCollections = response.data.EventCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteEventCollections.length + ' Remote Events Collections');
+          _this5.availableRemoteEventCollections = response.data.EventCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableRemoteEventCollections.length + ' Remote Events Collections');
         }
         if (response.data.TaskCollections) {
-          _this4.availableRemoteTaskCollections = response.data.TaskCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this4.availableRemoteTaskCollections.length + ' Remote Tasks Collections');
+          _this5.availableRemoteTaskCollections = response.data.TaskCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableRemoteTaskCollections.length + ' Remote Tasks Collections');
         }
       }).catch(function (error) {
         var _error$response5;
@@ -11010,20 +11026,20 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function () {});
     },
     fetchLocalCollections: function fetchLocalCollections() {
-      var _this5 = this;
+      var _this6 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-local-collections');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
         if (response.data.ContactCollections) {
-          _this5.availableLocalContactCollections = response.data.ContactCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalContactCollections.length + ' Local Contacts Collections');
+          _this6.availableLocalContactCollections = response.data.ContactCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.availableLocalContactCollections.length + ' Local Contacts Collections');
         }
         if (response.data.EventCollections) {
-          _this5.availableLocalEventCollections = response.data.EventCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalEventCollections.length + ' Local Events Collections');
+          _this6.availableLocalEventCollections = response.data.EventCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.availableLocalEventCollections.length + ' Local Events Collections');
         }
         if (response.data.TaskCollections) {
-          _this5.availableLocalTaskCollections = response.data.TaskCollections;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this5.availableLocalTaskCollections.length + ' Local Tasks Collections');
+          _this6.availableLocalTaskCollections = response.data.TaskCollections;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.availableLocalTaskCollections.length + ' Local Tasks Collections');
         }
       }).catch(function (error) {
         var _error$response6;
@@ -11031,36 +11047,9 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function () {});
     },
     fetchCorrelations: function fetchCorrelations() {
-      var _this6 = this;
+      var _this7 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-correlations');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
-        if (response.data.ContactCorrelations) {
-          _this6.establishedContactCorrelations = response.data.ContactCorrelations;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedContactCorrelations.length + ' Contact Collection Correlations');
-        }
-        if (response.data.EventCorrelations) {
-          _this6.establishedEventCorrelations = response.data.EventCorrelations;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedEventCorrelations.length + ' Event Collection Correlations');
-        }
-        if (response.data.TaskCorrelations) {
-          _this6.establishedTaskCorrelations = response.data.TaskCorrelations;
-          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this6.establishedTaskCorrelations.length + ' Task Collection Correlations');
-        }
-      }).catch(function (error) {
-        var _error$response7;
-        (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to load collection correlations list') + ': ' + ((_error$response7 = error.response) === null || _error$response7 === void 0 || (_error$response7 = _error$response7.request) === null || _error$response7 === void 0 ? void 0 : _error$response7.responseText));
-      }).then(function () {});
-    },
-    depositCorrelations: function depositCorrelations() {
-      var _this7 = this;
-      var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/deposit-correlations');
-      var data = {
-        ContactCorrelations: this.establishedContactCorrelations,
-        EventCorrelations: this.establishedEventCorrelations,
-        TaskCorrelations: this.establishedTaskCorrelations
-      };
-      _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].put(uri, data).then(function (response) {
-        (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Saved correlations');
         if (response.data.ContactCorrelations) {
           _this7.establishedContactCorrelations = response.data.ContactCorrelations;
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this7.establishedContactCorrelations.length + ' Contact Collection Correlations');
@@ -11074,16 +11063,43 @@ __webpack_require__.r(__webpack_exports__);
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this7.establishedTaskCorrelations.length + ' Task Collection Correlations');
         }
       }).catch(function (error) {
+        var _error$response7;
+        (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to load collection correlations list') + ': ' + ((_error$response7 = error.response) === null || _error$response7 === void 0 || (_error$response7 = _error$response7.request) === null || _error$response7 === void 0 ? void 0 : _error$response7.responseText));
+      }).then(function () {});
+    },
+    depositCorrelations: function depositCorrelations() {
+      var _this8 = this;
+      var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/deposit-correlations');
+      var data = {
+        ContactCorrelations: this.establishedContactCorrelations,
+        EventCorrelations: this.establishedEventCorrelations,
+        TaskCorrelations: this.establishedTaskCorrelations
+      };
+      _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].put(uri, data).then(function (response) {
+        (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Saved correlations');
+        if (response.data.ContactCorrelations) {
+          _this8.establishedContactCorrelations = response.data.ContactCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this8.establishedContactCorrelations.length + ' Contact Collection Correlations');
+        }
+        if (response.data.EventCorrelations) {
+          _this8.establishedEventCorrelations = response.data.EventCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this8.establishedEventCorrelations.length + ' Event Collection Correlations');
+        }
+        if (response.data.TaskCorrelations) {
+          _this8.establishedTaskCorrelations = response.data.TaskCorrelations;
+          (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Found ' + _this8.establishedTaskCorrelations.length + ' Task Collection Correlations');
+        }
+      }).catch(function (error) {
         var _error$response8;
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to save correlations') + ': ' + ((_error$response8 = error.response) === null || _error$response8 === void 0 || (_error$response8 = _error$response8.request) === null || _error$response8 === void 0 ? void 0 : _error$response8.responseText));
       }).then(function () {});
     },
     fetchPreferences: function fetchPreferences() {
-      var _this8 = this;
+      var _this9 = this;
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/fetch-preferences');
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
         if (response.data) {
-          _this8.state = response.data;
+          _this9.state = response.data;
         }
       }).catch(function (error) {
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showError)(t('integration_ews', 'Failed to retrieve preferences') + ': ' + error.response.request.responseText);
@@ -11387,9 +11403,44 @@ var render = function render() {
     }
   }), _c("h2", [_vm._v(" " + _vm._s(_vm.t("integration_ews", "EWS Connector")))])], 1), _vm._v(" "), _c("div", {
     staticClass: "ews-content"
-  }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Authentication")))]), _vm._v(" "), _vm.state.account_connected != 1 ? _c("div", [_c("div", {
+  }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Authentication")))]), _vm._v(" "), _vm.state.account_connected != 1 ? _c("div", [_c("div", [_c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Provider ")) + "\n\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+    attrs: {
+      reduce: function reduce(item) {
+        return item.id;
+      },
+      options: [{
+        label: "On-Premises / Alternate",
+        id: "A"
+      }, {
+        label: "Microsoft Exchange 365 Online",
+        id: "O365"
+      }]
+    },
+    model: {
+      value: _vm.state.account_provider,
+      callback: function callback($$v) {
+        _vm.$set(_vm.state, "account_provider", $$v);
+      },
+      expression: "state.account_provider"
+    }
+  })], 1), _vm._v(" "), _c("br"), _vm._v(" "), _vm.state.account_provider == "O365" ? _c("div", [_c("div", {
+    staticClass: "fields"
+  }, [_c("div", {
+    staticClass: "ews-connect-o365"
+  }, [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Press connect and enter your account information")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
+    on: {
+      click: _vm.onConnectO365Click
+    },
+    scopedSlots: _vm._u([{
+      key: "icon",
+      fn: function fn() {
+        return [_c("CheckIcon")];
+      },
+      proxy: true
+    }], null, false, 1355641774)
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t\t")])], 1)])]) : _c("div", [_c("div", {
     staticClass: "settings-hint"
-  }, [_vm._v("\n\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Enter your Exchange Server and account information then press connect.")) + "\n\t\t\t")]), _vm._v(" "), _c("div", {
+  }, [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Enter your Exchange Server and account information then press connect.")) + "\n\t\t\t\t")]), _vm._v(" "), _c("div", {
     staticClass: "fields"
   }, [_c("div", {
     staticClass: "line"
@@ -11397,7 +11448,7 @@ var render = function render() {
     attrs: {
       for: "ews-account-id"
     }
-  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account ID")) + "\n\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account ID")) + "\n\t\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
     directives: [{
       name: "model",
       rawName: "v-model",
@@ -11427,7 +11478,7 @@ var render = function render() {
     attrs: {
       for: "ews-account-secret"
     }
-  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account Secret")) + "\n\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account Secret")) + "\n\t\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
     directives: [{
       name: "model",
       rawName: "v-model",
@@ -11457,12 +11508,12 @@ var render = function render() {
     attrs: {
       for: "ews-server"
     }
-  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account Server")) + "\n\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
+  }, [_c("EwsIcon"), _vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Account Server")) + "\n\t\t\t\t\t\t")], 1), _vm._v(" "), _c("input", {
     directives: [{
       name: "model",
       rawName: "v-model",
-      value: _vm.state.account_provider,
-      expression: "state.account_provider"
+      value: _vm.state.account_server,
+      expression: "state.account_server"
     }],
     attrs: {
       id: "ews-server",
@@ -11473,12 +11524,12 @@ var render = function render() {
       autocapitalize: "none"
     },
     domProps: {
-      value: _vm.state.account_provider
+      value: _vm.state.account_server
     },
     on: {
       input: function input($event) {
         if ($event.target.composing) return;
-        _vm.$set(_vm.state, "account_provider", $event.target.value);
+        _vm.$set(_vm.state, "account_server", $event.target.value);
       }
     }
   })]) : _vm._e(), _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
@@ -11491,7 +11542,7 @@ var render = function render() {
         _vm.configureManually = $event;
       }
     }
-  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure server manually")) + "\n\t\t\t\t\t\t")])], 1)], _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure server manually")) + "\n\t\t\t\t\t\t\t")])], 1)], _vm._v(" "), [_c("div", [_c("NcCheckboxRadioSwitch", {
     attrs: {
       checked: _vm.configureMail,
       type: "switch"
@@ -11501,13 +11552,13 @@ var render = function render() {
         _vm.configureMail = $event;
       }
     }
-  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure mail app on successful connection")) + "\n\t\t\t\t\t\t")])], 1)], _vm._v(" "), _c("div", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Configure mail app on successful connection")) + "\n\t\t\t\t\t\t\t")])], 1)], _vm._v(" "), _c("div", {
     staticClass: "line"
   }, [_c("label", {
     staticClass: "ews-connect"
-  }, [_vm._v("\n\t\t\t\t\t\t \n\t\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t \n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
     on: {
-      click: _vm.onConnectClick
+      click: _vm.onConnectAlternateClick
     },
     scopedSlots: _vm._u([{
       key: "icon",
@@ -11516,11 +11567,11 @@ var render = function render() {
       },
       proxy: true
     }], null, false, 1355641774)
-  }, [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t")])], 1)], 2)]) : _c("div", [_c("div", {
+  }, [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connect")) + "\n\t\t\t\t\t\t")])], 1)], 2)])]) : _c("div", [_c("div", {
     staticClass: "ews-connected"
   }, [_c("EwsIcon"), _vm._v(" "), _c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Connected as {0} to {1}", {
     0: _vm.state.account_id,
-    1: _vm.state.account_provider
+    1: _vm.state.account_server
   })) + "\n\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
     on: {
       click: _vm.onDisconnectClick

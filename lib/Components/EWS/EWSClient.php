@@ -102,6 +102,10 @@ class EWSClient extends \SoapClient
     /**
      * Class Variables
      */
+    protected array $_http_header = [
+        'Connection' => 'Connection: Keep-Alive',
+        'Content-Type' => 'Content-Type: text/xml; charset=utf-8',
+    ];
     protected array $_http_options = [
         CURLOPT_USERAGENT => 'NextCloud EWS Client',
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
@@ -109,7 +113,6 @@ class EWSClient extends \SoapClient
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HEADER => true,
         CURLOPT_POST => true,
-        CURLOPT_HTTPAUTH => CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM,
     ];
     protected string $_soap_description_file = DIRECTORY_SEPARATOR . 'Assets' . DIRECTORY_SEPARATOR . 'services.wsdl';
 
@@ -122,15 +125,9 @@ class EWSClient extends \SoapClient
     /**
      * Username to use when connecting to the Exchange server.
      *
-     * @var string
+     * @var AuthenticationBasic|AuthenticationBearer
      */
-    protected $username;
-    /**
-     * Password to use when connecting to the Exchange server.
-     *
-     * @var string
-     */
-    protected $password;
+    protected $authentication;
     /**
      * Exchange Web Services version that we are going to connect with
      *
@@ -167,16 +164,14 @@ class EWSClient extends \SoapClient
      */
     public function __construct(
         $server = null,
-        $username = null,
-        $password = null,
+        $authentication = null,
         $version = self::SERVICE_VERSION_2010_SP2,
         $timezone = null,
         $impersonation = null
     ) {
         // Set the object properties.
         $this->server = $server;
-        $this->username = $username;
-        $this->password = $password;
+        $this->authentication = $authentication;
         $this->version = $version;
         $this->timezone = $timezone;
         $this->impersonation = $impersonation;
@@ -229,13 +224,10 @@ class EWSClient extends \SoapClient
             curl_setopt_array($this->_client, $this->_http_options);
         }
         // set request header
-        curl_setopt($this->_client, CURLOPT_HTTPHEADER, array (
-                'Connection: Keep-Alive',
-                'Content-Type: text/xml; charset=utf-8',
-                'SOAPAction: "' . $action . '"',
-                'Expect: 100-continue',
-            )
-        );
+        $header = array_merge(array_values($this->_http_header), array (
+            'SOAPAction: "' . $action . '"',
+        ));
+        curl_setopt($this->_client, CURLOPT_HTTPHEADER, $header);
         // set request data
         curl_setopt($this->_client, CURLOPT_POSTFIELDS, $request);
         // execute request
@@ -332,8 +324,16 @@ class EWSClient extends \SoapClient
 
     protected function constructAuthentication()
     {
-        // set service authentication
-        $this->_http_options[CURLOPT_USERPWD] = $this->username . ':' . $this->password;
+        // set service basiic authentication
+        if ($this->authentication instanceof AuthenticationBasic) {
+            $this->_http_options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM;
+            $this->_http_options[CURLOPT_USERPWD] = $this->authentication->Id . ':' . $this->authentication->Secret;
+        }
+        // set service bearer authentication
+        if ($this->authentication instanceof AuthenticationBearer) {
+            unset($this->_http_options[CURLOPT_HTTPAUTH]);
+            $this->_http_header['Authorization'] = 'Authorization: Bearer ' . $this->authentication->Token;
+        }
         // destroy existing client will need to be initilized again
         $this->_client = null;
 

@@ -80,7 +80,7 @@ class UserConfigurationController extends Controller {
 	 * 
 	 * @return DataResponse
 	 */
-	public function Connect(string $account_id, string $account_secret, string $account_provider, string $flag): DataResponse {
+	public function ConnectAlternate(string $account_id, string $account_secret, string $account_provider, string $flag): DataResponse {
 		
 		// evaluate if user id is present
 		if ($this->userId === null) {
@@ -92,9 +92,40 @@ class UserConfigurationController extends Controller {
 			$flags[] = 'CONNECT_MAIL';
 		}
 		// execute command
-		$rs = $this->CoreService->connectAccount($this->userId, $account_id, $account_secret, $account_provider, $flags);
+		$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_provider, $flags);
 		// return response
 		if (isset($rs)) {
+			return new DataResponse('success');
+		} else {
+			return new DataResponse($rs['error'], 401);
+		}
+
+	}
+
+	/**
+	 * handels connect click event
+	 * 
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 * @param string $server			server domain or ip
+	 * @param string $account_id		users login name
+	 * @param string $account_secret	users login password
+	 * 
+	 * @return DataResponse
+	 */
+	public function ConnectO365(string $code): DataResponse {
+		
+		// evaluate if user id is present
+		if ($this->userId === null) {
+			return new DataResponse([], Http::STATUS_BAD_REQUEST);
+		}
+		// assign flags
+		$flags = ['VALIDATE'];
+		// execute command
+		$rs = $this->CoreService->connectAccountO365($this->userId, $code, $flags);
+		// return response
+		if ($rs) {
 			return new DataResponse('success');
 		} else {
 			return new DataResponse($rs['error'], 401);

@@ -29,73 +29,99 @@
 		<div class="ews-content">
 			<h3>{{ t('integration_ews', 'Authentication') }}</h3>
 			<div v-if="state.account_connected != 1">
-				<div class="settings-hint">
-					{{ t('integration_ews', 'Enter your Exchange Server and account information then press connect.') }}
+				<div>
+					<label>
+						{{ t('integration_ews', 'Provider ') }}
+					</label>
+					<NcSelect v-model="state.account_provider"
+						:reduce="item => item.id"
+						:options="[{label: 'On-Premises / Alternate', id: 'A'}, {label: 'Microsoft Exchange 365 Online', id: 'O365'}]" />
 				</div>
-				<div class="fields">
-					<div class="line">
-						<label for="ews-account-id">
-							<EwsIcon />
-							{{ t('integration_ews', 'Account ID') }}
-						</label>
-						<input id="ews-account-id"
-							v-model="state.account_id"
-							type="text"
-							:placeholder="t('integration_ews', 'Authentication ID for your EWS Account')"
-							autocomplete="off"
-							autocorrect="off"
-							autocapitalize="none">
-					</div>
-					<div class="line">
-						<label for="ews-account-secret">
-							<EwsIcon />
-							{{ t('integration_ews', 'Account Secret') }}
-						</label>
-						<input id="ews-account-secret"
-							v-model="state.account_secret"
-							type="password"
-							:placeholder="t('integration_ews', 'Authentication secret for your EWS Account')"
-							autocomplete="off"
-							autocorrect="off"
-							autocapitalize="none">
-					</div>
-					<div v-if="configureManually" class="line">
-						<label for="ews-server">
-							<EwsIcon />
-							{{ t('integration_ews', 'Account Server') }}
-						</label>
-						<input id="ews-server"
-							v-model="state.account_provider"
-							type="text"
-							:placeholder="t('integration_ews', 'Account Server Address')"
-							autocomplete="off"
-							autocorrect="off"
-							autocapitalize="none">
-					</div>
-					<template>
-						<div>
-							<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
-								{{ t('integration_ews', 'Configure server manually') }}
-							</NcCheckboxRadioSwitch>
+				<br>
+				<div v-if="state.account_provider == 'O365'">
+					<div class="fields">
+						<div class="ews-connect-o365">
+							<label>
+								{{ t('integration_ews', 'Press connect and enter your account information') }}
+							</label>
+							<NcButton @click="onConnectO365Click">
+								<template #icon>
+									<CheckIcon />
+								</template>
+								{{ t('integration_ews', 'Connect') }}
+							</NcButton>
 						</div>
-					</template>
-					<template>
-						<div>
-							<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
-								{{ t('integration_ews', 'Configure mail app on successful connection') }}
-							</NcCheckboxRadioSwitch>
+					</div>
+				</div>
+				<div v-else>
+					<div class="settings-hint">
+						{{ t('integration_ews', 'Enter your Exchange Server and account information then press connect.') }}
+					</div>
+					<div class="fields">
+						<div class="line">
+							<label for="ews-account-id">
+								<EwsIcon />
+								{{ t('integration_ews', 'Account ID') }}
+							</label>
+							<input id="ews-account-id"
+								v-model="state.account_id"
+								type="text"
+								:placeholder="t('integration_ews', 'Authentication ID for your EWS Account')"
+								autocomplete="off"
+								autocorrect="off"
+								autocapitalize="none">
 						</div>
-					</template>
-					<div class="line">
-						<label class="ews-connect">
-							&nbsp;
-						</label>
-						<NcButton @click="onConnectClick">
-							<template #icon>
-								<CheckIcon />
-							</template>
-							{{ t('integration_ews', 'Connect') }}
-						</NcButton>
+						<div class="line">
+							<label for="ews-account-secret">
+								<EwsIcon />
+								{{ t('integration_ews', 'Account Secret') }}
+							</label>
+							<input id="ews-account-secret"
+								v-model="state.account_secret"
+								type="password"
+								:placeholder="t('integration_ews', 'Authentication secret for your EWS Account')"
+								autocomplete="off"
+								autocorrect="off"
+								autocapitalize="none">
+						</div>
+						<div v-if="configureManually" class="line">
+							<label for="ews-server">
+								<EwsIcon />
+								{{ t('integration_ews', 'Account Server') }}
+							</label>
+							<input id="ews-server"
+								v-model="state.account_server"
+								type="text"
+								:placeholder="t('integration_ews', 'Account Server Address')"
+								autocomplete="off"
+								autocorrect="off"
+								autocapitalize="none">
+						</div>
+						<template>
+							<div>
+								<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
+									{{ t('integration_ews', 'Configure server manually') }}
+								</NcCheckboxRadioSwitch>
+							</div>
+						</template>
+						<template>
+							<div>
+								<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
+									{{ t('integration_ews', 'Configure mail app on successful connection') }}
+								</NcCheckboxRadioSwitch>
+							</div>
+						</template>
+						<div class="line">
+							<label class="ews-connect">
+								&nbsp;
+							</label>
+							<NcButton @click="onConnectAlternateClick">
+								<template #icon>
+									<CheckIcon />
+								</template>
+								{{ t('integration_ews', 'Connect') }}
+							</NcButton>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -103,7 +129,7 @@
 				<div class="ews-connected">
 					<EwsIcon />
 					<label>
-						{{ t('integration_ews', 'Connected as {0} to {1}', {0:state.account_id, 1:state.account_provider}) }}
+						{{ t('integration_ews', 'Connected as {0} to {1}', {0:state.account_id, 1:state.account_server}) }}
 					</label>
 					<NcButton @click="onDisconnectClick">
 						<template #icon>
@@ -444,6 +470,10 @@ export default {
 
 			configureManually: false,
 			configureMail: false,
+
+			o365_application_id: '42439587-9c39-4da2-81f3-cf647e3e6177',
+			o365_tenant_id: '897abca2-ac50-4d46-9486-27b76faeabef',
+			o365_redirect: 'http://localhost/apps/integration_ews/connect-o365'
 		}
 	},
 
@@ -469,11 +499,12 @@ export default {
 				this.fetchRemoteCollections()
 			}
 		},
-		onConnectClick() {
-			const uri = generateUrl('/apps/integration_ews/connect')
+		onConnectAlternateClick() {
+			const uri = generateUrl('/apps/integration_ews/connect-alternate')
 			const data = {
 				params: {
 					account_provider: this.state.account_provider,
+					account_server: this.state.account_server,
 					account_id: this.state.account_id,
 					account_secret: this.state.account_secret,
 					flag: this.configureMail,
@@ -495,6 +526,24 @@ export default {
 					)
 				})
 		},
+		onConnectO365Click() {
+			const requestUrl = 'https://login.microsoftonline.com/' + this.o365_tenant_id + '/oauth2/v2.0/authorize'
+				+ '?client_id=' + encodeURIComponent(this.o365_application_id)
+				+ '&response_type=code'
+				+ '&scope=' + encodeURIComponent('https://outlook.office.com/EWS.AccessAsUser.All')
+				+ '&redirect_uri=' + encodeURIComponent(this.o365_redirect)
+			const ssoWindow = window.open(
+				requestUrl,
+				t('integration_onedrive', 'Sign in Nextcloud EWS Connector'),
+				' width=600, height=700'
+			)
+			ssoWindow.focus()
+			window.addEventListener('message', (event) => {
+				console.debug('Child window message received', event)
+				this.state.user_name = event.data.username
+				this.loadData()
+			})
+		},
 		onDisconnectClick() {
 			const uri = generateUrl('/apps/integration_ews/disconnect')
 			axios.get(uri)
@@ -502,6 +551,7 @@ export default {
 					showSuccess(('Successfully disconnected from EWS account'))
 					// state
 					this.state.account_provider = ''
+					this.state.account_server = ''
 					this.state.account_id = ''
 					this.state.account_secret = ''
 					this.state.account_connected = ''
@@ -722,6 +772,7 @@ export default {
 				})
 		},
 		changeContactCorrelation(roid, loid) {
+			
 			const cid = this.establishedContactCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid === -1) {
@@ -732,6 +783,7 @@ export default {
 			}
 		},
 		changeEventCorrelation(roid, loid) {
+			
 			const cid = this.establishedEventCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid === -1) {
@@ -742,6 +794,7 @@ export default {
 			}
 		},
 		changeTaskCorrelation(roid, loid) {
+			
 			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid === -1) {
@@ -752,6 +805,7 @@ export default {
 			}
 		},
 		clearContactCorrelation(roid) {
+			
 			const cid = this.establishedContactCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid > -1) {
@@ -762,6 +816,7 @@ export default {
 			}
 		},
 		clearEventCorrelation(roid) {
+			
 			const cid = this.establishedEventCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid > -1) {
@@ -772,6 +827,7 @@ export default {
 			}
 		},
 		clearTaskCorrelation(roid) {
+			
 			const cid = this.establishedTaskCorrelations.findIndex(i => i.roid == roid)
 
 			if (cid > -1) {
@@ -782,6 +838,7 @@ export default {
 			}
 		},
 		establishedContactCorrelationDisable(roid, loid) {
+			
 			const citem = this.establishedContactCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -802,6 +859,7 @@ export default {
 			}
 		},
 		establishedContactCorrelationSelect(roid, loid) {
+			
 			const citem = this.establishedContactCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -822,6 +880,7 @@ export default {
 			}
 		},
 		establishedEventCorrelationDisable(roid, loid) {
+			
 			const citem = this.establishedEventCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -842,6 +901,7 @@ export default {
 			}
 		},
 		establishedEventCorrelationSelect(roid, loid) {
+			
 			const citem = this.establishedEventCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -862,6 +922,7 @@ export default {
 			}
 		},
 		establishedTaskCorrelationDisable(roid, loid) {
+			
 			const citem = this.establishedTaskCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
@@ -882,6 +943,7 @@ export default {
 			}
 		},
 		establishedTaskCorrelationSelect(roid, loid) {
+			
 			const citem = this.establishedTaskCorrelations.find(i => i.loid == loid)
 
 			// console.log('ECC Item - LID: ' + this.establishedContactCorrelations[0].loid + ' RID: ' + this.establishedContactCorrelations[0].roid)
