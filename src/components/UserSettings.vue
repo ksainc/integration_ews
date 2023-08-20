@@ -204,17 +204,29 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="c" name="contacts_actions_local">Create</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="u" name="contacts_actions_local">Update</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="d" name="contacts_actions_local">Delete</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="c" name="contacts_actions_local">
+								Create
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="u" name="contacts_actions_local">
+								Update
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_local" value="d" name="contacts_actions_local">
+								Delete
+							</NcCheckboxRadioSwitch>
 						</div>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="c" name="contacts_actions_remote">Create</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="u" name="contacts_actions_remote">Update</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="d" name="contacts_actions_remote">Delete</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="c" name="contacts_actions_remote">
+								Create
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="u" name="contacts_actions_remote">
+								Update
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.contacts_actions_remote" value="d" name="contacts_actions_remote">
+								Delete
+							</NcCheckboxRadioSwitch>
 						</div>
 					</div>
 					<div v-else>
@@ -283,17 +295,29 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="c" name="events_actions_local">Create</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="u" name="events_actions_local">Update</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="d" name="events_actions_local">Delete</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="c" name="events_actions_local">
+								Create
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="u" name="events_actions_local">
+								Update
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_local" value="d" name="events_actions_local">
+								Delete
+							</NcCheckboxRadioSwitch>
 						</div>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="c" name="events_actions_remote">Create</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="u" name="events_actions_remote">Update</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="d" name="events_actions_remote">Delete</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="c" name="events_actions_remote">
+								Create
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="u" name="events_actions_remote">
+								Update
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.events_actions_remote" value="d" name="events_actions_remote">
+								Delete
+							</NcCheckboxRadioSwitch>
 						</div>
 					</div>
 					<div v-else>
@@ -362,17 +386,29 @@
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="c" name="tasks_actions_local">Create</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="u" name="tasks_actions_local">Update</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="d" name="tasks_actions_local">Delete</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="c" name="tasks_actions_local">
+								Create
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="u" name="tasks_actions_local">
+								Update
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_local" value="d" name="tasks_actions_local">
+								Delete
+							</NcCheckboxRadioSwitch>
 						</div>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these remote actions to the local system') }}
 							</label>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="c" name="tasks_actions_remote">Create</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="u" name="tasks_actions_remote">Update</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="d" name="tasks_actions_remote">Delete</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="c" name="tasks_actions_remote">
+								Create
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="u" name="tasks_actions_remote">
+								Update
+							</NcCheckboxRadioSwitch>
+							<NcCheckboxRadioSwitch :checked.sync="this.state.tasks_actions_remote" value="d" name="tasks_actions_remote">
+								Delete
+							</NcCheckboxRadioSwitch>
 						</div>
 					</div>
 					<div v-else>
@@ -473,7 +509,7 @@ export default {
 
 			o365_application_id: '42439587-9c39-4da2-81f3-cf647e3e6177',
 			o365_tenant_id: '897abca2-ac50-4d46-9486-27b76faeabef',
-			o365_redirect: 'http://localhost/apps/integration_ews/connect-o365'
+			o365_redirect: 'http://localhost/apps/integration_ews/connect-o365',
 		}
 	},
 

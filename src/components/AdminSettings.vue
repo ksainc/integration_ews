@@ -39,7 +39,7 @@
 						:reduce="item => item.id"
 						:options="[{label: 'Passive', id: 'P'}, {label: 'Active', id: 'A'}]" />
 				</div>
-				<div class="line" v-if="state.harmonization_mode === 'A'">
+				<div v-if="state.harmonization_mode === 'A'" class="line">
 					<label>
 						{{ t('integration_ews', 'Synchronization Thread Duration') }}
 					</label>
@@ -53,7 +53,7 @@
 						{{ t('integration_ews', 'Seconds') }}
 					</label>
 				</div>
-				<div class="line" v-if="state.harmonization_mode === 'A'">
+				<div v-if="state.harmonization_mode === 'A'" class="line">
 					<label>
 						{{ t('integration_ews', 'Synchronization Thread Pause') }}
 					</label>
