@@ -10938,11 +10938,6 @@ __webpack_require__.r(__webpack_exports__);
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Successfully disconnected from EWS account');
         // state
         _this3.fetchPreferences();
-        // this.state.account_provider = ''
-        // this.state.account_server = ''
-        // this.state.account_id = ''
-        // this.state.account_secret = ''
-        // this.state.account_connected = ''
         // contacts
         _this3.availableRemoteContactCollections = [];
         _this3.availableLocalContactCollections = [];
@@ -11425,7 +11420,7 @@ var render = function render() {
     staticClass: "fields"
   }, [_vm.state.system_ms365_authrization_uri === "" ? _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 connected accounts admin section.")) + "\n\t\t\t\t\t")]) : _c("div", {
     staticClass: "ews-connect-ms365"
-  }, [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Press connect and enter your account information")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
+  }, [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Press connect and enter your account information")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("NcButton", {
     on: {
       click: _vm.onConnectMS365Click
     },
