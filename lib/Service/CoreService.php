@@ -308,7 +308,7 @@ class CoreService {
 				// extract server version from response
 				preg_match_all(
 					'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
-					$RemoteStore->getClient()->__last_response,
+					$RemoteStore->__last_response,
 					$match
 				);
 				$account_protocol = $match[2][0];
@@ -323,7 +323,7 @@ class CoreService {
 		// evaluate connect status
 		if ($connect) {
 			// deposit authentication to datastore
-			$this->ConfigurationService->depositAuthentication($uid, $account_server, $account_id, $account_secret, $account_protocol);
+			$this->ConfigurationService->depositAuthenticationBasic($uid, $account_server, $account_id, $account_secret, $account_protocol);
 			// deposit configuration to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderAlternate);
 			$this->ConfigurationService->depositUser($uid, ['account_connected' => '1']);

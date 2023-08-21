@@ -81,7 +81,7 @@ class UserConfigurationController extends Controller {
 	 * 
 	 * @return DataResponse
 	 */
-	public function ConnectAlternate(string $account_id, string $account_secret, string $account_provider, string $flag): DataResponse {
+	public function ConnectAlternate(string $account_id, string $account_secret, string $account_server, string $flag): DataResponse {
 		
 		// evaluate if user id is present
 		if ($this->userId === null) {
@@ -93,7 +93,7 @@ class UserConfigurationController extends Controller {
 			$flags[] = 'CONNECT_MAIL';
 		}
 		// execute command
-		$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_provider, $flags);
+		$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_server, $flags);
 		// return response
 		if (isset($rs)) {
 			return new DataResponse('success');

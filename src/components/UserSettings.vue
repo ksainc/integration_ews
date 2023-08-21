@@ -534,10 +534,9 @@ export default {
 			const uri = generateUrl('/apps/integration_ews/connect-alternate')
 			const data = {
 				params: {
-					account_provider: this.state.account_provider,
-					account_server: this.state.account_server,
 					account_id: this.state.account_id,
 					account_secret: this.state.account_secret,
+					account_server: this.state.account_server,
 					flag: this.configureMail,
 				},
 			}
