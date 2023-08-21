@@ -367,6 +367,7 @@ class CoreService {
 		}
 
 		if (is_array($data)) {
+			// deposit authentication to datastore
 			$this->ConfigurationService->depositAuthenticationOAuth(
 				$uid,
 				$data['service_server'],
@@ -375,8 +376,11 @@ class CoreService {
 				(int) $data['expiry'],
 				$data['refresh']
 			);
+			// deposit configuration to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
 			$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
+			// register harmonization task
+			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
 
 			return true;
 		} else {
