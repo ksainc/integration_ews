@@ -397,7 +397,7 @@ class CoreService {
 	public function refreshAccountMS365(string $uid, string $code): bool {
 
 		try {
-			$data = \OCA\EWS\Integration\Microsoft365::createAccess($code);
+			$data = \OCA\EWS\Integration\Microsoft365::refreshAccess($code);
 		} catch (Exception $e) {
 			$this->logger->error('Could not refresh Microsoft account access token: ' . $e->getMessage(), [
 				'exception' => $e,
