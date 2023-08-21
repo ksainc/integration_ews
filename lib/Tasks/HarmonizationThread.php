@@ -172,10 +172,17 @@ try {
 
 		// update heart beat
 		$HarmonizationThreadService->setHeartBeat($uid, time());
-		 // consume events from feed and create actions
-		$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CO');
-		$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
-		$ts = $HarmonizationService->consumeEvents($uid, $ts->Id, $ts->Token, 'TO');
+		// consume events from feed and create actions
+		if (isset($cs)) {
+			$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CO');
+		}
+		if (isset($es)) {
+			$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
+		}
+		if (isset($ts)) {
+			$ts = $HarmonizationService->consumeEvents($uid, $ts->Id, $ts->Token, 'TO');
+		}
+		
 		// execute actions
 		$HarmonizationService->performActions($uid);
 
@@ -186,8 +193,15 @@ try {
 	}
 
 	// disconnect from remote events queue(s)
-	$cs = $HarmonizationService->disconnectEvents($uid, $cs->Id);
-	$es = $HarmonizationService->disconnectEvents($uid, $es->Id);
+	if (isset($cs)) {
+		$cs = $HarmonizationService->disconnectEvents($uid, $cs->Id);
+	}
+	if (isset($es)) {
+		$es = $HarmonizationService->disconnectEvents($uid, $es->Id);
+	}
+	if (isset($ts)) {
+		$ts = $HarmonizationService->disconnectEvents($uid, $ts->Id);
+	}
 
 	$logger->info("Harmonization thread ended for $uid", ['app' => 'integration_ews']);
 	echo "Harmonization thread ended for $uid" . PHP_EOL;

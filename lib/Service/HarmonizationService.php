@@ -329,10 +329,13 @@ class HarmonizationService {
 		$RemoteStore = $this->CoreService->createClient($uid);
 		// retrieve correlations
 		$cc = $this->CorrelationsService->findByType($uid, $ctype);
-		// extract correlation ids
-		$ids = array_map(function($o) { return $o->getroid();}, $cc);
-		// execute command
-		$rs = $this->RemoteCommonService->connectEvents($RemoteStore, $duration, $ids);
+		// evaluate if any correlation where found
+		if (count($cc) > 0) {
+			// extract correlation ids
+			$ids = array_map(function($o) { return $o->getroid();}, $cc);
+			// execute command
+			$rs = $this->RemoteCommonService->connectEvents($RemoteStore, $duration, $ids);
+		}
 		// return id and token
 		if ($rs instanceof \stdClass)
 		{
