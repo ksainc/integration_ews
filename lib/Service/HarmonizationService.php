@@ -42,6 +42,7 @@ use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\ContactsService;
 use OCA\EWS\Service\EventsService;
 use OCA\EWS\Service\TasksService;
+use OCA\EWS\Service\HarmonizationThreadService;
 use OCA\EWS\Service\Local\LocalContactsService;
 use OCA\EWS\Service\Local\LocalEventsService;
 use OCA\EWS\Service\Local\LocalTasksService;
@@ -127,6 +128,7 @@ class HarmonizationService {
 								ContactsService $ContactsService,
 								EventsService $EventsService,
 								TasksService $TasksService,
+								HarmonizationThreadService $HarmonizationThreadService,
 								CardDavBackend $LocalContactsStore,
 								CalDavBackend $LocalEventsStore) {
 		$this->logger = $logger;
@@ -143,6 +145,7 @@ class HarmonizationService {
 		$this->ContactsService = $ContactsService;
 		$this->EventsService = $EventsService;
 		$this->TasksService = $TasksService;
+		$this->HarmonizationThreadService = $HarmonizationThreadService;
 		$this->LocalContactsStore = $LocalContactsStore;
 		$this->LocalEventsStore = $LocalEventsStore;
 		$this->ActionManager = $ActionManager;
@@ -164,11 +167,13 @@ class HarmonizationService {
 		$this->logger->info('Statred Harmonization of Collections for ' . $uid);
 
 		// evaluate, if harmonization is executing
+		/*
 		if ($this->ConfigurationService->getHarmonizationState($uid) === true) {
 			if ((time() - $this->ConfigurationService->getHarmonizationHeartBeat($uid)) < 900) {
 				return;
 			}
 		}
+		*/
 
 		// update harmonization state and start time
 		$this->ConfigurationService->setHarmonizationState($uid, true);
@@ -190,10 +195,20 @@ class HarmonizationService {
 				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::ContactCollection);
 				// iterate through correlation items
 				foreach ($correlations as $correlation) {
+					// evaluate if correlation is locked and lock has not expired
+					if ($correlation->gethlock() == 1 &&
+					   (time() - $correlation->gethlockhb()) < 3600) {
+						continue;
+					}
+					// lock correlation before harmonization
+					$correlation->sethlock(1);
+					$correlation->sethlockhd((int) getmypid());
+					$this->CorrelationsService->update($correlation);
 					// execute contacts harmonization loop
 					do {
-						// update harmonization heart beat
-						$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+						// update lock heartbeat
+						$correlation->sethlockhb(time());
+						$this->CorrelationsService->update($correlation);
 						// harmonize contacts collections
 						$statistics = $this->ContactsService->performHarmonization($correlation, $Configuration);
 						// evaluate if anything was done and publish notice if needed
@@ -201,6 +216,9 @@ class HarmonizationService {
 							$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
 						}
 					} while ($statistics->total() > 0);
+					// unlock correlation after harmonization
+					$correlation->sethlock(0);
+					$this->CorrelationsService->update($correlation);
 				}
 			}
 			// events harmonization
@@ -212,10 +230,20 @@ class HarmonizationService {
 				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::EventCollection);
 				// iterate through correlation items
 				foreach ($correlations as $correlation) {
+					// evaluate if correlation is locked and lock has not expired
+					if ($correlation->gethlock() == 1 &&
+					   (time() - $correlation->gethlockhb()) < 3600) {
+						continue;
+					}
+					// lock correlation before harmonization
+					$correlation->sethlock(1);
+					$correlation->sethlockhd((int) getmypid());
+					$this->CorrelationsService->update($correlation);
 					// execute events harmonization loop
 					do {
-						// update harmonization heart beat
-						$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+						// update lock heartbeat
+						$correlation->sethlockhb(time());
+						$this->CorrelationsService->update($correlation);
 						// harmonize events collections
 						$statistics = $this->EventsService->performHarmonization($correlation, $Configuration);
 						// evaluate if anything was done and publish notice if needed
@@ -223,6 +251,9 @@ class HarmonizationService {
 							$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
 						}
 					} while ($statistics->total() > 0);
+					// unlock correlation after harmonization
+					$correlation->sethlock(0);
+					$this->CorrelationsService->update($correlation);
 				}
 			}
 			// tasks harmonization
@@ -234,10 +265,20 @@ class HarmonizationService {
 				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::TaskCollection);
 				// iterate through correlation items
 				foreach ($correlations as $correlation) {
+					// evaluate if correlation is locked and lock has not expired
+					if ($correlation->gethlock() == 1 &&
+					   (time() - $correlation->gethlockhb()) < 3600) {
+						continue;
+					}
+					// lock correlation before harmonization
+					$correlation->sethlock(1);
+					$correlation->sethlockhd((int) getmypid());
+					$this->CorrelationsService->update($correlation);
 					// execute tasks harmonization loop
 					do {
-						// update harmonization heart beat
-						$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+						// update lock heartbeat
+						$correlation->sethlockhb(time());
+						$this->CorrelationsService->update($correlation);
 						// harmonize tasks collections
 						$statistics = $this->TasksService->performHarmonization($correlation, $Configuration);
 						// evaluate if anything was done and publish notice if needed
@@ -245,6 +286,9 @@ class HarmonizationService {
 							$this->CoreService->publishNotice($uid,'tasks_harmonized', (array)$statistics);
 						}
 					} while ($statistics->total() > 0);
+					// unlock correlation after harmonization
+					$correlation->sethlock(0);
+					$this->CorrelationsService->update($correlation);
 				}
 			}
 		} catch (Exception $e) {
