@@ -28,7 +28,7 @@
 		</div>
 		<div class="ews-content">
 			<h3>{{ t('integration_ews', 'Authentication') }}</h3>
-			<div v-if="state.account_connected != 1">
+			<div v-if="state.account_connected !== '1'">
 				<div>
 					<label>
 						{{ t('integration_ews', 'Provider ') }}
@@ -544,7 +544,7 @@ export default {
 				.then((response) => {
 					if (response.data === 'success') {
 						showSuccess(('Successfully connected to EWS account'))
-						this.state.account_connected = 1
+						this.state.account_connected = '1'
 						this.fetchPreferences()
 						this.loadData()
 					}
@@ -565,7 +565,7 @@ export default {
 			ssoWindow.focus()
 			window.addEventListener('message', (event) => {
 				console.debug('Child window message received', event)
-				this.state.account_connected = 1
+				this.state.account_connected = '1'
 				this.fetchPreferences()
 				this.loadData()
 			})
@@ -576,7 +576,7 @@ export default {
 				.then((response) => {
 					showSuccess(('Successfully disconnected from EWS account'))
 					// state
-					this.state.account_connected = 0
+					this.state.account_connected = '0'
 					this.fetchPreferences()
 					// contacts
 					this.availableRemoteContactCollections = []

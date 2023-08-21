@@ -10901,17 +10901,16 @@ __webpack_require__.r(__webpack_exports__);
       var uri = (0,_nextcloud_router__WEBPACK_IMPORTED_MODULE_1__.generateUrl)('/apps/integration_ews/connect-alternate');
       var data = {
         params: {
-          account_provider: this.state.account_provider,
-          account_server: this.state.account_server,
           account_id: this.state.account_id,
           account_secret: this.state.account_secret,
+          account_server: this.state.account_server,
           flag: this.configureMail
         }
       };
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri, data).then(function (response) {
         if (response.data === 'success') {
           (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Successfully connected to EWS account');
-          _this.state.account_connected = 1;
+          _this.state.account_connected = '1';
           _this.fetchPreferences();
           _this.loadData();
         }
@@ -10926,7 +10925,7 @@ __webpack_require__.r(__webpack_exports__);
       ssoWindow.focus();
       window.addEventListener('message', function (event) {
         console.debug('Child window message received', event);
-        _this2.state.account_connected = 1;
+        _this2.state.account_connected = '1';
         _this2.fetchPreferences();
         _this2.loadData();
       });
@@ -10937,6 +10936,7 @@ __webpack_require__.r(__webpack_exports__);
       _nextcloud_axios__WEBPACK_IMPORTED_MODULE_0__["default"].get(uri).then(function (response) {
         (0,_nextcloud_dialogs__WEBPACK_IMPORTED_MODULE_3__.showSuccess)('Successfully disconnected from EWS account');
         // state
+        _this3.state.account_connected = '0';
         _this3.fetchPreferences();
         // contacts
         _this3.availableRemoteContactCollections = [];
@@ -11396,7 +11396,7 @@ var render = function render() {
     }
   }), _c("h2", [_vm._v(" " + _vm._s(_vm.t("integration_ews", "EWS Connector")))])], 1), _vm._v(" "), _c("div", {
     staticClass: "ews-content"
-  }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Authentication")))]), _vm._v(" "), _vm.state.account_connected != 1 ? _c("div", [_c("div", [_c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Provider ")) + "\n\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
+  }, [_c("h3", [_vm._v(_vm._s(_vm.t("integration_ews", "Authentication")))]), _vm._v(" "), _vm.state.account_connected !== "1" ? _c("div", [_c("div", [_c("label", [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Provider ")) + "\n\t\t\t\t")]), _vm._v(" "), _c("NcSelect", {
     attrs: {
       reduce: function reduce(item) {
         return item.id;
@@ -11420,7 +11420,7 @@ var render = function render() {
     staticClass: "fields"
   }, [_vm.state.system_ms365_authrization_uri === "" ? _c("div", [_vm._v("\n\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "No Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 connected accounts admin section.")) + "\n\t\t\t\t\t")]) : _c("div", {
     staticClass: "ews-connect-ms365"
-  }, [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Press connect and enter your account information")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("br"), _vm._v(" "), _c("NcButton", {
+  }, [_c("label", [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t("integration_ews", "Press connect and enter your account information")) + "\n\t\t\t\t\t\t")]), _vm._v(" "), _c("NcButton", {
     on: {
       click: _vm.onConnectMS365Click
     },
