@@ -576,6 +576,7 @@ export default {
 				.then((response) => {
 					showSuccess(('Successfully disconnected from EWS account'))
 					// state
+					this.state.account_connected = 0
 					this.fetchPreferences()
 					// contacts
 					this.availableRemoteContactCollections = []

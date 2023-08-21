@@ -323,7 +323,7 @@ class CoreService {
 		// evaluate connect status
 		if ($connect) {
 			// deposit authentication to datastore
-			$this->ConfigurationService->depositAuthenticationBasic($uid, $account_server, $account_id, $account_secret, $account_protocol);
+			$this->ConfigurationService->depositAuthenticationBasic($uid, $account_server, $account_protocol, $account_id, $account_secret);
 			// deposit configuration to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderAlternate);
 			$this->ConfigurationService->depositUser($uid, ['account_connected' => '1']);
