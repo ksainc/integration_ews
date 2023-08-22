@@ -323,7 +323,7 @@ class RemoteContactsService {
             }
             // Prefix
             if (!empty($so->Name->Prefix)) {
-                $ro->ExtendedProperty[] = $this->createFieldExtendedByTag('0x3A45', 'String', $so->Name->Prefix);
+                $ro->ExtendedProperty[] = $this->createFieldExtendedById('Address', '14917', 'String', $so->Name->Prefix);
             }
             // Suffix
             if (!empty($so->Name->Suffix)) {
@@ -347,9 +347,11 @@ class RemoteContactsService {
             $ro->Birthday = $so->BirthDay->format('Y-m-d\TH:i:s\Z');
         }
         // Gender
+        /*
         if (!empty($so->Gender)) {
             $ro->ExtendedProperty[] = $this->createFieldExtendedByTag('0x3A4D', 'String', $so->Gender);
         }
+        */
         // Partner
         if (!empty($so->Partner)) {
             $ro->SpouseName = $so->Partner;
@@ -469,38 +471,6 @@ class RemoteContactsService {
         // execute command
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
 
-        // Photo
-        // TODO: Remove after testing
-        /*
-        if ($result->ItemId) {
-            if ($so->Photo->Data) {
-                $a = new \OCA\EWS\Components\EWS\Type\FileAttachmentType();
-                $a->IsInline = false;
-                $a->IsContactPhoto = true;
-                $a->Name = 'ContactPicture.' . \OCA\EWS\Utile\MIME::toExtension($so->Attachments[$so->Photo->Data]->Type);
-                $a->ContentId = $so->Attachments[$so->Photo->Data]->Name;
-                $a->ContentType = $so->Attachments[$so->Photo->Data]->Type;
-
-                if ($so->Photo->Type == 'uri') {
-                    // TODO: Download And Save Image
-                } elseif ($so->Photo->Type == 'data') {
-                    if (isset($so->Attachments[$so->Photo->Data])) {
-                        switch ($so->Attachments[$so->Photo->Data]->Encoding) {
-                            case 'B':
-                                $a->Content = $so->Attachments[$so->Photo->Data];
-                                $this->createAttachment($this->DataStore, $result->ItemId->Id, array($a));
-                                break;
-                            case 'B64':
-                                $a->Content = base64_decode($so->Attachments[$so->Photo->Data]->Data);
-                                $this->createAttachment($this->DataStore, $result->ItemId->Id, array($a));
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-        */
-
         // process response
         if ($rs->ItemId) {
 			$co = clone $so;
@@ -568,12 +538,14 @@ class RemoteContactsService {
                 $rd[] = $this->deleteFieldUnindexed('contacts:MiddleName');
             }
             // Prefix
+            /*
             if (!empty($so->Name->Prefix)) {
-                $rm[] = $this->updateFieldExtendedByTag('0x3A45', 'String', $so->Name->Prefix);
+                $rm[] = $this->updateFieldExtendedById('Address', '14917', 'String', $so->Name->Prefix);
             }
             else {
-                $rd[] = $this->deleteFieldExtendedByTag('0x3A45', 'String');
+                $rd[] = $this->deleteFieldExtendedById('Address', '14917', 'String');
             }
+            */
             // Suffix
             if (!empty($so->Name->Suffix)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:Generation', 'Generation', $so->Name->Suffix);
@@ -581,6 +553,7 @@ class RemoteContactsService {
             else {
                 $rd[] = $this->deleteFieldUnindexed('contacts:Generation');
             }
+            /*
             // Phonetic Last
             if (!empty($so->Name->PhoneticLast)) {
                 $rm[] = $this->updateFieldExtendedByTag('0x802D', 'String', $so->Name->PhoneticLast);
@@ -595,6 +568,7 @@ class RemoteContactsService {
             else {
                 $rd[] = $this->deleteFieldExtendedByTag('0x802C', 'String');
             }
+            */
             // Aliases
             if (!empty($so->Name->Aliases)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:Nickname', 'Nickname', $so->Name->Aliases);
@@ -611,12 +585,14 @@ class RemoteContactsService {
             $rd[] = $this->deleteFieldUnindexed('contacts:Birthday');
         }
         // Gender
+        /*
         if (!empty($so->Gender)) {
             $rm[] = $this->updateFieldExtendedByTag('0x3A4D', 'String', $so->Gender);
         }
         else {
             $rd[] = $this->deleteFieldExtendedByTag('0x3A4D', 'String');
         }
+        */
         // Partner
         if (!empty($so->Partner)) {
             $rm[] = $this->updateFieldUnindexed('contacts:SpouseName', 'SpouseName', $so->Partner);
@@ -1342,6 +1318,101 @@ class RemoteContactsService {
         // create field delete object
         $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
         $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
+        // return object
+        return $o;
+    }
+
+        /**
+     * construct collection item extended property create command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $collection - property collection
+     * @param string $name - property name
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property create command
+	 */
+    public function createFieldExtendedById(string $collection, string $id, string $type, mixed $value): object {
+        // create extended field object
+        $o = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
+            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                $collection,
+                null,
+                $id,
+                null,
+                null,
+                $type
+            ),
+            $value
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property update command
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $collection - property collection
+     * @param string $name - property name
+     * @param string $type - property type
+     * @param string $value - property value
+	 * 
+	 * @return object collection item property update command
+	 */
+    public function updateFieldExtendedById(string $collection, string $id, string $type, mixed $value): object {
+        // create field update object
+        $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
+        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+            $collection,
+            null,
+            $id,
+            null,
+            null,
+            $type
+        );
+        // create field contact object
+        $o->Contact = new \OCA\EWS\Components\EWS\Type\ContactItemType();
+        $o->Contact->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
+            new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+                $collection,
+                null,
+                $id,
+                null,
+                null,
+                $type
+            ),
+            $value
+        );
+        // return object
+        return $o;
+    }
+
+    /**
+     * construct collection item extended property delete 
+     * 
+     * @since Release 1.0.0
+     * 
+     * @param string $collection - property collection
+     * @param string $name - property name
+     * @param string $type - property type
+	 * 
+	 * @return object collection item property delete command
+	 */
+    public function deleteFieldExtendedById(string $collection, string $id, string $type): object {
+        // create field delete object
+        $o = new \OCA\EWS\Components\EWS\Type\DeleteItemFieldType();
+        $o->ExtendedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+            $collection,
+            null,
+            $id,
+            null,
+            null,
+            $type
+        );
         // return object
         return $o;
     }
