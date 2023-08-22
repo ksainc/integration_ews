@@ -6,7 +6,6 @@ AdminConfiguration - add items per cycle limit
 AdminConfiguration - stop all threads
 UserConfiguration - add notification enable/disable
 HarmonizationThread - evaluate if user exists and is active
-HarmonizationThread - evaluate if ews account is connected
 
 
 
