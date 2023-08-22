@@ -206,7 +206,7 @@ try {
 	$logger->info("Harmonization thread ended for $uid", ['app' => 'integration_ews']);
 	echo "Harmonization thread ended for $uid" . PHP_EOL;
 
-	if ($executionConclusion == 'N') {
+	if ($executionMode == 'C' && $executionConclusion == 'N') {
 		// spawn new harmonization thread
 		$tid = $HarmonizationThreadService->launch($uid);
 		// evaluate, if thread id is present

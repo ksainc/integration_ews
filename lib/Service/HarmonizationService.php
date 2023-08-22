@@ -410,7 +410,9 @@ class HarmonizationService {
 		$rs = $this->RemoteCommonService->fetchEvents($RemoteStore, $id, $token);
 
 		// top date time in epoch
+		/*
 		$tt = 0;
+		*/
 		
 		if (isset($rs->CreatedEvent)) {
 			foreach ($rs->CreatedEvent as $entry) {
@@ -438,6 +440,7 @@ class HarmonizationService {
 						// deposit action entry
 						$this->ActionManager->insert($a);
 					}
+					/*
 					// workaround to find newest token
 					// convert date/time to epoch time
 					$et = strtotime($entry->TimeStamp);
@@ -446,7 +449,10 @@ class HarmonizationService {
 						$tt = $et;
 						$token = $entry->Watermark;
 					}
+					*/
 				}
+				// aquire water mark
+				$token = $entry->Watermark;
 			}
 		}
 
@@ -476,6 +482,7 @@ class HarmonizationService {
 						// deposit action entry
 						$this->ActionManager->insert($a);
 					}
+					/*
 					// workaround to find newest token
 					// convert date/time to epoch time
 					$et = strtotime($entry->TimeStamp);
@@ -484,7 +491,10 @@ class HarmonizationService {
 						$tt = $et;
 						$token = $entry->Watermark;
 					}
+					*/
 				}
+				// aquire water mark
+				$token = $entry->Watermark;
 			}
 		}
 
@@ -514,6 +524,7 @@ class HarmonizationService {
 						// deposit action entry
 						$this->ActionManager->insert($a);
 					}
+					/*
 					// workaround to find newest token
 					// convert date/time to epoch time
 					$et = strtotime($entry->TimeStamp);
@@ -522,7 +533,34 @@ class HarmonizationService {
 						$tt = $et;
 						$token = $entry->Watermark;
 					}
+					*/
 				}
+				// aquire water mark
+				$token = $entry->Watermark;
+			}
+		}
+
+		if (isset($rs->NewMailEvent)) {
+			foreach ($rs->NewMailEvent as $entry) {
+				$token = $entry->Watermark;
+			}
+		}
+
+		if (isset($rs->CopiedEvent)) {
+			foreach ($rs->CopiedEvent as $entry) {
+				$token = $entry->Watermark;
+			}
+		}
+
+		if (isset($rs->MovedEvent)) {
+			foreach ($rs->MovedEvent as $entry) {
+				$token = $entry->Watermark;
+			}
+		}
+
+		if (isset($rs->StatusEvent)) {
+			foreach ($rs->StatusEvent as $entry) {
+				$token = $entry->Watermark;
 			}
 		}
 

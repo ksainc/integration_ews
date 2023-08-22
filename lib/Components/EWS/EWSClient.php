@@ -477,6 +477,7 @@ class EWSClient extends \SoapClient
     {
         // If the option to strip bad characters is not set, then we shouldn't
         // do anything here.
+        /*
         if (!$this->options['strip_bad_chars']) {
             return;
         }
@@ -499,6 +500,7 @@ class EWSClient extends \SoapClient
                 E_USER_WARNING
             );
         }
+        */
     }
 
 }
