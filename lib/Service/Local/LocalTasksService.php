@@ -85,7 +85,11 @@ class LocalTasksService {
 		// construct collections list
 		$data = array();
 		foreach ($collections as $entry) {
-			$data[] = array('id' => $entry['id'], 'name' => $entry['{DAV:}displayname'], 'uri' => $entry['uri']);
+            if (isset($entry['{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set'])) {
+                if (in_array('VTODO', $entry['{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set']->getValue())) {
+                    $data[] = array('id' => $entry['id'], 'name' => $entry['{DAV:}displayname'], 'uri' => $entry['uri']);
+                }
+            }
 		}
         // return collections list
 		return $data;
