@@ -96,15 +96,18 @@ class Version1000Date20230601 extends SimpleMigrationStep {
 			]);
 			// Lock state
 			$table->addColumn('hlock', Types::INTEGER, [
-				'notnull' => true
+				'notnull' => true,
+				'default' => '0',
 			]);
 			// Lock holder
 			$table->addColumn('hlockhd', Types::INTEGER, [
-				'notnull' => true
+				'notnull' => true,
+				'default' => '0',
 			]);
 			// Lock heart beat
 			$table->addColumn('hlockhb', Types::INTEGER, [
-				'notnull' => true
+				'notnull' => true,
+				'default' => '0',
 			]);
 			
 			$table->setPrimaryKey(['id']);
