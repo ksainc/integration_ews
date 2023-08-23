@@ -1041,7 +1041,7 @@ class EventsService {
 		// retrieve local event collections
 		$lc = $this->LocalEventsService->listCollections($configuration->UserId);
 		foreach ($lc as $entry) {
-			if ($entry['name'] == 'EWS Test') {
+			if ($entry['name'] == 'EWS Calendar') {
 				$lcid = $entry['id'];
 				break;
 			}
@@ -1049,7 +1049,7 @@ class EventsService {
 		// retrieve remote event collections
 		$rc = $this->RemoteEventsService->listCollections();
 		foreach ($rc as $entry) {
-			if ($entry['name'] == 'NC Test') {
+			if ($entry['name'] == 'NC Calendar') {
 				$rcid = $entry['id'];
 				break;
 			}
@@ -1068,12 +1068,12 @@ class EventsService {
 
 		// create local collection
 		if (!isset($lcid)) {
-			$lco = $this->LocalEventsService->createCollection($configuration->UserId, 'ews-test', 'EWS Test', true);
+			$lco = $this->LocalEventsService->createCollection($configuration->UserId, 'ews-test', 'EWS Calendar', true);
 			$lcid = $lco->Id;
 		}
 		// create remote collection
 		if (!isset($rcid)) {
-			$rco = $this->RemoteEventsService->createCollection('msgfolderroot', 'NC Test', true);
+			$rco = $this->RemoteEventsService->createCollection('msgfolderroot', 'NC Calendar', true);
 			$rcid = $rco->Id;
 		}
 		// retrieve correlation for remote and local collections
@@ -1131,8 +1131,6 @@ class EventsService {
 		$ro = $this->RemoteEventsService->createCollectionItem($rcid, $eo);
 		// retrieve remote event
 		$ro = $this->RemoteEventsService->fetchCollectionItem($ro->ID);
-		
-		return;
 		// update remote event
 		$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
 		// update remote event uuid

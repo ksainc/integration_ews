@@ -890,7 +890,7 @@ class RemoteEventsService {
 		}
 		else {
 			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'false');
-			$rm[] = $this->deleteFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', '0');
+			$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', '0');
 		}
 		// Occurrence
 		if (isset($so->Occurrence) && !empty($so->Occurrence->Precision)) {
@@ -1608,6 +1608,7 @@ class RemoteEventsService {
 			);
 		}
 		// Absolute Date Transition
+		/*
 		if (count($zone->Transitions->AbsoluteDateTransition) > 0) {
 			foreach ($zone->Transitions->AbsoluteDateTransition as $entry) {
 				$o->Transitions->AbsoluteDateTransition[] = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType(
@@ -1619,6 +1620,7 @@ class RemoteEventsService {
 				);
 			}
 		}
+		*/
 		// Recurring Date Transition
 		if (count($zone->Transitions->RecurringDateTransition) > 0) {
 			// TODO: Recurring Date Transition Code

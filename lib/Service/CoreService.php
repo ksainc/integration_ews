@@ -850,8 +850,8 @@ class CoreService {
 			// create remote store client
 			$RemoteStore = $this->createClient($uid);
 			// Test Contacts
-			//$this->ContactsService->RemoteStore = $RemoteStore;
-			//$result = $this->ContactsService->performTest($action, $Configuration);
+			$this->ContactsService->RemoteStore = $RemoteStore;
+			$result = $this->ContactsService->performTest($action, $Configuration);
 			// Test Events
 			$this->EventsService->RemoteStore = $RemoteStore;
 			$result = $this->EventsService->performTest($action, $Configuration);

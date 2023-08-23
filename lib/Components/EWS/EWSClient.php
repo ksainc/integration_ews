@@ -254,9 +254,6 @@ class EWSClient extends \SoapClient
                 case 408:
                     throw new RuntimeException('Request Timeout', $code);
                     break;
-                default:
-                    throw new RuntimeException($code . ' Unknown Error', $code);
-                    break;
             }
         }
 

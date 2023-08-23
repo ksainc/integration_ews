@@ -80,6 +80,7 @@ try {
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 	
 	// create client
+	/*
 	$client = $CoreService->createClient('admin');
 	$rcid = 'AQMkAGMwNTA4ZGIxLWQ1MDktNDI4Yi05ZWQxLWFmMmZmADc0NTY1MGYALgAAAzmziW6wlrFEgWK1LqkltCoBAKTqOIZoUNNLkdVBWIFk0WEAAAIBDQAAAA==';
 	
@@ -102,27 +103,19 @@ try {
 	// create remote event
 	$RemoteEventsService->DataStore = $client;
 	$ro = $RemoteEventsService->createCollectionItem($rcid, $eo);
-	
-	//$misc = \OC::$server->get(\OCA\EWS\Utile\Misc::class);
-	//$client = $CoreService->createClient('admin');
-	//$misc->generateEWS($client);
-	
-	// execute retrieve local collections harmonization
-	//$test = $CoreService->fetchLocalCollections($uid);
-
-	// execute retrieve remote collections harmonization
-	//$test = $CoreService->fetchRemoteCollections($uid);
-
-	// execute retrieve correlations harmonization
-	//$test = $CoreService->fetchCorrelations($uid);
+	// retrieve remote event
+	$ro = $RemoteEventsService->fetchCollectionItem($ro->ID);
+	// update remote event
+	$ro = $RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
+	*/
 
 	// execute initial harmonization
-	//$HarmonizationService->performHarmonization($uid, 'S');
+	$HarmonizationService->performHarmonization($uid, 'S');
 
 	// execute actions
 	//$HarmonizationService->performActions($uid);
 
-	// execute actions
+	// execute test
 	//$CoreService->performTest($uid, 'C');
 
 	$logger->info('Test ended for ' . $uid, ['app' => 'integration_ews']);

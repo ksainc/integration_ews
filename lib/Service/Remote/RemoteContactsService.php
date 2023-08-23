@@ -466,7 +466,7 @@ class RemoteContactsService {
             $ro->ExtendedProperty[] = $this->createFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $so->UID);
         }
         // set the "file as" mapping to "LastFirstCompany"
-        $ro->FileAsMapping = 'LastFirstCompany';
+        //$ro->FileAsMapping = 'LastFirstCompany';
         // execute command
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
 

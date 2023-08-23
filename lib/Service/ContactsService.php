@@ -1019,7 +1019,7 @@ class ContactsService {
 		// retrieve local contact collections
 		$lc = $this->LocalContactsService->listCollections($configuration->UserId);
 		foreach ($lc as $entry) {
-			if ($entry['name'] == 'EWS Test') {
+			if ($entry['name'] == 'EWS Contacts') {
 				$lcid = $entry['id'];
 				break;
 			}
@@ -1027,7 +1027,7 @@ class ContactsService {
 		// retrieve remote contact collections
 		$rc = $this->RemoteContactsService->listCollections();
 		foreach ($rc as $entry) {
-			if ($entry['name'] == 'NC Test') {
+			if ($entry['name'] == 'NC Contacts') {
 				$rcid = $entry['id'];
 				break;
 			}
@@ -1046,13 +1046,13 @@ class ContactsService {
 
 		// create local collection
 		if (!isset($lcid)) {
-			$lco = $this->LocalContactsService->createCollection($configuration->UserId, 'ews-test', 'EWS Test', true);
+			$lco = $this->LocalContactsService->createCollection($configuration->UserId, 'ews-test', 'EWS Contacts', true);
 			$lcid = $lco->Id;
 		}
 		
 		// create remote collection
 		if (!isset($rcid)) {
-			$rco = $this->RemoteContactsService->createCollection('msgfolderroot', 'NC Test', true);
+			$rco = $this->RemoteContactsService->createCollection('msgfolderroot', 'NC Contacts', true);
 			$rcid = $rco->Id;
 		}
 
