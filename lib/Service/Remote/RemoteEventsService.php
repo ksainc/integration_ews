@@ -458,10 +458,9 @@ class RemoteEventsService {
         }
 		// Notifications
 		if (count($so->Notifications) > 0) {
-			$ro->ReminderIsSet  = 'true';
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
 				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
-				$ro->ReminderIsSet = 'true';
+				$ro->ReminderIsSet = true;
 				$ro->ReminderMinutesBeforeStart = $t;
 				unset($t);
 			}
@@ -479,7 +478,7 @@ class RemoteEventsService {
 						($so->Notifications[0]->When->h * 60) +
 						($so->Notifications[0]->When->i);
 				}
-				$ro->ReminderIsSet = 'true';
+				$ro->ReminderIsSet = true;
 				$ro->ReminderMinutesBeforeStart = $t;
 				unset($t);
 			}
@@ -493,16 +492,18 @@ class RemoteEventsService {
 			if (!empty($so->Occurrence->Iterations)) {
 				$ro->Recurrence->NumberedRecurrence = new \OCA\EWS\Components\EWS\Type\NumberedRecurrenceRangeType();
 				$ro->Recurrence->NumberedRecurrence->NumberOfOccurrences = $so->Occurrence->Iterations;
+				$ro->Recurrence->NumberedRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 			}
 			// Occurrence Conclusion
 			if (!empty($so->Occurrence->Concludes)) {
 				$ro->Recurrence->EndDateRecurrence = new \OCA\EWS\Components\EWS\Type\EndDateRecurrenceRangeType();
+				$ro->Recurrence->EndDateRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 				if ($so->Origin == 'L') {
 					// subtract 1 day to adjust in how the end date is calculated in NC and EWS
-					$ro->Recurrence->EndDateRecurrence->EndDate = date_modify(clone $so->Occurrence->Concludes, '-1 day')->format('Y-m-d\TH:i:s');
+					$ro->Recurrence->EndDateRecurrence->EndDate = date_modify(clone $so->Occurrence->Concludes, '-1 day')->format('Y-m-d');
 				}
 				else {
-					$ro->Recurrence->EndDateRecurrence->EndDate = $so->Occurrence->Concludes->format('Y-m-d\TH:i:s');
+					$ro->Recurrence->EndDateRecurrence->EndDate = $so->Occurrence->Concludes->format('Y-m-d');
 				}
 			}
 			// No Iterations And No Conclusion Date
@@ -704,10 +705,6 @@ class RemoteEventsService {
 			unset($tz);
 			unset($dt);
         }
-        else {
-            $rd[] = $this->deleteFieldUnindexed('calendar:Start');
-			$rd[] = $this->deleteFieldUnindexed('calendar:StartTimeZone');
-        }
 		// Ends On
         if (!empty($so->EndsOn)) {
 			// clone end date
@@ -746,10 +743,6 @@ class RemoteEventsService {
 			}
 			unset($tz);
 			unset($dt);
-        }
-        else {
-            $rd[] = $this->deleteFieldUnindexed('calendar:End');
-			$rd[] = $this->deleteFieldUnindexed('calendar:EndTimeZone');
         }
 		// All Day Event
 		if(($so->EndsTZ == $so->StartsTZ) &&
@@ -866,7 +859,7 @@ class RemoteEventsService {
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
 				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
-				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'ture');
+				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
@@ -883,14 +876,14 @@ class RemoteEventsService {
 						($so->Notifications[0]->When->h * 60) +
 						($so->Notifications[0]->When->i);
 				}
-				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart',(string) $t);
-				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'ture');
+				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
 				unset($t);
 			}
 		}
 		else {
-			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'false');
-			$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', '0');
+			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', false);
+			$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', 0);
 		}
 		// Occurrence
 		if (isset($so->Occurrence) && !empty($so->Occurrence->Precision)) {
@@ -900,16 +893,18 @@ class RemoteEventsService {
 			if (!empty($so->Occurrence->Iterations)) {
 				$f->NumberedRecurrence = new \OCA\EWS\Components\EWS\Type\NumberedRecurrenceRangeType();
 				$f->NumberedRecurrence->NumberOfOccurrences = $so->Occurrence->Iterations;
+				$f->NumberedRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 			}
 			// Conclusion
 			if (!empty($so->Occurrence->Concludes)) {
 				$f->EndDateRecurrence = new \OCA\EWS\Components\EWS\Type\EndDateRecurrenceRangeType();
+				$f->EndDateRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 				if ($so->Origin == 'L') {
 					// subtract 1 day to adjust in how the end date is calculated in NC and EWS
-					$f->EndDateRecurrence->EndDate = date_modify(clone $so->Occurrence->Concludes, '-1 day')->format('Y-m-d\TH:i:s');
+					$f->EndDateRecurrence->EndDate = date_modify(clone $so->Occurrence->Concludes, '-1 day')->format('Y-m-d');
 				}
 				else {
-					$f->EndDateRecurrence->EndDate = $so->Occurrence->Concludes->format('Y-m-d\TH:i:s');
+					$f->EndDateRecurrence->EndDate = $so->Occurrence->Concludes->format('Y-m-d');
 				}
 			}
 			// No Iterations And No Conclusion Date

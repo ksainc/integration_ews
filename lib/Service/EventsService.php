@@ -1231,7 +1231,7 @@ class EventsService {
 		*/
 		$eo = new EventObject();
 		$eo->Origin = 'L';
-		$eo->Notes = 'Every other week on Tuesday and Thursday until 4 Weeks from start';
+		$eo->Notes = 'Every other week on Monday, Wednesday and Friday until 4 Weeks from start';
 		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
 		$eo->StartsTZ = $configuration->SystemTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
