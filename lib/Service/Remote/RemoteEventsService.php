@@ -146,7 +146,6 @@ class RemoteEventsService {
 		// construct command object
 		$ec = new \OCA\EWS\Components\EWS\Type\CalendarFolderType();
 		$ec->DisplayName = $name;
-		$ec->FolderClass = 'IPF.Appointment';
 		// execute command
 		$cr = $this->RemoteCommonService->createFolder($this->DataStore, $cid, $ec, $ctype);
         // process response
@@ -252,7 +251,7 @@ class RemoteEventsService {
 		// construct identification object
         $io = new \OCA\EWS\Components\EWS\Type\ItemIdType($iid);
 		// execute command
-		$ro = $this->RemoteCommonService->fetchItem($this->DataStore, array($io), 'D', $this->constructDefaultItemProperties());
+		$ro = $this->RemoteCommonService->fetchItem($this->DataStore, array($io), 'A', $this->constructDefaultItemProperties());
         // validate response
 		if (isset($ro->CalendarItem)) {
 			// convert to event object
@@ -342,7 +341,7 @@ class RemoteEventsService {
 			// convert time zone
 			$tz = $this->toTimeZone($tz);
 			// construct time zone attribute
-			if ($tz instanceof \DateTimeZone) {
+			if (!empty($tz)) {
 				$ro->StartTimeZone = $this->constructTimeZone($tz);
 			} else {
 				$ro->StartTimeZone = $this->constructTimeZone('UTC');
@@ -374,7 +373,7 @@ class RemoteEventsService {
 			// convert time zone
 			$tz = $this->toTimeZone($tz);
 			// construct time zone attribute
-			if ($tz instanceof \DateTimeZone) {
+			if (!empty($tz)) {
 				$ro->EndTimeZone = $this->constructTimeZone($tz);
 			} else {
 				$ro->EndTimeZone = $this->constructTimeZone('UTC');
@@ -385,10 +384,10 @@ class RemoteEventsService {
 		// All Day Event
 		if(($so->EndsTZ == $so->StartsTZ) &&
 		   (fmod(($so->EndsOn->getTimestamp() - $so->StartsOn->getTimestamp()), 86400) == 0)) {
-			$ro->IsAllDayEvent = 'true';
+			$ro->IsAllDayEvent = true;
 		}
 		else {
-			$ro->IsAllDayEvent = 'false';
+			$ro->IsAllDayEvent = false;
 		}
 		// TimeZone
 		if ($so->TimeZone instanceof \DateTimeZone) {
@@ -666,9 +665,6 @@ class RemoteEventsService {
 			$rm[] = $this->updateFieldUnindexed('calendar:TimeZone', 'TimeZone', $tz);
 			unset($tz);
 		}
-		else {
-			$rd[] = $this->deleteFieldUnindexed('calendar:TimeZone');
-		}
         // Starts On
         if (!empty($so->StartsOn)) {
 			// clone start date
@@ -692,7 +688,7 @@ class RemoteEventsService {
 			// convert time zone
 			$tz = $this->toTimeZone($tz);
 			// construct time zone attribute
-			if ($tz instanceof \DateTimeZone) {
+			if (!empty($tz)) {
 				$rm[] = $this->updateFieldUnindexed(
 					'calendar:StartTimeZone',
 					'StartTimeZone',
@@ -735,7 +731,7 @@ class RemoteEventsService {
 			// construct start time zone
 			$tz = $this->toTimeZone($tz);
 			// construct time zone attribute
-			if ($tz instanceof \DateTimeZone) {
+			if (!empty($tz)) {
 				$rm[] = $this->updateFieldUnindexed(
 					'calendar:EndTimeZone',
 					'EndTimeZone',
@@ -758,10 +754,10 @@ class RemoteEventsService {
 		// All Day Event
 		if(($so->EndsTZ == $so->StartsTZ) &&
 		   (fmod(($so->EndsOn->getTimestamp() - $so->StartsOn->getTimestamp()), 86400) == 0) ) {
-			$rm[] = $this->updateFieldUnindexed('calendar:IsAllDayEvent', 'IsAllDayEvent', 'true');
+			$rm[] = $this->updateFieldUnindexed('calendar:IsAllDayEvent', 'IsAllDayEvent', true);
 		}
 		else {
-			$rm[] = $this->updateFieldUnindexed('calendar:IsAllDayEvent', 'IsAllDayEvent', 'false');
+			$rm[] = $this->updateFieldUnindexed('calendar:IsAllDayEvent', 'IsAllDayEvent', false);
 		}
 		// Label
         if (!empty($so->Label)) {
@@ -776,7 +772,7 @@ class RemoteEventsService {
                 'item:Body',
                 'Body', 
                 new \OCA\EWS\Components\EWS\Type\BodyType(
-                    'Text',
+                    'HTML',
                     $so->Notes
             ));
         }
@@ -807,9 +803,6 @@ class RemoteEventsService {
 		// Sensitivity
 		if (!empty($so->Sensitivity)) {
 			$rm[] = $this->updateFieldUnindexed('item:Sensitivity', 'Sensitivity', $this->toSensitivity($so->Sensitivity));
-		}
-		else {
-			$rd[] = $this->deleteFieldUnindexed('item:Sensitivity');
 		}
 		// Tag(s)
 		if (count($so->Tags) > 0) {
@@ -870,7 +863,6 @@ class RemoteEventsService {
 		}
 		// Notification(s)
 		if (count($so->Notifications) > 0) {
-			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'true');
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
 				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
@@ -898,7 +890,7 @@ class RemoteEventsService {
 		}
 		else {
 			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'false');
-			$rd[] = $this->deleteFieldUnindexed('item:ReminderMinutesBeforeStart');
+			$rm[] = $this->deleteFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', '0');
 		}
 		// Occurrence
 		if (isset($so->Occurrence) && !empty($so->Occurrence->Precision)) {
@@ -1026,13 +1018,10 @@ class RemoteEventsService {
 					unset($dt);
 				}
 				$rm[] = $this->updateFieldUnindexed('calendar:DeletedOccurrences', 'DeletedOccurrences', $f);
-			} else {
-				$rd[] = $this->deleteFieldUnindexed('calendar:DeletedOccurrences');	
 			}
 		}
 		else {
 			$rd[] = $this->deleteFieldUnindexed('calendar:Recurrence');
-			$rd[] = $this->deleteFieldUnindexed('calendar:DeletedOccurrences');
 		}
         // execute command
         $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, $rd);
@@ -1591,22 +1580,112 @@ class RemoteEventsService {
     public function constructTimeZone(string $name): object {
 		// retrive time zone properties
 		$zone = \OCA\EWS\Utile\TimeZoneEWS::find($name);
+
         // construct time zone object
         $o = new \OCA\EWS\Components\EWS\Type\TimeZoneDefinitionType;
-		$o->Id = $zone->id;
+		$o->Id = $zone->Id;
+		$o->Name = $zone->Name;
 
+		// Periods
+		$o->Periods = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPeriodsType();
+		foreach ($zone->Periods->Period as $entry) {
+			$o->Periods->Period[] = new \OCA\EWS\Components\EWS\Type\PeriodType(
+				$entry->Id,
+				$entry->Name,
+				$entry->Bias
+			);
+		}
+
+		// Transitions
+		$o->Transitions = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
+		// Transition
+		foreach ($zone->Transitions->Transition as $entry) {
+			$o->Transitions->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
+				new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+					$entry->To->Kind,
+					$entry->To->_
+				)
+			);
+		}
+		// Absolute Date Transition
+		if (count($zone->Transitions->AbsoluteDateTransition) > 0) {
+			foreach ($zone->Transitions->AbsoluteDateTransition as $entry) {
+				$o->Transitions->AbsoluteDateTransition[] = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType(
+					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+						$entry->To->Kind,
+						$entry->To->_
+					),
+					$entry->DateTime
+				);
+			}
+		}
+		// Recurring Date Transition
+		if (count($zone->Transitions->RecurringDateTransition) > 0) {
+			// TODO: Recurring Date Transition Code
+		}
+		// Recurring Day Transition
+		if (count($zone->Transitions->RecurringDayTransition) > 0) {
+			// TODO: Recurring Day Transition Code
+		}
+
+		// Transitions Groups
+		$o->TransitionsGroups = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsGroupsType();
+		foreach ($zone->TransitionsGroups->TransitionsGroup as $key => $group) {
+			$o->TransitionsGroups->TransitionsGroup[$key] = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
+			$o->TransitionsGroups->TransitionsGroup[$key]->Id = $group->Id;
+			// Transition
+			foreach ($group->Transition as $entry) {
+				$o->TransitionsGroups->TransitionsGroup[$key]->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
+					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+						$entry->To->Kind,
+						$entry->To->_
+					)
+				);
+			}
+			// Absolute Date Transition
+			if (count($group->AbsoluteDateTransition) > 0) {
+				foreach ($group->AbsoluteDateTransition as $entry) {
+					$o->TransitionsGroups->TransitionsGroup[$key]->AbsoluteDateTransition[] = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType(
+						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+							$entry->To->Kind,
+							$entry->To->_
+						),
+						$entry->DateTime
+					);
+				}
+			}
+			// Recurring Date Transition
+			if (count($group->RecurringDateTransition) > 0) {
+				foreach ($group->RecurringDateTransition as $entry) {
+					$o->TransitionsGroups->TransitionsGroup[$key]->RecurringDateTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDateTransitionType(
+						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+							$entry->To->Kind,
+							$entry->To->_
+						),
+						$entry->TimeOffset,
+						$entry->Month,
+						$entry->Day
+					);
+				}
+			}
+			// Recurring Day Transition
+			if (count($group->RecurringDayTransition) > 0) {
+				foreach ($group->RecurringDayTransition as $entry) {
+					$o->TransitionsGroups->TransitionsGroup[$key]->RecurringDayTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDayTransitionType(
+						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+							$entry->To->Kind,
+							$entry->To->_
+						),
+						$entry->TimeOffset,
+						$entry->Month,
+						$entry->DayOfWeek,
+						$entry->Occurrence
+					);
+				}
+			}
+		}
+		/*
 		if (!empty($zone->StandardBias) && !empty($zone->DaylightBias)) {
-			$o->Periods = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPeriodsType();
-			$o->Periods->Period[] = new \OCA\EWS\Components\EWS\Type\PeriodType(
-				$zone->StandardName,
-				$zone->StandardBias,
-				'ST'
-			);
-			$o->Periods->Period[] = new \OCA\EWS\Components\EWS\Type\PeriodType(
-				$zone->DaylightName,
-				$zone->DaylightBias,
-				'DL'
-			);
 			$o->TransitionsGroups = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsGroupsType();
 			$group = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
 			$group->Id = 0;
@@ -1639,6 +1718,7 @@ class RemoteEventsService {
 			$o->Transitions->Transition->To->_ = 0;
 			$o->Transitions->Transition->To->Kind = 'Group';
 		}
+		*/
 
 		/*
 		$o->Transitions->AbsoluteDateTransition = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType();
@@ -1691,11 +1771,11 @@ class RemoteEventsService {
         }
 		// Start Time Zone
         if (!empty($data->StartTimeZone)) {
-			$o->StartsTZ = $this->fromTimeZone($data->StartTimeZone);
+			$o->StartsTZ = $this->fromTimeZone($data->StartTimeZone->Id);
         }
 		// End Time Zone
 		if (!empty($data->EndTimeZone)) {
-			$o->EndsTZ = $this->fromTimeZone($data->EndTimeZone);
+			$o->EndsTZ = $this->fromTimeZone($data->EndTimeZone->Id);
 		}
 		// Time Zone
         if (!empty($data->TimeZone)) {

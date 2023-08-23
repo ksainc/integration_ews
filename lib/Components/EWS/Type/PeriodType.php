@@ -38,11 +38,11 @@ use OCA\EWS\Components\EWS\Type;
 class PeriodType extends Type
 {
     /*Constructor method with arguments*/
-    public function __construct(string $Name = null, string $Bias = null, string $Id = null)
+    public function __construct(string $Id = null, string $Name = null, string $Bias = null)
     {
+        $this->Id = $Id;
         $this->Name = $Name;
         $this->Bias = $Bias;
-        $this->Id = $Id;
     }
 
     /**

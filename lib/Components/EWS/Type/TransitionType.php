@@ -36,6 +36,11 @@ use OCA\EWS\Components\EWS\Type;
  */
 class TransitionType extends Type
 {
+    /*Constructor method with arguments*/
+    public function __construct($To = null)
+    {
+        $this->To = $To;
+    }
     /**
      * Specifies the Period or TransitionsGroup that is the target of the time
      * zone transition.

@@ -136,7 +136,6 @@ class RemoteContactsService {
 		// construct command object
 		$cc = new \OCA\EWS\Components\EWS\Type\ContactsFolderType();
 		$cc->DisplayName = $name;
-		$cc->FolderClass = 'IPF.Contact';
 		// execute command
 		$cr = $this->RemoteCommonService->createFolder($this->DataStore, $cid, $cc, $ctype);
         // process response

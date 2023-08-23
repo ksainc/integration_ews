@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace OCA\EWS\Utile;
 
-class Test {
+class Misc {
 
     // generate iana time zone file
     function generateIANA() {
@@ -183,107 +183,40 @@ class Test {
 		fclose($file);
     }
 
-    function generateEWS() {
-        // retrieve EWS connection information
-		$server = $this->config->getUserValue($uid, Application::APP_ID, 'server');
-		$account_id = $this->config->getUserValue($uid, Application::APP_ID, 'account_id');
-		$account_secret = $this->config->getUserValue($uid, Application::APP_ID, 'account_secret');
-		$contacts_prevalence = $this->config->getUserValue($uid, Application::APP_ID, 'contacts_prevalence');
-		$events_prevalence = $this->config->getUserValue($uid, Application::APP_ID, 'events_prevalence');
+    function generateEWS($RemoteStore) {
 
-		// create EWS client.
-		$RemoteStore = new EWSClient($server, $account_id, $account_secret, EWSClient::VERSION_2010_SP2);
-		
-		$zones = $this->RemoteCommonService->fetchTimeZone($RemoteStore);
+		$RemoteCommonService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteCommonService::class);
 
-		$file = fopen("/var/www/nextcloud/data/EWS-Timezones.txt", "w") or die("Unable to open file!");
+		$zones = $RemoteCommonService->fetchTimeZone($RemoteStore);
+
+		$data = [];
+
 		foreach ($zones->TimeZoneDefinition as $zone) {
 			
-			$zonedata = array();
-
-			foreach ($zone->Periods->Period as $entry) {
-
-				$p = array();
-				//if (str_contains($period->Id, '/Daylight')) { continue; }
-
-				$p['id'] = str_replace("trule:Microsoft/Registry/", "", $entry->Id);
-				$p['name'] = $entry->Name;
-				$p['bias'] = $entry->Bias;
-
-				$offset = str_replace("PT", "", $entry->Bias);
-				$offset = str_replace("H0", "H00", $offset); // Convert Hours
-				$offset = str_replace("H", "", $offset); // Remove Hour Indicator
-				$offset = str_replace("M", "", $offset); // Remote Minutes Indicator
-				$offset = str_replace("0S", "", $offset); // Remove Seconds
-				$offset = intval($offset); // convert to integer
-				$offset = $offset * -1; // convert to standard offset
-
-				if ($offset < 0) { 
-					$dt = new DateTime('now', new DateTimeZone($offset));
-				} else {
-					$dt = new DateTime('now', new DateTimeZone('+' . $offset));
-				}
-				$p['offset'] = $dt->format('P');
-
-				if ($p['name'] == 'Standard') {
-					$p['id'] = str_replace("/Standard", "", $p['id']);
-					$zonedata['S'] = $p;
-				} elseif ($p['name'] == 'Daylight') {
-					$p['id'] = str_replace("/Daylight", "", $p['id']);
-					$zonedata['D'] = $p;
-				} else {
-					throw new Exception('Invalid Period');
-				}
-			}
-
-			foreach ($zone->TransitionsGroups->TransitionsGroup as $tg) {
-				foreach ($tg->RecurringDayTransition as $ts) {
-
-					if (str_contains($ts->To->_, '/Standard')) {
-						$p = 'D';
-					} elseif (str_contains($ts->To->_, '/Daylight')) {
-						$p = 'S';
-					} else {
-						throw new Exception('Invalid Transition');
-					}
-
-					$zonedata[$p]['to'] = str_replace("trule:Microsoft/Registry/", "", $ts->To->_);
-					$zonedata[$p]['month'] = $ts->Month;
-					$zonedata[$p]['dow'] = $ts->DayOfWeek;
-					$zonedata[$p]['wom'] = $ts->Occurrence;
-					$zonedata[$p]['time'] = $ts->TimeOffset;
-	
-				}
-			}
-
-			$zoneid = str_replace("/Standard", "", $zonedata['S']['id']);
-			
-			$data .= "array( id => '" . $zonedata['S']['id'] . // Id
-			"', sname => '" . $zonedata['S']['name'] . // Name
-			"', sbias => '" . $zonedata['S']['bias'] . // Bias
-			"', soffset => '" . $zonedata['S']['offset'] . // Offset
-			"', smonth => '" . $zonedata['S']['month'] . // Month
-			"', sdow => '" . $zonedata['S']['dow'] . // Day Of Week
-			"', swom => '" . $zonedata['S']['wom'] . // Week Of Month
-			"', stime => '" . $zonedata['S']['time'] . // Time
-			//"', sto => '" . $zonedata['S']['to'] . // To Period
-			//"', did => '" . $zonedata['D']['id'] . // Id
-			"', dname => '" . $zonedata['D']['name'] . // Name
-			"', dbias => '" . $zonedata['D']['bias'] . // Bias
-			"', doffset => '" . $zonedata['D']['offset'] . // Offset
-			"', dmonth => '" . $zonedata['D']['month'] . // Month
-			"', ddow => '" . $zonedata['D']['dow'] . // Day Of Week
-			"', dwom => '" . $zonedata['D']['wom'] . // Week Of Month
-			"', dtime => '" . $zonedata['D']['time'] . // Time
-			//"', dto => '" . $zonedata['D']['to'] . // To Period
-			"' ), \n";
+			$data[] = [
+				'Id' => $zone->Id, // Id
+				'Name' => $zone->Name, // Name
+				'Periods' => json_encode($zone->Periods), // Periods
+				'Transitions' => json_encode($zone->Transitions), // Transitions
+				'TransitionsGroups' => json_encode($zone->TransitionsGroups) // TransitionsGroups
+			];
 		}
 
-		fwrite(
-			$file,
-			"array(\n" . $data . ");"
-		);
+		array_multisort(array_column($data, 'Id'), SORT_ASC, $data);
 
+		$file = fopen("/var/www/nextcloud/data/EWS-Timezones.txt", "w") or die("Unable to open file!");
+		
+		fwrite($file, "[\n");
+		foreach ($data as $entry) {
+			fwrite($file, "[\n" .
+				"\t'Id' => '" . $entry['Id'] . "',\n" .
+				"\t'Name' => '" . $entry['Name'] . "',\n" .
+				"\t'Periods' => '" . $entry['Periods'] . "',\n" .
+				"\t'Transitions' => '" . $entry['Transitions'] . "',\n" .
+				"\t'TransitionsGroups' => '" . $entry['TransitionsGroups'] . "',\n" .
+			"],\n");
+		}
+		fwrite($file, "]\n");
 		fclose($file);
     }
 }

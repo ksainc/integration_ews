@@ -34,6 +34,12 @@ namespace OCA\EWS\Components\EWS\Type;
  */
 class TransitionTargetType extends StringType
 {
+    /*Constructor method with arguments*/
+    public function __construct(string $Kind = null, string $Value = null)
+    {
+        $this->Kind = $Kind;
+        $this->_ = $Value;
+    }
     /**
      * Indicates whether the time zone transition target is a time zone period
      * or of a group of time zone transitions.

@@ -76,7 +76,36 @@ try {
 	// initilize required services
 	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
+	$RemoteEventsService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteEventsService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
+	
+	// create client
+	$client = $CoreService->createClient('admin');
+	$rcid = 'AQMkAGMwNTA4ZGIxLWQ1MDktNDI4Yi05ZWQxLWFmMmZmADc0NTY1MGYALgAAAzmziW6wlrFEgWK1LqkltCoBAKTqOIZoUNNLkdVBWIFk0WEAAAIBDQAAAA==';
+	
+	// construct event object with basic properties
+	$eo = \OC::$server->get(\OCA\EWS\Objects\EventObject::class);
+	$eo->Origin = 'L';
+	$eo->Notes = 'Don\'t forget to bring a present';
+	$eo->StartsOn = new \DateTime('2023-08-28T10:00:00', new \DateTimeZone('America/Toronto')); 
+	$eo->StartsTZ = new \DateTimeZone('America/Toronto');
+	$eo->EndsOn = new \DateTime('2023-08-28T10:00:00', new \DateTimeZone('America/Anchorage')); 
+	$eo->EndsTZ = new \DateTimeZone('America/Anchorage');
+	$eo->Location = 'Moes Pub';
+	$eo->Availability = 'Busy';
+	$eo->Priority = '1';
+	$eo->Sensitivity = '1';
+	// generate new uuid for local
+	$eo->UUID = '63b2fb65-f54d-406f-b0af-c0e531ba9937';
+	$eo->Label = 'NC Simpson\'s Birthday Dinner';
+
+	// create remote event
+	$RemoteEventsService->DataStore = $client;
+	$ro = $RemoteEventsService->createCollectionItem($rcid, $eo);
+	
+	//$misc = \OC::$server->get(\OCA\EWS\Utile\Misc::class);
+	//$client = $CoreService->createClient('admin');
+	//$misc->generateEWS($client);
 	
 	// execute retrieve local collections harmonization
 	//$test = $CoreService->fetchLocalCollections($uid);
@@ -88,10 +117,13 @@ try {
 	//$test = $CoreService->fetchCorrelations($uid);
 
 	// execute initial harmonization
-	$HarmonizationService->performHarmonization($uid, 'S');
+	//$HarmonizationService->performHarmonization($uid, 'S');
 
 	// execute actions
 	//$HarmonizationService->performActions($uid);
+
+	// execute actions
+	//$CoreService->performTest($uid, 'C');
 
 	$logger->info('Test ended for ' . $uid, ['app' => 'integration_ews']);
 	echo 'Test ended for ' . $uid . PHP_EOL;

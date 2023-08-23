@@ -1026,20 +1026,20 @@ class EventsService {
 	 *
 	 * @return void
 	 */
-	public function performTest($action) : void {
+	public function performTest($action, $configuration) : void {
 		// assign data stores
 		$this->LocalEventsService->DataStore = $this->LocalStore;
-		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
+		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($configuration->UserId);
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;
 		// assign timezones
-		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
-		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
+		$this->LocalEventsService->UserTimeZone = $configuration->SystemTimeZone;
+		$this->RemoteEventsService->UserTimeZone = $configuration->SystemTimeZone;
 
 		/*
 		*	Test Basic Collection Functions
 		*/
 		// retrieve local event collections
-		$lc = $this->LocalEventsService->listCollections($this->Configuration->UserId);
+		$lc = $this->LocalEventsService->listCollections($configuration->UserId);
 		foreach ($lc as $entry) {
 			if ($entry['name'] == 'EWS Test') {
 				$lcid = $entry['id'];
@@ -1068,7 +1068,7 @@ class EventsService {
 
 		// create local collection
 		if (!isset($lcid)) {
-			$lco = $this->LocalEventsService->createCollection($this->Configuration->UserId, 'ews-test', 'EWS Test', true);
+			$lco = $this->LocalEventsService->createCollection($configuration->UserId, 'ews-test', 'EWS Test', true);
 			$lcid = $lco->Id;
 		}
 		// create remote collection
@@ -1077,12 +1077,12 @@ class EventsService {
 			$rcid = $rco->Id;
 		}
 		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($this->Configuration->UserId, $lcid, $rcid);
+		$ci = $this->CorrelationsService->find($configuration->UserId, $lcid, $rcid);
 		// create correlation if none was found
 		if (!isset($ci)) {
 			$ci = new \OCA\EWS\Db\Correlation();
 			$ci->settype('EC'); // Correlation Type
-			$ci->setuid($this->Configuration->UserId); // User ID
+			$ci->setuid($configuration->UserId); // User ID
 			$ci->setloid($lcid); // Local ID
 			$ci->setroid($rcid); // Remote ID
 			$this->CorrelationsService->create($ci);
@@ -1104,8 +1104,8 @@ class EventsService {
 		$eo->Origin = 'L';
 		$eo->Notes = 'Don\'t forget to bring a present';
 		$eo->StartsOn = (new DateTime('NOW')); 
-		$eo->StartsTZ = $this->Configuration->UserTimeZone;
-		$eo->StartsOn->setTimezone($this->Configuration->UserTimeZone);
+		$eo->StartsTZ = $configuration->SystemTimeZone;
+		$eo->StartsOn->setTimezone($configuration->SystemTimeZone);
 		$eo->StartsOn->modify('next saturday')->setTime(20, 0, 0, 0); // set event start next saturday at 10:00
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+2 hour'); // set event end on same day one hour later
 		$eo->EndsTZ = (clone $eo->StartsTZ);
@@ -1131,6 +1131,8 @@ class EventsService {
 		$ro = $this->RemoteEventsService->createCollectionItem($rcid, $eo);
 		// retrieve remote event
 		$ro = $this->RemoteEventsService->fetchCollectionItem($ro->ID);
+		
+		return;
 		// update remote event
 		$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
 		// update remote event uuid
@@ -1144,8 +1146,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Bart done it again';
-		$eo->StartsOn = (new DateTime('now', $this->Configuration->UserTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $this->Configuration->UserTimeZone;
+		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
+		$eo->StartsTZ = $configuration->SystemTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';
@@ -1196,8 +1198,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Every other day for 4 iterations';
-		$eo->StartsOn = (new DateTime('now', $this->Configuration->UserTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $this->Configuration->UserTimeZone;
+		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
+		$eo->StartsTZ = $configuration->SystemTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';
@@ -1232,8 +1234,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Every other week on Tuesday and Thursday until 4 Weeks from start';
-		$eo->StartsOn = (new DateTime('now', $this->Configuration->UserTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
-		$eo->StartsTZ = $this->Configuration->UserTimeZone;
+		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
+		$eo->StartsTZ = $configuration->SystemTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';

@@ -1008,7 +1008,7 @@ class ContactsService {
 	 *
 	 * @return void
 	 */
-	public function performTest($action) : void {
+	public function performTest($action, $configuration) : void {
 		// assign data stores
 		$this->LocalContactsService->DataStore = $this->LocalStore;
 		$this->RemoteContactsService->DataStore = $this->RemoteStore;
@@ -1017,7 +1017,7 @@ class ContactsService {
 		*	Test Basic Collection Functions
 		*/
 		// retrieve local contact collections
-		$lc = $this->LocalContactsService->listCollections($this->Configuration->UserId);
+		$lc = $this->LocalContactsService->listCollections($configuration->UserId);
 		foreach ($lc as $entry) {
 			if ($entry['name'] == 'EWS Test') {
 				$lcid = $entry['id'];
@@ -1046,7 +1046,7 @@ class ContactsService {
 
 		// create local collection
 		if (!isset($lcid)) {
-			$lco = $this->LocalContactsService->createCollection($this->Configuration->UserId, 'ews-test', 'EWS Test', true);
+			$lco = $this->LocalContactsService->createCollection($configuration->UserId, 'ews-test', 'EWS Test', true);
 			$lcid = $lco->Id;
 		}
 		
@@ -1057,12 +1057,12 @@ class ContactsService {
 		}
 
 		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($this->Configuration->UserId, $lcid, $rcid);
+		$ci = $this->CorrelationsService->find($configuration->UserId, $lcid, $rcid);
 		// create correlation if none was found
 		if (!isset($ci)) {
 			$ci = new \OCA\EWS\Db\Correlation();
 			$ci->settype('CC'); // Correlation Type
-			$ci->setuid($this->Configuration->UserId); // User ID
+			$ci->setuid($configuration->UserId); // User ID
 			$ci->setloid($lcid); // Local ID
 			$ci->setroid($rcid); // Remote ID
 			$this->CorrelationsService->create($ci);

@@ -33,6 +33,12 @@ namespace OCA\EWS\Components\EWS\Type;
  */
 class AbsoluteDateTransitionType extends TransitionType
 {
+    /*Constructor method with arguments*/
+    public function __construct($To = null, $DateTime = null)
+    {
+        $this->To = $To;
+        $this->DateTime = $DateTime;
+    }
     /**
      * Represents the date and time at which the time zone transition occurs.
      *

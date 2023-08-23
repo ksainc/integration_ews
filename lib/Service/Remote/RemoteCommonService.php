@@ -824,6 +824,7 @@ class RemoteCommonService {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\CreateItemType();
+		$request->SendMeetingInvitations = 'SendToNone';
 		// define target
 		$request->SavedItemFolderId = new \OCA\EWS\Components\EWS\Type\TargetFolderIdType();
 		$request->SavedItemFolderId->FolderId = new \OCA\EWS\Components\EWS\Type\FolderIdType($fid);
@@ -882,6 +883,7 @@ class RemoteCommonService {
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\UpdateItemType();
 		$request->ConflictResolution = 'AlwaysOverwrite';
+		$request->SendMeetingInvitationsOrCancellations = 'SendToNone';
 		// define target folder
 		$request->SavedItemFolderId = new \OCA\EWS\Components\EWS\Type\TargetFolderIdType();
 		$request->SavedItemFolderId->FolderId = new \OCA\EWS\Components\EWS\Type\FolderIdType($fid);

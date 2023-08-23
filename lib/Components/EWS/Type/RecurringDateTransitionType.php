@@ -32,6 +32,15 @@ namespace OCA\EWS\Components\EWS\Type;
  */
 class RecurringDateTransitionType extends RecurringTimeTransitionType
 {
+    /*Constructor method with arguments*/
+    public function __construct($To = null, string $Offset = null, int $Month = null, int $Day = null)
+    {
+        $this->To = $To;
+        $this->TimeOffset = $Offset;
+        $this->Month = $Month;
+        $this->Day = $Day;
+
+    }
     /**
      * The day of the month on which the time zone transition occurs.
      *

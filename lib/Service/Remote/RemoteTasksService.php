@@ -146,7 +146,6 @@ class RemoteTasksService {
 		// construct command object
 		$ec = new \OCA\EWS\Components\EWS\Type\TasksFolderType();
 		$ec->DisplayName = $name;
-		$ec->FolderClass = 'IPF.Appointment';
 		// execute command
 		$cr = $this->RemoteCommonService->createFolder($this->DataStore, $cid, $ec, $ctype);
         // process response
