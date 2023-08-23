@@ -148,9 +148,9 @@ try {
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');
 	// connect to remote events queue(s)
-	$cs = $HarmonizationService->connectEvents($uid, 60, 'CC');
-	$es = $HarmonizationService->connectEvents($uid, 60, 'EC');
-	$ts = $HarmonizationService->connectEvents($uid, 60, 'TC');
+	$cs = $HarmonizationService->connectEvents($uid, 15, 'CC');
+	$es = $HarmonizationService->connectEvents($uid, 15, 'EC');
+	$ts = $HarmonizationService->connectEvents($uid, 15, 'TC');
 
 	while ((time() - $executionStart) < $executionDuration) {
 		
