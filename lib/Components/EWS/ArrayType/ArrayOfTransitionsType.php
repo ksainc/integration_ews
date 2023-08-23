@@ -35,6 +35,15 @@ use OCA\EWS\Components\EWS\ArrayType;
 class ArrayOfTransitionsType extends ArrayType
 {
     /**
+     * Represents a time zone transition. 
+     *
+     * @since Exchange 2010
+     *
+     * @var \OCA\EWS\Components\EWS\Type\TransitionType[]
+     */
+    public $Transition = array();
+    
+    /**
      * A time zone transition that occurs on a specific date and at a specific
      * time.
      *
