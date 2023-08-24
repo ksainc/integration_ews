@@ -68,9 +68,9 @@ class CalendarObjectDeletedListener implements IEventListener {
 					$uid = str_replace('principals/users/', '', $ec['principaluri']);
 					$cid = (string) $ec['id'];
 					$oid = str_replace('-deleted', '', $eo['uri']);
-					// retrieve object corrollation
+					// retrieve object correlation
 					$ci = $this->CorrelationsService->findByLocalId($uid, $cos, $oid, $cid);
-					// evaluate corrollation, if exists, create action
+					// evaluate correlation, if exists, create action
 					if ($ci instanceof \OCA\EWS\Db\Correlation) {
 						// construct action entry
 						$a = new Action();

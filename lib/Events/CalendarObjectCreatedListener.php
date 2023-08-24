@@ -71,13 +71,13 @@ class CalendarObjectCreatedListener implements IEventListener {
 					$cid = (string) $ec['id'];
 					$oid = str_replace('-deleted', '', $eo['uri']);
 					$ostate = trim($eo['etag'],'"');
-					// retrieve collection corrollation
+					// retrieve collection correlation
 					$cc = $this->CorrelationsService->findByLocalId($uid, $ccs, $cid);
-					// evaluate corrollation, if corrollation exists for the local collection create action
+					// evaluate correlation, if correlation exists for the local collection create action
 					if ($cc instanceof \OCA\EWS\Db\Correlation) {
-						// retrieve object corrollation
+						// retrieve object correlation
 						$ci = $this->CorrelationsService->findByLocalId($uid, $cos, $oid, $cid);
-						// evaluate corrollation, if dose not exists or state does not match, create action
+						// evaluate correlation, if dose not exists or state does not match, create action
 						// work around to filter out harmonization generated events
 						if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getlostate() != $ostate) {
 							// construct action entry

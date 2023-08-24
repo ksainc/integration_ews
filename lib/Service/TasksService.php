@@ -322,13 +322,13 @@ class TasksService {
 			}
 			// evaluate, action origin
 			if ($action->getorigin() == "L") {
-				// retrieve collection corrollation
+				// retrieve collection correlation
 				$cc = $this->CorrelationsService->findByLocalId(
 					$this->Configuration->UserId, 
 					CorrelationsService::TaskCollection, 
 					$action->getlcid()
 				);
-				// evaluate corrollation, if corrollation exists for the local collection create action
+				// evaluate correlation, if correlation exists for the local collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
 					switch ($action->getaction()) {
@@ -369,13 +369,13 @@ class TasksService {
 				}
 			}
 			elseif ($action->getorigin() == "R") {
-				// retrieve collection corrollation
+				// retrieve collection correlation
 				$cc = $this->CorrelationsService->findByRemoteId(
 					$this->Configuration->UserId, 
 					CorrelationsService::TaskCollection, 
 					$action->getrcid()
 				);
-				// evaluate corrollation, if corrollation exists for the remote collection create action
+				// evaluate correlation, if correlation exists for the remote collection create action
 				if ($cc instanceof \OCA\EWS\Db\Correlation) {
 					// process based on action
 					switch ($action->getaction()) {
