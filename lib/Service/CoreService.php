@@ -840,9 +840,6 @@ class CoreService {
 
 	public function performTest(string $uid, string $action): void {
 
-		//$this->performActions($uid);
-		//return;
-
 		try {
 			// retrieve Configuration
 			$Configuration = $this->ConfigurationService->retrieveUser($uid);
@@ -855,6 +852,9 @@ class CoreService {
 			// Test Events
 			$this->EventsService->RemoteStore = $RemoteStore;
 			$result = $this->EventsService->performTest($action, $Configuration);
+			// Test Tasks
+			//$this->TasksService->RemoteStore = $RemoteStore;
+			//$result = $this->TasksService->performTest($action, $Configuration);
 			// destroy remote store client
 			$this->destroyClient($RemoteStore);
 		} catch (Exception $e) {

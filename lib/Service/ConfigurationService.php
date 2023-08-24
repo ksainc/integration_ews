@@ -72,12 +72,14 @@ class ConfigurationService {
 		'account_oauth_refresh' => '',
 		'contacts_harmonize' => '5',
 		'contacts_prevalence' => 'R',
-		'contacts_presentation' => 'DisplayName',
+		'contacts_presentation' => '',
 		'events_harmonize' => '5',
 		'events_prevalence' => 'R',
 		'events_timezone' => '',
+		'events_attachment_path' => '/Calendar',
 		'tasks_harmonize' => '5',
 		'tasks_prevalence' => 'R',
+		'tasks_attachment_path' => '/Tasks',
 	];
 
 	/** @var LoggerInterface */
@@ -236,19 +238,36 @@ class ConfigurationService {
 		// define parameters place holder
 		$parameters = [];
 		// evaluate if we are looking for specific parameters
+		
 		if (!isset($keys) || count($keys) == 0) {
+			// retrieve all user configuration keys
 			$keys = array_keys(self::_USER);
-			// retrieve other parameters
-			$parameters['user_id'] = $uid;
-			$parameters['user_timezone'] = $this->_ds->getUserValue($uid, 'calendar', 'timezone');
-			$parameters['system_timezone'] = $this->_ds->getUserValue($uid, 'core', 'timezone');
+			// retrieve all user configuration values
+			foreach ($keys as $entry) {
+				$parameters[$entry] = $this->retrieveUserValue($uid, $entry);
+			}
+			// retrieve system parameters
+			$parameters['system_timezone'] = date_default_timezone_get();
 			$parameters['system_contacts'] = $this->isContactsAppAvailable();
 			$parameters['system_events'] = $this->isCalendarAppAvailable();
 			$parameters['system_tasks'] = $this->isTasksAppAvailable();
+			$parameters['user_id'] = $uid;
+			// user default time zone
+			$v = $this->_ds->getUserValue($uid, 'core', 'timezone');
+			if (!empty($v)) {
+				$parameters['user_timezone'] = $v;
+			}
+			// user events attachment path
+			$v = $this->_ds->getUserValue($uid, 'dav', 'attachmentsFolder');
+			if (!empty($v)) {
+				$parameters['events_attachment_path'] = $v;
+			}
 		}
-		// retrieve system configuration values
-		foreach ($keys as $entry) {
-			$parameters[$entry] = $this->retrieveUserValue($uid, $entry);
+		else {
+			// retrieve specific user configuration values
+			foreach ($keys as $entry) {
+				$parameters[$entry] = $this->retrieveUserValue($uid, $entry);
+			}
 		}
 		// remove account secret
 		if (isset($parameters['account_secret'])) {
@@ -542,11 +561,17 @@ class ConfigurationService {
 					}
 					unset($tz);
 					break;
+				case 'events_attachment_path':
+					$o->EventsAttachmentPath = $value;
+					break;
 				case 'tasks_harmonize':
 					$o->TasksHarmonize = $value;
 					break;
 				case 'tasks_prevalence':
 					$o->TasksPrevalence = $value;
+					break;
+				case 'tasks_attachment_path':
+					$o->TasksAttachmentPath = $value;
 					break;
 				case 'account_provider':
 					$o->AccountProvider = $value;

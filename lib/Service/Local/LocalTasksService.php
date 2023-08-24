@@ -49,11 +49,15 @@ class LocalTasksService {
     /**
 	 * @var DateTimeZone
 	 */
-	private ?DateTimeZone $DefaultTimeZone = null;
+	public ?DateTimeZone $SystemTimeZone = null;
     /**
 	 * @var DateTimeZone
 	 */
 	public ?DateTimeZone $UserTimeZone = null;
+    /**
+	 * @var String
+	 */
+	public string $UserAttachmentPath = '';
     /**
 	 * @var CalDavBackend
 	 */
@@ -66,7 +70,6 @@ class LocalTasksService {
 	public function __construct (string $appName, LoggerInterface $logger, TasksUtile $TasksUtile) {
 		$this->logger = $logger;
         $this->TasksUtile = $TasksUtile;
-        $this->DefaultTimeZone = new DateTimeZone(date_default_timezone_get());
 	}
 
 	/**
@@ -479,7 +482,7 @@ class LocalTasksService {
             // check if file exists and write to it if possible
             try {
                 // construct folder location
-                $fl = 'Tasks/' . $fn;
+                $fl = $this->UserAttachmentPath . '/' . $fn;
                 // check if folder exists
                 if (!$this->FileStore->nodeExists($fl)) {
                     // create folder if missing
@@ -584,7 +587,7 @@ class LocalTasksService {
                 $tz = $this->UserTimeZone;
             }
             else {
-                $tz = $this->DefaultTimeZone;
+                $tz = $this->SystemTimeZone;
             }
             $to->StartsOn = new DateTime($vo->DTSTART->getValue(), $tz);
             unset($tz);
@@ -601,7 +604,7 @@ class LocalTasksService {
                 $tz = $this->UserTimeZone;
             }
             else {
-                $tz = $this->DefaultTimeZone;
+                $tz = $this->SystemTimeZone;
             }
             $to->DueOn = new DateTime($vo->DUE->getValue(), $tz);
             unset($tz);
@@ -758,7 +761,7 @@ class LocalTasksService {
                         $tz = $this->UserTimeZone;
                     }
                     else {
-                        $tz = $this->DefaultTimeZone;
+                        $tz = $this->SystemTimeZone;
                     }
                     $to->Occurrence->Excludes[] = new DateTime($entry->getValue(), $tz);
                 }
@@ -949,7 +952,7 @@ class LocalTasksService {
                         $tz = $this->UserTimeZone->getName();
                     }
                     else {
-                        $tz = $this->DefaultTimeZone->getName();
+                        $tz = $this->SystemTimeZone->getName();
                     }
                     // apply time zone
                     $dt = clone $entry;

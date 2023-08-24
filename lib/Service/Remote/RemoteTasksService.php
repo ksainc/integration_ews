@@ -50,7 +50,7 @@ class RemoteTasksService {
 	/**
 	 * @var DateTimeZone
 	 */
-	private ?DateTimeZone $DefaultTimeZone = null;
+	public ?DateTimeZone $SystemTimeZone = null;
     /**
 	 * @var DateTimeZone
 	 */
@@ -75,7 +75,6 @@ class RemoteTasksService {
 								RemoteCommonService $RemoteCommonService) {
 		$this->logger = $logger;
 		$this->RemoteCommonService = $RemoteCommonService;
-		$this->DefaultTimeZone = new DateTimeZone(date_default_timezone_get());
 	}
 
 	/**
@@ -281,11 +280,11 @@ class RemoteTasksService {
 	public function fetchCollectionItemByUUID(string $cid, string $uuid): ?TaskObject {
 
         // retrieve properties for a specific collection item
-		$data = $this->RemoteCommonService->findItemByUUID($this->DataStore, $cid, $uuid, false, 'D', $this->constructDefaultItemProperties());
-		// process response
-		if (isset($data) && (count($data) > 0)) {
+		$ro = $this->RemoteCommonService->findItemByUUID($this->DataStore, $cid, $uuid, false, 'D', $this->constructDefaultItemProperties());
+		// validate response
+		if (isset($ro->Task)) {
 			// convert to task object
-            $to = $this->toTaskObject($data[0]);
+            $to = $this->toTaskObject($ro->Task[0]);
             // retrieve attachment(s) from remote data store
 			if (count($to->Attachments) > 0) {
 				$to->Attachments = $this->fetchCollectionItemAttachment(array_column($to->Attachments, 'Id'));

@@ -272,11 +272,11 @@ class RemoteContactsService {
 	public function fetchCollectionItemByUUID(string $cid, string $uuid): ?ContactObject {
 
         // retrieve properties for a specific collection item
-		$data = $this->RemoteCommonService->findItemByUUID($this->DataStore, $cid, $uuid, false, 'D', $this->constructDefaultItemProperties());
-        // process response
-		if (isset($data) && (count($data) > 0)) {
+		$ro = $this->RemoteCommonService->findItemByUUID($this->DataStore, $cid, $uuid, false, 'D', $this->constructDefaultItemProperties());
+        // validate response
+		if (isset($ro->Contact)) {
             // convert to contact object
-            $co = $this->toContactObject($data[0]);
+            $co = $this->toContactObject($ro->Contact[0]);
             // retrieve attachment(s) from remote data store
 			if (count($co->Attachments) > 0) {
 				$co->Attachments = $this->fetchCollectionItemAttachment(array_column($co->Attachments, 'Id'));
@@ -284,8 +284,10 @@ class RemoteContactsService {
             // return object
 		    return $co;
         } else {
+            // return null
             return null;
         }
+
     }
     
 	/**

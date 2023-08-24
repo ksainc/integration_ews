@@ -611,7 +611,7 @@ class RemoteCommonService {
 	 * 
 	 * @return array Item Object on success / Null on failure
 	 */
-	public function findItemByUUID(EWSClient $DataStore, string $fid, string $uuid, bool $ftype = false, string $base = 'D', object $additional = null): ?array {
+	public function findItemByUUID(EWSClient $DataStore, string $fid, string $uuid, bool $ftype = false, string $base = 'D', object $additional = null): ?object {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\FindItemType();
@@ -704,11 +704,8 @@ class RemoteCommonService {
 				$message = $response_data->MessageText;
 				continue;
 			} else {
-				foreach ($response_data->Items as $items) {
-					if (count($items) > 0) {
-						$data = $items;
-						break;
-					}
+				if (isset($response_data->RootFolder->Items)) {
+					$data = $response_data->RootFolder->Items;
 				}
 			}
 		}

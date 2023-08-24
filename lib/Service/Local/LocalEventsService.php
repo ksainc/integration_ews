@@ -49,11 +49,15 @@ class LocalEventsService {
     /**
 	 * @var DateTimeZone
 	 */
-	private ?DateTimeZone $DefaultTimeZone = null;
+	public ?DateTimeZone $SystemTimeZone = null;
     /**
 	 * @var DateTimeZone
 	 */
 	public ?DateTimeZone $UserTimeZone = null;
+    /**
+	 * @var String
+	 */
+	public string $UserAttachmentPath = '';
     /**
 	 * @var CalDavBackend
 	 */
@@ -66,7 +70,6 @@ class LocalEventsService {
 	public function __construct (string $appName, LoggerInterface $logger, EventsUtile $EventsUtile) {
 		$this->logger = $logger;
         $this->EventsUtile = $EventsUtile;
-        $this->DefaultTimeZone = new DateTimeZone(date_default_timezone_get());
 	}
 
 	/**
@@ -479,7 +482,7 @@ class LocalEventsService {
             // check if file exists and write to it if possible
             try {
                 // construct folder location
-                $fl = 'Calendar/' . $fn;
+                $fl = $this->UserAttachmentPath . '/' . $fn;
                 // check if folder exists
                 if (!$this->FileStore->nodeExists($fl)) {
                     // create folder if missing
@@ -585,7 +588,7 @@ class LocalEventsService {
                 $eo->StartsTZ = $this->UserTimeZone;
             }
             else {
-                $eo->StartsTZ = $this->DefaultTimeZone;
+                $eo->StartsTZ = $this->SystemTimeZone;
             }
             $eo->StartsOn = new DateTime($vo->DTSTART->getValue(), $eo->StartsTZ);
         }
@@ -602,7 +605,7 @@ class LocalEventsService {
                 $eo->EndsTZ = $this->UserTimeZone;
             }
             else {
-                $eo->EndsTZ = $this->DefaultTimeZone;
+                $eo->EndsTZ = $this->SystemTimeZone;
             }
             $eo->EndsOn = new DateTime($vo->DTEND->getValue(), $eo->EndsTZ);
         }
@@ -806,7 +809,7 @@ class LocalEventsService {
                         $tz = $this->UserTimeZone;
                     }
                     else {
-                        $tz = $this->DefaultTimeZone;
+                        $tz = $this->SystemTimeZone;
                     }
                     $eo->Occurrence->Excludes[] = new DateTime($entry->getValue(), $tz);
                 }
@@ -848,7 +851,7 @@ class LocalEventsService {
                 $tz = $this->UserTimeZone->getName();
             }
             else {
-                $tz = $this->DefaultTimeZone->getName();
+                $tz = $this->SystemTimeZone->getName();
             }
 
             $dt = clone $eo->StartsOn;
@@ -870,7 +873,7 @@ class LocalEventsService {
                 $tz = $this->UserTimeZone->getName();
             }
             else {
-                $tz = $this->DefaultTimeZone->getName();
+                $tz = $this->SystemTimeZone->getName();
             }
 
             $dt = clone $eo->EndsOn;
@@ -1074,7 +1077,7 @@ class LocalEventsService {
                         $tz = $this->UserTimeZone->getName();
                     }
                     else {
-                        $tz = $this->DefaultTimeZone->getName();
+                        $tz = $this->SystemTimeZone->getName();
                     }
                     // apply time zone
                     $dt = clone $entry;

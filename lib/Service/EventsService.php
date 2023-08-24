@@ -111,8 +111,12 @@ class EventsService {
 		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;
 		// assign timezones
+		$this->LocalEventsService->SystemTimeZone = $this->Configuration->SystemTimeZone;
+		$this->RemoteEventsService->SystemTimeZone = $this->Configuration->SystemTimeZone;
 		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
 		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
+		// assign default folder
+		$this->LocalEventsService->UserAttachmentPath = $this->Configuration->EventsAttachmentPath;
 		// construct statistics object
 		$statistics = new HarmonizationStatisticsObject();
 		
@@ -293,7 +297,15 @@ class EventsService {
 		$this->Configuration = $configuration;
 		// assign data stores
 		$this->LocalEventsService->DataStore = $this->LocalStore;
+		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;
+		// assign timezones
+		$this->LocalEventsService->SystemTimeZone = $this->Configuration->SystemTimeZone;
+		$this->RemoteEventsService->SystemTimeZone = $this->Configuration->SystemTimeZone;
+		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
+		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
+		// assign default folder
+		$this->LocalEventsService->UserAttachmentPath = $this->Configuration->EventsAttachmentPath;
 		// construct statistics object
 		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
 		// retrieve list of actions
@@ -1032,8 +1044,12 @@ class EventsService {
 		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($configuration->UserId);
 		$this->RemoteEventsService->DataStore = $this->RemoteStore;
 		// assign timezones
-		$this->LocalEventsService->UserTimeZone = $configuration->SystemTimeZone;
-		$this->RemoteEventsService->UserTimeZone = $configuration->SystemTimeZone;
+		$this->LocalEventsService->SystemTimeZone = $configuration->SystemTimeZone;
+		$this->RemoteEventsService->SystemTimeZone = $configuration->SystemTimeZone;
+		$this->LocalEventsService->UserTimeZone = $configuration->UserTimeZone;
+		$this->RemoteEventsService->UserTimeZone = $configuration->UserTimeZone;
+		// assign default folder
+		$this->LocalEventsService->UserAttachmentPath = $configuration->EventsAttachmentPath;
 
 		/*
 		*	Test Basic Collection Functions
@@ -1104,8 +1120,8 @@ class EventsService {
 		$eo->Origin = 'L';
 		$eo->Notes = 'Don\'t forget to bring a present';
 		$eo->StartsOn = (new DateTime('NOW')); 
-		$eo->StartsTZ = $configuration->SystemTimeZone;
-		$eo->StartsOn->setTimezone($configuration->SystemTimeZone);
+		$eo->StartsTZ = $configuration->UserTimeZone;
+		$eo->StartsOn->setTimezone($configuration->UserTimeZone);
 		$eo->StartsOn->modify('next saturday')->setTime(20, 0, 0, 0); // set event start next saturday at 10:00
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+2 hour'); // set event end on same day one hour later
 		$eo->EndsTZ = (clone $eo->StartsTZ);
@@ -1144,8 +1160,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Bart done it again';
-		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $configuration->SystemTimeZone;
+		$eo->StartsOn = (new DateTime('now', $configuration->UserTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
+		$eo->StartsTZ = $configuration->UserTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';
@@ -1196,8 +1212,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Every other day for 4 iterations';
-		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $configuration->SystemTimeZone;
+		$eo->StartsOn = (new DateTime('now', $configuration->UserTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
+		$eo->StartsTZ = $configuration->UserTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';
@@ -1232,8 +1248,8 @@ class EventsService {
 		$eo = new EventObject();
 		$eo->Origin = 'L';
 		$eo->Notes = 'Every other week on Monday, Wednesday and Friday until 4 Weeks from start';
-		$eo->StartsOn = (new DateTime('now', $configuration->SystemTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
-		$eo->StartsTZ = $configuration->SystemTimeZone;
+		$eo->StartsOn = (new DateTime('now', $configuration->UserTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
+		$eo->StartsTZ = $configuration->UserTimeZone;
 		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
 		$eo->EndsTZ = (clone $eo->StartsTZ);
 		$eo->Availability = 'Busy';

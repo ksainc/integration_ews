@@ -50,7 +50,7 @@ class RemoteEventsService {
 	/**
 	 * @var DateTimeZone
 	 */
-	private ?DateTimeZone $DefaultTimeZone = null;
+	public ?DateTimeZone $SystemTimeZone = null;
     /**
 	 * @var DateTimeZone
 	 */
@@ -75,7 +75,6 @@ class RemoteEventsService {
 								RemoteCommonService $RemoteCommonService) {
 		$this->logger = $logger;
 		$this->RemoteCommonService = $RemoteCommonService;
-		$this->DefaultTimeZone = new DateTimeZone(date_default_timezone_get());
 	}
 
 	/**
@@ -281,11 +280,11 @@ class RemoteEventsService {
 	public function fetchCollectionItemByUUID(string $cid, string $uuid): ?EventObject {
 
         // retrieve properties for a specific collection item
-		$data = $this->RemoteCommonService->findItemByUUID($this->DataStore, $cid, $uuid, false, 'D', $this->constructDefaultItemProperties());
-		// process response
-		if (isset($data) && (count($data) > 0)) {
+		$ro = $this->RemoteCommonService->findItemByUUID($this->DataStore, $cid, $uuid, false, 'D', $this->constructDefaultItemProperties());
+		// validate response
+		if (isset($ro->CalendarItem)) {
 			// convert to event object
-            $eo = $this->toEventObject($data[0]);
+            $eo = $this->toEventObject($ro->CalendarItem[0]);
             // retrieve attachment(s) from remote data store
 			if (count($eo->Attachments) > 0) {
 				$eo->Attachments = $this->fetchCollectionItemAttachment(array_column($eo->Attachments, 'Id'));
@@ -295,7 +294,7 @@ class RemoteEventsService {
 		} else {
 			return null;
 		}
-
+		
     }
 
 	/**
@@ -336,7 +335,7 @@ class RemoteEventsService {
 			}
 			// use system default time zone if no other option was present
 			else {
-				$tz = $this->DefaultTimeZone;
+				$tz = $this->SystemTimeZone;
 			}
 			// convert time zone
 			$tz = $this->toTimeZone($tz);
@@ -368,7 +367,7 @@ class RemoteEventsService {
 			}
 			// use system default time zone if no other option was present
 			else {
-				$tz = $this->DefaultTimeZone;
+				$tz = $this->SystemTimeZone;
 			}
 			// convert time zone
 			$tz = $this->toTimeZone($tz);
@@ -684,7 +683,7 @@ class RemoteEventsService {
 			}
 			// use system default time zone if no other option was present
 			else {
-				$tz = $this->DefaultTimeZone;
+				$tz = $this->SystemTimeZone;
 			}
 			// convert time zone
 			$tz = $this->toTimeZone($tz);
@@ -723,7 +722,7 @@ class RemoteEventsService {
 			}
 			// use system default time zone if no other option was present
 			else {
-				$tz = $this->DefaultTimeZone;
+				$tz = $this->SystemTimeZone;
 			}
 			// construct start time zone
 			$tz = $this->toTimeZone($tz);

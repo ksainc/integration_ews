@@ -76,47 +76,16 @@ try {
 	// initilize required services
 	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
-	$RemoteEventsService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteEventsService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
-	
-	/*
-	// create client
-	$client = $CoreService->createClient('admin');
-	$rcid = 'AQMkAGMwNTA4ZGIxLWQ1MDktNDI4Yi05ZWQxLWFmMmZmADc0NTY1MGYALgAAAzmziW6wlrFEgWK1LqkltCoBAKTqOIZoUNNLkdVBWIFk0WEAAAIBDQAAAA==';
-	
-	// construct event object with basic properties
-	$eo = \OC::$server->get(\OCA\EWS\Objects\EventObject::class);
-	$eo->Origin = 'L';
-	$eo->Notes = 'Every other week on Tuesday and Thursday until 4 Weeks from start';
-	$eo->StartsOn = new \DateTime('2023-8-28T9:00:00', new \DateTimeZone('America/Toronto'));
-	$eo->StartsTZ = new \DateTimeZone('America/Toronto');
-	$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
-	$eo->EndsTZ = (clone $eo->StartsTZ);
-	$eo->Availability = 'Busy';
-	$eo->Priority = '1';
-	$eo->Sensitivity = '1';
-	$eo->Occurrence->Pattern = 'A'; // Absolute
-	$eo->Occurrence->Precision = 'W'; // Daily
-	$eo->Occurrence->Interval = 2; // Every Other Week
-	$eo->Occurrence->Concludes = (clone $eo->StartsOn)->modify('+4 Weeks');
-	$eo->Occurrence->OnDayOfWeek = array(1, 3, 5);
-	// generate new uuid for local
-	$eo->UUID = '63b2fb65-f54d-406f-b0af-c0e531ba9937';
-	$eo->Label = 'NC Weekly Occurance';
-
-	// create remote event
-	$RemoteEventsService->DataStore = $client;
-	$ro = $RemoteEventsService->createCollectionItem($rcid, $eo);
-	*/
-
-	// execute initial harmonization
-	//$HarmonizationService->performHarmonization($uid, 'S');
-
-	// execute actions
-	//$HarmonizationService->performActions($uid);
 
 	// execute test
+	//$CoreService->performTest($uid, 'D');
 	//$CoreService->performTest($uid, 'C');
+	// execute initial harmonization
+	//$HarmonizationService->performHarmonization($uid, 'S');
+	// execute actions
+	//$HarmonizationService->performActions($uid);
+	
 
 	$logger->info('Test ended for ' . $uid, ['app' => 'integration_ews']);
 	echo 'Test ended for ' . $uid . PHP_EOL;
