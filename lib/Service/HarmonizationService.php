@@ -422,10 +422,10 @@ class HarmonizationService {
 					$cid = $entry->ParentFolderId->Id;
 					$oid = $entry->ItemId->Id;
 					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object corrollation
+					// retrieve object correlation
 					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
 					// work around to filter out harmonization generated events
-					// evaluate corrollation, if dose not exists or state does not match, create action
+					// evaluate correlation, if dose not exists or state does not match, create action
 					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
 						// construct action entry
 						$a = new Action();
@@ -440,16 +440,6 @@ class HarmonizationService {
 						// deposit action entry
 						$this->ActionManager->insert($a);
 					}
-					/*
-					// workaround to find newest token
-					// convert date/time to epoch time
-					$et = strtotime($entry->TimeStamp);
-					// evaluate, if event time is greatest
-					if ($et !== false && $et > $tt) {
-						$tt = $et;
-						$token = $entry->Watermark;
-					}
-					*/
 				}
 				// aquire water mark
 				$token = $entry->Watermark;
@@ -464,10 +454,10 @@ class HarmonizationService {
 					$cid = $entry->ParentFolderId->Id;
 					$oid = $entry->ItemId->Id;
 					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object corrollation
+					// retrieve object correlation
 					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
 					// work around to filter out harmonization generated events
-					// evaluate corrollation, if dose not exists or state does not match, create action
+					// evaluate correlation, if dose not exists or state does not match, create action
 					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
 						// construct action entry
 						$a = new Action();
@@ -482,16 +472,6 @@ class HarmonizationService {
 						// deposit action entry
 						$this->ActionManager->insert($a);
 					}
-					/*
-					// workaround to find newest token
-					// convert date/time to epoch time
-					$et = strtotime($entry->TimeStamp);
-					// evaluate, if event time is greatest
-					if ($et !== false && $et > $tt) {
-						$tt = $et;
-						$token = $entry->Watermark;
-					}
-					*/
 				}
 				// aquire water mark
 				$token = $entry->Watermark;
@@ -506,10 +486,10 @@ class HarmonizationService {
 					$cid = $entry->ParentFolderId->Id;
 					$oid = $entry->ItemId->Id;
 					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object corrollation
+					// retrieve object correlation
 					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
 					// work around to filter out harmonization generated events
-					// evaluate corrollation, if dose not exists or state does not match, create action
+					// evaluate correlation, if exists, create action
 					if ($ci instanceof \OCA\EWS\Db\Correlation) {
 						// construct action entry
 						$a = new Action();
@@ -524,16 +504,6 @@ class HarmonizationService {
 						// deposit action entry
 						$this->ActionManager->insert($a);
 					}
-					/*
-					// workaround to find newest token
-					// convert date/time to epoch time
-					$et = strtotime($entry->TimeStamp);
-					// evaluate, if event time is greatest
-					if ($et !== false && $et > $tt) {
-						$tt = $et;
-						$token = $entry->Watermark;
-					}
-					*/
 				}
 				// aquire water mark
 				$token = $entry->Watermark;
@@ -554,6 +524,74 @@ class HarmonizationService {
 
 		if (isset($rs->MovedEvent)) {
 			foreach ($rs->MovedEvent as $entry) {
+				// evaluate, if it was an object event, ignore collection events
+				if (isset($entry->ItemId)) {
+					// extract source atributes
+					$cid = $entry->OldParentFolderId->Id;
+					$oid = $entry->OldItemId->Id;
+					$ostate = $entry->ItemId->ChangeKey;
+					// retrieve object correlation
+					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
+					// evaluate correlation, if exists, create action
+					if ($ci instanceof \OCA\EWS\Db\Correlation) {
+						// construct action entry
+						$a = new Action();
+						$a->setuid($uid);
+						$a->settype($otype);
+						$a->setaction('D');
+						$a->setorigin('R');
+						$a->setrcid($cid);
+						$a->setroid($oid);
+						$a->setrostate($ostate);
+						$a->setcreatedon($entry->TimeStamp);
+						// deposit action entry
+						$this->ActionManager->insert($a);
+					}
+
+					// extract destination atributes
+					$cid = $entry->ParentFolderId->Id;
+					$oid = $entry->ItemId->Id;
+					$ostate = $entry->ItemId->ChangeKey;
+					// determain collection type from object type
+					switch ($otype) {
+						case 'CO':
+							$ctype = 'CC';
+							break;
+						case 'EO':
+							$ctype = 'EC';
+							break;
+						case 'TO':
+							$ctype = 'TC';
+							break;			
+						default:
+							# code...
+							break;
+					}
+					// retrieve collection correlation
+					$cc = $this->CorrelationsService->findByRemoteId($uid, $ctype, $cid);
+					// evaluate correlation, if correlation exists for the remote collection
+					if ($cc instanceof \OCA\EWS\Db\Correlation) {
+						// retrieve object correlation
+						$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
+						// work around to filter out harmonization generated events
+						// evaluate correlation, if dose not exists or state does not match, create action
+						if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
+							// construct action entry
+							$a = new Action();
+							$a->setuid($uid);
+							$a->settype($otype);
+							$a->setaction('C');
+							$a->setorigin('R');
+							$a->setrcid($cid);
+							$a->setroid($oid);
+							$a->setrostate($ostate);
+							$a->setcreatedon($entry->TimeStamp);
+							// deposit action entry
+							$this->ActionManager->insert($a);
+						}
+					}
+				}
+				// aquire water mark
 				$token = $entry->Watermark;
 			}
 		}
