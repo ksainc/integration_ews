@@ -109,7 +109,17 @@ class Version1000Date20230601 extends SimpleMigrationStep {
 				'notnull' => true,
 				'default' => '0',
 			]);
-			
+			// Lock heart beat
+			$table->addColumn('hperformed', Types::INTEGER, [
+				'notnull' => true,
+				'default' => '0',
+			]);
+			// Lock heart beat
+			$table->addColumn('haltered', Types::INTEGER, [
+				'notnull' => true,
+				'default' => '0',
+			]);
+
 			$table->setPrimaryKey(['id']);
 		}
 		
