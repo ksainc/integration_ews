@@ -1576,24 +1576,28 @@ class RemoteEventsService {
 
 		// Periods
 		$o->Periods = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPeriodsType();
-		foreach ($zone->Periods->Period as $entry) {
-			$o->Periods->Period[] = new \OCA\EWS\Components\EWS\Type\PeriodType(
-				$entry->Id,
-				$entry->Name,
-				$entry->Bias
-			);
+		if (count($zone->Periods->Period) > 0) {
+			foreach ($zone->Periods->Period as $entry) {
+				$o->Periods->Period[] = new \OCA\EWS\Components\EWS\Type\PeriodType(
+					$entry->Id,
+					$entry->Name,
+					$entry->Bias
+				);
+			}
 		}
 
 		// Transitions
 		$o->Transitions = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
 		// Transition
-		foreach ($zone->Transitions->Transition as $entry) {
-			$o->Transitions->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
-				new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
-					$entry->To->Kind,
-					$entry->To->_
-				)
-			);
+		if (count($zone->Transitions->Transition) > 0) {
+			foreach ($zone->Transitions->Transition as $entry) {
+				$o->Transitions->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
+					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+						$entry->To->Kind,
+						$entry->To->_
+					)
+				);
+			}
 		}
 		// Absolute Date Transition
 		/*
@@ -1624,13 +1628,15 @@ class RemoteEventsService {
 			$o->TransitionsGroups->TransitionsGroup[$key] = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
 			$o->TransitionsGroups->TransitionsGroup[$key]->Id = $group->Id;
 			// Transition
-			foreach ($group->Transition as $entry) {
-				$o->TransitionsGroups->TransitionsGroup[$key]->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
-					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
-						$entry->To->Kind,
-						$entry->To->_
-					)
-				);
+			if (count($group->Transition) > 0) {
+				foreach ($group->Transition as $entry) {
+					$o->TransitionsGroups->TransitionsGroup[$key]->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
+						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+							$entry->To->Kind,
+							$entry->To->_
+						)
+					);
+				}
 			}
 			// Absolute Date Transition
 			if (count($group->AbsoluteDateTransition) > 0) {
@@ -1674,50 +1680,6 @@ class RemoteEventsService {
 				}
 			}
 		}
-		/*
-		if (!empty($zone->StandardBias) && !empty($zone->DaylightBias)) {
-			$o->TransitionsGroups = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsGroupsType();
-			$group = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
-			$group->Id = 0;
-
-			$transition = new \OCA\EWS\Components\EWS\Type\RecurringDayTransitionType();
-			$transition->To = new \OCA\EWS\Components\EWS\Type\TransitionTargetType();
-			$transition->To->_ = 'ST';
-			$transition->To->Kind = 'Period';
-			$transition->Month = $zone->DaylightEndMonth;
-			$transition->Occurrence = $zone->DaylightEndWeek;
-			$transition->DayOfWeek = $zone->DaylightEndDay;
-			$transition->TimeOffset = $zone->DaylightEndTime;
-			$group->RecurringDayTransition[] = $transition;
-
-			$transition = new \OCA\EWS\Components\EWS\Type\RecurringDayTransitionType();
-			$transition->To = new \OCA\EWS\Components\EWS\Type\TransitionTargetType();
-			$transition->To->_ = 'DL';
-			$transition->To->Kind = 'Period';
-			$transition->Month = $zone->DaylightStartMonth;
-			$transition->Occurrence = $zone->DaylightStartWeeK;
-			$transition->DayOfWeek = $zone->DaylightStartDay;
-			$transition->TimeOffset = $zone->DaylightStartTime;
-			$group->RecurringDayTransition[] = $transition;
-
-			$o->TransitionsGroups->TransitionsGroup[] = $group;
-
-			$o->Transitions = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
-			$o->Transitions->Transition = new \OCA\EWS\Components\EWS\Type\TransitionType();
-			$o->Transitions->Transition->To = new \OCA\EWS\Components\EWS\Type\TransitionTargetType();
-			$o->Transitions->Transition->To->_ = 0;
-			$o->Transitions->Transition->To->Kind = 'Group';
-		}
-		*/
-
-		/*
-		$o->Transitions->AbsoluteDateTransition = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType();
-		$o->Transitions->AbsoluteDateTransition->To = new \OCA\EWS\Components\EWS\Type\TransitionTargetType();
-		$o->Transitions->AbsoluteDateTransition->To->_ = 1;
-		$o->Transitions->AbsoluteDateTransition->To->Kind = 'Group';
-		$o->Transitions->AbsoluteDateTransition->DateTime = '2007-01-01T00:00:00';
-		*/
-        // return object
         return $o;
     }
 
