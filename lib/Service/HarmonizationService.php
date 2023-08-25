@@ -34,8 +34,6 @@ use OCA\DAV\CalDAV\CalDavBackend;
 
 use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Components\EWS\EWSClient;
-use OCA\EWS\Db\Action;
-use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Service\ConfigurationService;
 use OCA\EWS\Service\CoreService;
 use OCA\EWS\Service\CorrelationsService;
@@ -98,23 +96,10 @@ class HarmonizationService {
 	 * @var RemoteTasksService
 	 */
 	private $RemoteTasksService;
-	/**
-	 * @var CardDavBackend
-	 */
-	private $LocalContactsStore;
-	/**
-	 * @var CalDavBackend
-	 */
-	private $LocalEventsStore;
-	/**
-	 * @var EWSClient
-	 */
-	private $RemoteStore;
 	
 
 	public function __construct (string $appName,
 								LoggerInterface $logger,
-								ActionMapper $ActionManager,
 								ConfigurationService $ConfigurationService,
 								CoreService $CoreService,
 								CorrelationsService $CorrelationsService,
@@ -128,9 +113,7 @@ class HarmonizationService {
 								ContactsService $ContactsService,
 								EventsService $EventsService,
 								TasksService $TasksService,
-								HarmonizationThreadService $HarmonizationThreadService,
-								CardDavBackend $LocalContactsStore,
-								CalDavBackend $LocalEventsStore) {
+								HarmonizationThreadService $HarmonizationThreadService) {
 		$this->logger = $logger;
 		$this->ConfigurationService = $ConfigurationService;
 		$this->CoreService = $CoreService;
@@ -146,9 +129,6 @@ class HarmonizationService {
 		$this->EventsService = $EventsService;
 		$this->TasksService = $TasksService;
 		$this->HarmonizationThreadService = $HarmonizationThreadService;
-		$this->LocalContactsStore = $LocalContactsStore;
-		$this->LocalEventsStore = $LocalEventsStore;
-		$this->ActionManager = $ActionManager;
 
 	}
 
@@ -164,32 +144,24 @@ class HarmonizationService {
 	 */
 	public function performHarmonization(string $uid, string $mode = "S"): void {
 
-		$this->logger->info('Statred Harmonization of Collections for ' . $uid);
-
-		// evaluate, if harmonization is executing
-		/*
-		if ($this->ConfigurationService->getHarmonizationState($uid) === true) {
-			if ((time() - $this->ConfigurationService->getHarmonizationHeartBeat($uid)) < 900) {
-				return;
-			}
-		}
-		*/
-
 		// update harmonization state and start time
 		$this->ConfigurationService->setHarmonizationState($uid, true);
 		$this->ConfigurationService->setHarmonizationStart($uid);
-		$this->ConfigurationService->setHarmonizationHeartBeat($uid);
-		
+		$this->ConfigurationService->setHarmonizationHeartBeat($uid);		
+		// retrieve Configuration
+		$Configuration = $this->ConfigurationService->retrieveUser($uid);
+		$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
+		// create remote store client
+		$RemoteStore = $this->CoreService->createClient($uid);
+
+		// contacts harmonization
 		try {
-			// retrieve Configuration
-			$Configuration = $this->ConfigurationService->retrieveUser($uid);
-			$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
-			// create remote store client
-			$RemoteStore = $this->CoreService->createClient($uid);
-			// contacts harmonization
+			// evaluate, if contacts app is available and contacts harmonization is turned on
 			if ($this->ConfigurationService->isContactsAppAvailable() &&
 				(($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->ContactsHarmonize > -1))) {
+				$this->logger->info('Statred Harmonization of Contacts for ' . $uid);
+				// assign remote data store
 				$this->ContactsService->RemoteStore = $RemoteStore;
 				// retrieve list of collections correlations
 				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::ContactCollection);
@@ -216,15 +188,29 @@ class HarmonizationService {
 							$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
 						}
 					} while ($statistics->total() > 0);
+					// update harmonization time stamp
+					$correlation->sethperformed(time());
 					// unlock correlation after harmonization
 					$correlation->sethlock(0);
 					$this->CorrelationsService->update($correlation);
 				}
+				$this->logger->info('Finished Harmonization of Contacts for ' . $uid);
 			}
-			// events harmonization
+		
+		} catch (Exception $e) {
+			
+			throw new Exception($e, 1);
+			
+		}
+
+		// events harmonization
+		try {
+			// evaluate, if calendar app is available and events harmonization is turned on
 			if ($this->ConfigurationService->isCalendarAppAvailable() &&
 				(($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->EventsHarmonize > -1))) {
+				$this->logger->info('Statred Harmonization of Events for ' . $uid);
+				// assign remote data store
 				$this->EventsService->RemoteStore = $RemoteStore;
 				// retrieve list of correlations
 				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::EventCollection);
@@ -251,15 +237,29 @@ class HarmonizationService {
 							$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
 						}
 					} while ($statistics->total() > 0);
+					// update harmonization time stamp
+					$correlation->sethperformed(time());
 					// unlock correlation after harmonization
 					$correlation->sethlock(0);
 					$this->CorrelationsService->update($correlation);
 				}
+				$this->logger->info('Finished Harmonization of Events for ' . $uid);
 			}
-			// tasks harmonization
+		
+		} catch (Exception $e) {
+			
+			throw new Exception($e, 1);
+			
+		}
+		
+		// tasks harmonization
+		try {
+			// evaluate, if tasks app is available and tasks harmonization is turned on
 			if ($this->ConfigurationService->isTasksAppAvailable() &&
 				(($mode === 'S' && $Configuration->TasksHarmonize > 0) ||
 				($mode === 'M' && $Configuration->TasksHarmonize > -1))) {
+				$this->logger->info('Statred Harmonization of Tasks for ' . $uid);
+				// assign remote data store
 				$this->TasksService->RemoteStore = $RemoteStore;
 				// retrieve list of correlations
 				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::TaskCollection);
@@ -286,16 +286,21 @@ class HarmonizationService {
 							$this->CoreService->publishNotice($uid,'tasks_harmonized', (array)$statistics);
 						}
 					} while ($statistics->total() > 0);
+					// update harmonization time stamp
+					$correlation->sethperformed(time());
 					// unlock correlation after harmonization
 					$correlation->sethlock(0);
 					$this->CorrelationsService->update($correlation);
 				}
+				$this->logger->info('Finished Harmonization of Tasks for ' . $uid);
 			}
+
 		} catch (Exception $e) {
 			
 			throw new Exception($e, 1);
 			
 		}
+
 		// update harmonization state and end time
 		$this->ConfigurationService->setHarmonizationState($uid, false);
 		$this->ConfigurationService->setHarmonizationEnd($uid);
@@ -304,7 +309,7 @@ class HarmonizationService {
 	}
 
 	/**
-	 * Perform actions for all modules
+	 * Perform harmonization for all modules
 	 * 
 	 * @since Release 1.0.0
 	 * 
@@ -312,73 +317,192 @@ class HarmonizationService {
 	 *
 	 * @return void
 	 */
-	public function performActions (string $uid): void {
+	public function performLiveHarmonization(string $uid): void {
 
-		// retrieve harmonization status
-		$ttl = $this->ConfigurationService->getHarmonizationStart($uid);
+		$this->logger->info('Statred Live Harmonization of Collections for ' . $uid);
 
+		// update harmonization state and start time
+		$this->ConfigurationService->setHarmonizationState($uid, true);
+		$this->ConfigurationService->setHarmonizationStart($uid);
+		$this->ConfigurationService->setHarmonizationHeartBeat($uid);
+		
+		// retrieve Configuration
+		$Configuration = $this->ConfigurationService->retrieveUser($uid);
+		$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
+		// create remote store client
+		$RemoteStore = $this->CoreService->createClient($uid);
+
+		// contacts harmonization
 		try {
-			// retrieve Configuration
-			$Configuration = $this->ConfigurationService->retrieveUser($uid);
-			$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
-			// create remote store client
-			$RemoteStore = $this->CoreService->createClient($uid);
-			// contacts harmonization
-			if ($this->ConfigurationService->isContactsAppAvailable() && $Configuration->ContactsHarmonize > -1) {
+			// evaluate, if contacts app is available and contacts harmonization is turned on
+			if ($this->ConfigurationService->isContactsAppAvailable() && $Configuration->ContactsHarmonize > 0) {
+				$this->logger->info('Statred Harmonization of Contacts for ' . $uid);
+				// assign remote data store
 				$this->ContactsService->RemoteStore = $RemoteStore;
-				// update harmonization heart beat
-				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
-				// harmonize contact collections
-				$statistics = $this->ContactsService->performActions($ttl, $Configuration);
-				// evaluate if anything was done and publish notice if needed
-				if ($statistics->total() > 0) {
-					$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
+				// retrieve list of collections correlations
+				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::ContactCollection);
+				// iterate through correlation items
+				foreach ($correlations as $correlation) {
+					// evaluate if correlation is locked and lock has not expired
+					if ($correlation->gethlock() == 1 &&
+					   (time() - $correlation->gethlockhb()) < 3600) {
+						continue;
+					}
+					// evaluate, if current state is obsolete, by comparing timestamps
+					if ($correlation->gethperformed() > $correlation->gethaltered()) {
+						continue;
+					}
+					// lock correlation before harmonization
+					$correlation->sethlock(1);
+					$correlation->sethlockhd((int) getmypid());
+					$this->CorrelationsService->update($correlation);
+					// execute contacts harmonization loop
+					do {
+						// update lock heartbeat
+						$correlation->sethlockhb(time());
+						$this->CorrelationsService->update($correlation);
+						// harmonize contacts collections
+						$statistics = $this->ContactsService->performHarmonization($correlation, $Configuration);
+						// evaluate if anything was done and publish notice if needed
+						if ($statistics->total() > 0) {
+							$this->CoreService->publishNotice($uid,'contacts_harmonized', (array)$statistics);
+						}
+					} while ($statistics->total() > 0);
+					// update harmonization time stamp
+					$correlation->sethperformed(time());
+					// unlock correlation after harmonization
+					$correlation->sethlock(0);
+					$this->CorrelationsService->update($correlation);
 				}
+				$this->logger->info('Finished Harmonization of Contacts for ' . $uid);
 			}
-			// events harmonization
-			if ($this->ConfigurationService->isCalendarAppAvailable() && $Configuration->EventsHarmonize > -1) {
-				$this->EventsService->RemoteStore = $RemoteStore;
-				// update harmonization heart beat
-				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
-				// harmonize event collections
-				$statistics = $this->EventsService->performActions($ttl, $Configuration);
-				// evaluate if anything was done and publish notice if needed
-				if ($statistics->total() > 0) {
-					$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
-				}
-			}
-			// tasks harmonization
-			if ($this->ConfigurationService->isTasksAppAvailable() && $Configuration->TasksHarmonize > -1) {
-				$this->TasksService->RemoteStore = $RemoteStore;
-				// update harmonization heart beat
-				$this->ConfigurationService->setHarmonizationHeartBeat($uid);
-				// harmonize tasks collections
-				$statistics = $this->TasksService->performActions($ttl, $Configuration);
-				// evaluate if anything was done and publish notice if needed
-				if ($statistics->total() > 0) {
-					$this->CoreService->publishNotice($uid,'tasks_harmonized', (array)$statistics);
-				}
-			}
+
 		} catch (Exception $e) {
 			
 			throw new Exception($e, 1);
 			
 		}
-		
+
+		// events harmonization
+		try {
+			// evaluate, if calendar app is available and events harmonization is turned on
+			if ($this->ConfigurationService->isCalendarAppAvailable() && $Configuration->EventsHarmonize > 0) {
+				$this->logger->info('Statred Harmonization of Events for ' . $uid);
+				// assign remote data store
+				$this->EventsService->RemoteStore = $RemoteStore;
+				// retrieve list of correlations
+				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::EventCollection);
+				// iterate through correlation items
+				foreach ($correlations as $correlation) {
+					// evaluate if correlation is locked and lock has not expired
+					if ($correlation->gethlock() == 1 &&
+					   (time() - $correlation->gethlockhb()) < 3600) {
+						continue;
+					}
+					// evaluate, if current state is obsolete, by comparing timestamps
+					if ($correlation->gethperformed() > $correlation->gethaltered()) {
+						continue;
+					}
+					// lock correlation before harmonization
+					$correlation->sethlock(1);
+					$correlation->sethlockhd((int) getmypid());
+					$this->CorrelationsService->update($correlation);
+					// execute events harmonization loop
+					do {
+						// update lock heartbeat
+						$correlation->sethlockhb(time());
+						$this->CorrelationsService->update($correlation);
+						// harmonize events collections
+						$statistics = $this->EventsService->performHarmonization($correlation, $Configuration);
+						// evaluate if anything was done and publish notice if needed
+						if ($statistics->total() > 0) {
+							$this->CoreService->publishNotice($uid,'events_harmonized', (array)$statistics);
+						}
+					} while ($statistics->total() > 0);
+					// update harmonization time stamp
+					$correlation->sethperformed(time());
+					// unlock correlation after harmonization
+					$correlation->sethlock(0);
+					$this->CorrelationsService->update($correlation);
+				}
+				$this->logger->info('Finished Harmonization of Events for ' . $uid);
+			}
+			
+
+		} catch (Exception $e) {
+			
+			throw new Exception($e, 1);
+			
+		}
+
+		// tasks harmonization
+		try {
+			// evaluate, if tasks app is available and tasks harmonization is turned on
+			if ($this->ConfigurationService->isTasksAppAvailable() && $Configuration->TasksHarmonize > 0) {
+				$this->logger->info('Statred Harmonization of Tasks for ' . $uid);
+				// assign remote data store
+				$this->TasksService->RemoteStore = $RemoteStore;
+				// retrieve list of correlations
+				$correlations = $this->CorrelationsService->findByType($uid, CorrelationsService::TaskCollection);
+				// iterate through correlation items
+				foreach ($correlations as $correlation) {
+					// evaluate if correlation is locked and lock has not expired
+					if ($correlation->gethlock() == 1 &&
+					   (time() - $correlation->gethlockhb()) < 3600) {
+						continue;
+					}
+					// evaluate, if current state is obsolete, by comparing timestamps
+					if ($correlation->gethperformed() > $correlation->gethaltered()) {
+						continue;
+					}
+					// lock correlation before harmonization
+					$correlation->sethlock(1);
+					$correlation->sethlockhd((int) getmypid());
+					$this->CorrelationsService->update($correlation);
+					// execute tasks harmonization loop
+					do {
+						// update lock heartbeat
+						$correlation->sethlockhb(time());
+						$this->CorrelationsService->update($correlation);
+						// harmonize tasks collections
+						$statistics = $this->TasksService->performHarmonization($correlation, $Configuration);
+						// evaluate if anything was done and publish notice if needed
+						if ($statistics->total() > 0) {
+							$this->CoreService->publishNotice($uid,'tasks_harmonized', (array)$statistics);
+						}
+					} while ($statistics->total() > 0);
+					// update harmonization time stamp
+					$correlation->sethperformed(time());
+					// unlock correlation after harmonization
+					$correlation->sethlock(0);
+					$this->CorrelationsService->update($correlation);
+				}
+				$this->logger->info('Finished Harmonization of Tasks for ' . $uid);
+			}
+
+		} catch (Exception $e) {
+			
+			throw new Exception($e, 1);
+			
+		}
+		// update harmonization state and end time
+		$this->ConfigurationService->setHarmonizationState($uid, false);
+		$this->ConfigurationService->setHarmonizationEnd($uid);
 	}
+
 	
 	public function connectEvents(string $uid, int $duration, string $ctype): ?object {
 
-		// create remote store client
-		$RemoteStore = $this->CoreService->createClient($uid);
 		// retrieve correlations
 		$cc = $this->CorrelationsService->findByType($uid, $ctype);
 		// evaluate if any correlation where found
 		if (count($cc) > 0) {
 			// extract correlation ids
 			$ids = array_map(function($o) { return $o->getroid();}, $cc);
+			// create remote store client
+			$RemoteStore = $this->CoreService->createClient($uid);
 			// execute command
-			$rs = $this->RemoteCommonService->connectEvents($RemoteStore, $duration, $ids);
+			$rs = $this->RemoteCommonService->connectEvents($RemoteStore, $duration, $ids, null, ['CreatedEvent', 'ModifiedEvent', 'DeletedEvent', 'CopiedEvent', 'MovedEvent']);
 		}
 		// return id and token
 		if ($rs instanceof \stdClass)
@@ -402,197 +526,59 @@ class HarmonizationService {
 
 	}
 
-	public function consumeEvents(string $uid, string $id, string $token, string $otype): ?object {
+	public function consumeEvents(string $uid, string $id, string $token, string $ctype): ?object {
 
+		// construct state place holder
+		$state = false;
 		// create remote store client
 		$RemoteStore = $this->CoreService->createClient($uid);
 		// execute command
 		$rs = $this->RemoteCommonService->fetchEvents($RemoteStore, $id, $token);
-
-		// top date time in epoch
-		/*
-		$tt = 0;
-		*/
 		
 		if (isset($rs->CreatedEvent)) {
 			foreach ($rs->CreatedEvent as $entry) {
-				// evaluate, if it was an object event, ignore collection events
-				if (isset($entry->ItemId)) {
-					// extract atributes
-					$cid = $entry->ParentFolderId->Id;
-					$oid = $entry->ItemId->Id;
-					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object correlation
-					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
-					// work around to filter out harmonization generated events
-					// evaluate correlation, if dose not exists or state does not match, create action
-					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
-						// construct action entry
-						$a = new Action();
-						$a->setuid($uid);
-						$a->settype($otype);
-						$a->setaction('C');
-						$a->setorigin('R');
-						$a->setrcid($cid);
-						$a->setroid($oid);
-						$a->setrostate($ostate);
-						$a->setcreatedon($entry->TimeStamp);
-						// deposit action entry
-						$this->ActionManager->insert($a);
-					}
-				}
-				// aquire water mark
-				$token = $entry->Watermark;
+				// do nothing
 			}
 		}
 
 		if (isset($rs->ModifiedEvent)) {
 			foreach ($rs->ModifiedEvent as $entry) {
-				// evaluate, if it was an object event, ignore collection events
-				if (isset($entry->ItemId)) {
+				// evaluate, if it was an collection event, ignore object events
+				if (isset($entry->FolderId)) {
 					// extract atributes
-					$cid = $entry->ParentFolderId->Id;
-					$oid = $entry->ItemId->Id;
-					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object correlation
-					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
-					// work around to filter out harmonization generated events
-					// evaluate correlation, if dose not exists or state does not match, create action
-					if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
-						// construct action entry
-						$a = new Action();
-						$a->setuid($uid);
-						$a->settype($otype);
-						$a->setaction('U');
-						$a->setorigin('R');
-						$a->setrcid($cid);
-						$a->setroid($oid);
-						$a->setrostate($ostate);
-						$a->setcreatedon($entry->TimeStamp);
-						// deposit action entry
-						$this->ActionManager->insert($a);
+					$cid = $entry->FolderId->Id;
+					$cstate = $entry->FolderId->ChangeKey;
+					// retrieve collection correlation
+					$cc = $this->CorrelationsService->findByRemoteId($uid, $ctype, $cid);
+					// evaluate correlation, if exists, change altered time stamp
+					if ($cc instanceof \OCA\EWS\Db\Correlation) {
+						$cc->sethaltered(time());
+						$this->CorrelationsService->update($cc);
+						$state = true;
 					}
+					// aquire water mark
+					$token = $entry->Watermark;
 				}
-				// aquire water mark
-				$token = $entry->Watermark;
+				
+				$w[] = ['C', ($entry->Watermark == $rs->PreviousWatermark), $entry->Watermark];
 			}
 		}
 
 		if (isset($rs->DeletedEvent)) {
 			foreach ($rs->DeletedEvent as $entry) {
-				// evaluate, if it was an object event, ignore collection events
-				if (isset($entry->ItemId)) {
-					// extract atributes
-					$cid = $entry->ParentFolderId->Id;
-					$oid = $entry->ItemId->Id;
-					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object correlation
-					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
-					// work around to filter out harmonization generated events
-					// evaluate correlation, if exists, create action
-					if ($ci instanceof \OCA\EWS\Db\Correlation) {
-						// construct action entry
-						$a = new Action();
-						$a->setuid($uid);
-						$a->settype($otype);
-						$a->setaction('D');
-						$a->setorigin('R');
-						$a->setrcid($cid);
-						$a->setroid($oid);
-						$a->setrostate($ostate);
-						$a->setcreatedon($entry->TimeStamp);
-						// deposit action entry
-						$this->ActionManager->insert($a);
-					}
-				}
-				// aquire water mark
-				$token = $entry->Watermark;
-			}
-		}
-
-		if (isset($rs->NewMailEvent)) {
-			foreach ($rs->NewMailEvent as $entry) {
-				$token = $entry->Watermark;
+				// do nothing
 			}
 		}
 
 		if (isset($rs->CopiedEvent)) {
 			foreach ($rs->CopiedEvent as $entry) {
-				$token = $entry->Watermark;
+				// do nothing
 			}
 		}
 
 		if (isset($rs->MovedEvent)) {
 			foreach ($rs->MovedEvent as $entry) {
-				// evaluate, if it was an object event, ignore collection events
-				if (isset($entry->ItemId)) {
-					// extract source atributes
-					$cid = $entry->OldParentFolderId->Id;
-					$oid = $entry->OldItemId->Id;
-					$ostate = $entry->ItemId->ChangeKey;
-					// retrieve object correlation
-					$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
-					// evaluate correlation, if exists, create action
-					if ($ci instanceof \OCA\EWS\Db\Correlation) {
-						// construct action entry
-						$a = new Action();
-						$a->setuid($uid);
-						$a->settype($otype);
-						$a->setaction('D');
-						$a->setorigin('R');
-						$a->setrcid($cid);
-						$a->setroid($oid);
-						$a->setrostate($ostate);
-						$a->setcreatedon($entry->TimeStamp);
-						// deposit action entry
-						$this->ActionManager->insert($a);
-					}
-
-					// extract destination atributes
-					$cid = $entry->ParentFolderId->Id;
-					$oid = $entry->ItemId->Id;
-					$ostate = $entry->ItemId->ChangeKey;
-					// determain collection type from object type
-					switch ($otype) {
-						case 'CO':
-							$ctype = 'CC';
-							break;
-						case 'EO':
-							$ctype = 'EC';
-							break;
-						case 'TO':
-							$ctype = 'TC';
-							break;			
-						default:
-							# code...
-							break;
-					}
-					// retrieve collection correlation
-					$cc = $this->CorrelationsService->findByRemoteId($uid, $ctype, $cid);
-					// evaluate correlation, if correlation exists for the remote collection
-					if ($cc instanceof \OCA\EWS\Db\Correlation) {
-						// retrieve object correlation
-						$ci = $this->CorrelationsService->findByRemoteId($uid, $otype, $oid, $cid);
-						// work around to filter out harmonization generated events
-						// evaluate correlation, if dose not exists or state does not match, create action
-						if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getrostate() != $ostate) {
-							// construct action entry
-							$a = new Action();
-							$a->setuid($uid);
-							$a->settype($otype);
-							$a->setaction('C');
-							$a->setorigin('R');
-							$a->setrcid($cid);
-							$a->setroid($oid);
-							$a->setrostate($ostate);
-							$a->setcreatedon($entry->TimeStamp);
-							// deposit action entry
-							$this->ActionManager->insert($a);
-						}
-					}
-				}
-				// aquire water mark
-				$token = $entry->Watermark;
+				// do nothing
 			}
 		}
 
@@ -603,7 +589,7 @@ class HarmonizationService {
 		}
 
 		// return response
-		return (object) ['Id' => $id, 'Token' => $token];
+		return (object) ['Id' => $id, 'Token' => $token, 'State' => $state];
 
 	}
 

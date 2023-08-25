@@ -31,8 +31,6 @@ use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCA\DAV\Events\CalendarObjectRestoredEvent;
 
-use OCA\EWS\Db\Action;
-use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Db\Correlation;
 use OCA\EWS\Service\CorrelationsService;
 
@@ -42,9 +40,8 @@ class CalendarObjectRestoredListener implements IEventListener {
 	 */
 	private $logger;
 
-	public function __construct(LoggerInterface $logger, ActionMapper $ActionManager, CorrelationsService $CorrelationsService) {
+	public function __construct(LoggerInterface $logger, CorrelationsService $CorrelationsService) {
 		$this->logger = $logger;
-		$this->ActionManager = $ActionManager;
 		$this->CorrelationsService = $CorrelationsService;
 	}
 
@@ -52,47 +49,27 @@ class CalendarObjectRestoredListener implements IEventListener {
 
         if ($event instanceof CalendarObjectRestoredEvent) {
 			try {
-				// retrieve collection and object attributes
+				// retrieve collection attributes
 				$ec = $event->getCalendarData();
 				$eo = $event->getObjectData();
 				// evaluate object type
 				if (strtoupper($eo['component']) == 'VEVENT') {
 					$ccs = 'EC';
-					$cos = 'EO';
 				}
 				elseif (strtoupper($eo['component']) == 'VTODO') {
 					$ccs = 'TC';
-					$cos = 'TO';
 				}
-				// evaluate if collection and object selector is populated
-				if (isset($ccs) && isset($cos)) {
+				// evaluate if collection selector is populated
+				if (isset($ccs)) {
 					// determine ids and state  
 					$uid = str_replace('principals/users/', '', $ec['principaluri']);
 					$cid = (string) $ec['id'];
-					$oid = str_replace('-deleted', '', $eo['uri']);
-					$ostate = trim($eo['etag'],'"');
 					// retrieve collection correlation
 					$cc = $this->CorrelationsService->findByLocalId($uid, $ccs, $cid);
-					// evaluate correlation, if correlation exists for the local collection create action
+					// evaluate, if correlation exists for the local collection
 					if ($cc instanceof \OCA\EWS\Db\Correlation) {
-						// retrieve object correlation
-						$ci = $this->CorrelationsService->findByLocalId($uid, $cos, $oid, $cid);
-						// evaluate correlation, if dose not exists or state does not match, create action
-						// work around to filter out harmonization generated events
-						if (!($ci instanceof \OCA\EWS\Db\Correlation) || $ci->getlostate() != $ostate) {
-							// construct action entry
-							$a = new Action();
-							$a->setuid($uid);
-							$a->settype($cos);
-							$a->setaction('C');
-							$a->setorigin('L');
-							$a->setlcid($cid);
-							$a->setloid($oid);
-							$a->setlostate($ostate);
-							$a->setcreatedon(date(DATE_W3C));
-							// deposit action entry
-							$this->ActionManager->insert($a);
-						}
+						$cc->sethaltered(time());
+						$this->CorrelationsService->update($cc);
 					}
 				}	
 			} catch (Exception $e) {

@@ -82,9 +82,7 @@ try {
 	//$CoreService->performTest($uid, 'D');
 	//$CoreService->performTest($uid, 'C');
 	// execute initial harmonization
-	//$HarmonizationService->performHarmonization($uid, 'S');
-	// execute actions
-	//$HarmonizationService->performActions($uid);
+	$HarmonizationService->performHarmonization($uid, 'S');
 	
 
 	$logger->info('Test ended for ' . $uid, ['app' => 'integration_ews']);

@@ -1146,7 +1146,7 @@ class RemoteCommonService {
 			$request->PullSubscriptionRequest->EventTypes->EventType = $types;
 		}
 		else {
-			$request->PullSubscriptionRequest->EventTypes->EventType = ['CreatedEvent', 'ModifiedEvent', 'DeletedEvent', 'NewMailEvent', 'CopiedEvent', 'MovedEvent'];
+			$request->PullSubscriptionRequest->EventTypes->EventType = ['CreatedEvent', 'ModifiedEvent', 'DeletedEvent', 'CopiedEvent', 'MovedEvent'];
 		}
 		// execute request
 		$response = $DataStore->Subscribe($request);

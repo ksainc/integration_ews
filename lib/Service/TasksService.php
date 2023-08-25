@@ -34,7 +34,6 @@ use OCA\DAV\CalDav\CalDavBackend;
 use OCP\Files\IRootFolder;
 
 use OCA\EWS\AppInfo\Application;
-use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\Local\LocalTasksService;
 use OCA\EWS\Service\Remote\RemoteTasksService;
@@ -82,14 +81,12 @@ class TasksService {
 
 	public function __construct (string $appName,
 								LoggerInterface $logger,
-								ActionMapper $ActionMapper,
 								CorrelationsService $CorrelationsService,
 								LocalTasksService $LocalTasksService,
 								RemoteTasksService $RemoteTasksService,
 								CalDavBackend $LocalStore,
 								IRootFolder $LocalFileStore) {
 		$this->logger = $logger;
-		$this->ActionsManager = $ActionMapper;
 		$this->CorrelationsService = $CorrelationsService;
 		$this->LocalTasksService = $LocalTasksService;
 		$this->RemoteTasksService = $RemoteTasksService;
@@ -280,144 +277,6 @@ class TasksService {
 		$this->CorrelationsService->update($correlation);
 		// destroy UUID's place holder
 		unset($this->RemoteUUIDs);
-
-		// return statistics
-		return $statistics;
-
-	}
-	
-	/**
-	 * Perform actions for contacts events
-	 * 
-	 * @since Release 1.0.0
-	 *
-	 * @return void
-	 */
-	public function performActions($syncedOn, $configuration) : object {
-		$this->Configuration = $configuration;
-		// assign data stores
-		$this->LocalTasksService->DataStore = $this->LocalStore;
-		$this->LocalTasksService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
-		$this->RemoteTasksService->DataStore = $this->RemoteStore;
-		// assign timezones
-		$this->LocalTasksService->SystemTimeZone = $this->Configuration->SystemTimeZone;
-		$this->RemoteTasksService->SystemTimeZone = $this->Configuration->SystemTimeZone;
-		$this->LocalTasksService->UserTimeZone = $this->Configuration->UserTimeZone;
-		$this->RemoteTasksService->UserTimeZone = $this->Configuration->UserTimeZone;
-		// assign default folder
-		$this->LocalTasksService->UserAttachmentPath = $this->Configuration->TasksAttachmentPath;
-		// construct statistics object
-		$statistics = new HarmonizationStatisticsObject();
-		// construct statistics object
-		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
-		// retrieve list of actions
-		$actions = $this->ActionsManager->findByType($this->Configuration->UserId, CorrelationsService::TaskObject);
-		// iterate through correlation items
-		foreach ($actions as $action) {
-			// evaluate action, if action was created before last harmonization ignore it and delete it.
-			// harmonization already processed the changes
-			if ($syncedOn !== '' && intval($syncedOn) > strtotime($action->getcreatedon())) {
-				$this->ActionsManager->delete($action);
-				continue;
-			}
-			// evaluate, action origin
-			if ($action->getorigin() == "L") {
-				// retrieve collection correlation
-				$cc = $this->CorrelationsService->findByLocalId(
-					$this->Configuration->UserId, 
-					CorrelationsService::TaskCollection, 
-					$action->getlcid()
-				);
-				// evaluate correlation, if correlation exists for the local collection create action
-				if ($cc instanceof \OCA\EWS\Db\Correlation) {
-					// process based on action
-					switch ($action->getaction()) {
-						case 'C':
-						case 'U':
-							$as = $this->harmonizeLocalAltered(
-								$this->Configuration->UserId,
-								$cc->getloid(),
-								$action->getloid(),
-								$cc->getroid(),
-								$cc->getid()
-							);
-							// increment statistics
-							switch ($as) {
-								case 'RC':
-									$statistics->RemoteCreated += 1;
-									break;
-								case 'RU':
-									$statistics->RemoteUpdated += 1;
-									break;
-								case 'LU':
-									$statistics->LocalUpdate += 1;
-									break;
-							}
-							break;
-						case 'D':
-							$as = $this->harmonizeLocalDelete(
-								$this->Configuration->UserId,
-								$cc->getloid(),
-								$action->getloid()
-							);
-							if ($as == 'RD') {
-								// assign status
-								$statistics->RemoteDeleted += 1;
-							}
-							break;
-					}
-				}
-			}
-			elseif ($action->getorigin() == "R") {
-				// retrieve collection correlation
-				$cc = $this->CorrelationsService->findByRemoteId(
-					$this->Configuration->UserId, 
-					CorrelationsService::TaskCollection, 
-					$action->getrcid()
-				);
-				// evaluate correlation, if correlation exists for the remote collection create action
-				if ($cc instanceof \OCA\EWS\Db\Correlation) {
-					// process based on action
-					switch ($action->getaction()) {
-						case 'C':
-						case 'U':
-							$as = $this->harmonizeRemoteAltered(
-								$this->Configuration->UserId,
-								$cc->getroid(),
-								$action->getroid(),
-								$cc->getloid(),
-								$cc->getid()
-							);
-							// increment statistics
-							switch ($as) {
-								case 'LC':
-									$statistics->LocalCreated += 1;
-									break;
-								case 'LU':
-									$statistics->LocalUpdated += 1;
-									break;
-								case 'RU':
-									$statistics->RemoteUpdate += 1;
-									break;
-							}
-							break;
-						case 'D':
-							$as = $this->harmonizeRemoteDelete(
-								$this->Configuration->UserId,
-								$cc->getroid(),
-								$action->getroid()
-							);
-							if ($as == 'LD') {
-								// increment statistics
-								$statistics->LocalDeleted += 1;
-							}
-							break;
-					}
-				}
-			}
-			// destroy action
-			$this->ActionsManager->delete($action);
-		}
 
 		// return statistics
 		return $statistics;

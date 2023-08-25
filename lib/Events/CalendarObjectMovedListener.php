@@ -31,8 +31,6 @@ use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCA\DAV\Events\CalendarObjectMovedEvent;
 
-use OCA\EWS\Db\Action;
-use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Db\Correlation;
 use OCA\EWS\Service\CorrelationsService;
 
@@ -42,9 +40,8 @@ class CalendarObjectMovedListener implements IEventListener {
 	 */
 	private $logger;
 
-	public function __construct(LoggerInterface $logger, ActionMapper $ActionManager, CorrelationsService $CorrelationsService) {
+	public function __construct(LoggerInterface $logger, CorrelationsService $CorrelationsService) {
 		$this->logger = $logger;
-		$this->ActionManager = $ActionManager;
 		$this->CorrelationsService = $CorrelationsService;
 	}
 
@@ -52,24 +49,29 @@ class CalendarObjectMovedListener implements IEventListener {
 
         if ($event instanceof CalendarObjectMovedEvent) {
 			try {
-				/*
-				// retrieve collection and object attributes
+				// retrieve collection attributes
 				$ec = $event->getCalendarData();
 				$eo = $event->getObjectData();
-				// determain object type
-				if ($eo['component'] == 'vevent') {
-					// construct action entry
-					$a = new Action();
-					$a->setuid(str_replace('principals/users/', '', $ec['principaluri']));
-					$a->settype('EOD');
-					$a->setorigin('L');
-					$a->setlcid($ec['id']);
-					$a->setloid(str_replace('-deleted', '', $eo['uri']));
-					$a->setlostate(trim($eo['etag'],'"'));
-					// deposit action entry
-					$this->ActionManager->insert($a);
+				// evaluate object type
+				if (strtoupper($eo['component']) == 'VEVENT') {
+					$ccs = 'EC';
 				}
-				*/
+				elseif (strtoupper($eo['component']) == 'VTODO') {
+					$ccs = 'TC';
+				}
+				// evaluate if collection selector is populated
+				if (isset($ccs)) {
+					// determine ids and state  
+					$uid = str_replace('principals/users/', '', $ec['principaluri']);
+					$cid = (string) $ec['id'];
+					// retrieve collection correlation
+					$cc = $this->CorrelationsService->findByLocalId($uid, $ccs, $cid);
+					// evaluate, if correlation exists for the local collection
+					if ($cc instanceof \OCA\EWS\Db\Correlation) {
+						$cc->sethaltered(time());
+						$this->CorrelationsService->update($cc);
+					}
+				}
 			} catch (Exception $e) {
 				$this->logger->warning($e->getMessage(), ['uid' => $event->getUser()->getUID()]);
 			}

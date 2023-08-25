@@ -117,7 +117,6 @@ try {
 
 	// initilize required services
 	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
-	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
 	$HarmonizationThreadService = \OC::$server->get(\OCA\EWS\Service\HarmonizationThreadService::class);
 
@@ -154,6 +153,9 @@ try {
 
 	while ((time() - $executionStart) < $executionDuration) {
 		
+		// update thread heart beat
+		$HarmonizationThreadService->setHeartBeat($uid, time());
+
 		/**
 		 * 
 		 * TODO: evaluate if user still exists and is active
@@ -170,21 +172,19 @@ try {
 			break;
 		}
 
-		// update heart beat
-		$HarmonizationThreadService->setHeartBeat($uid, time());
-		// consume events from feed and create actions
+		// consume events from feed(s)
 		if (isset($cs)) {
-			$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CO');
+			$cs = $HarmonizationService->consumeEvents($uid, $cs->Id, $cs->Token, 'CC');
 		}
 		if (isset($es)) {
-			$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EO');
+			$es = $HarmonizationService->consumeEvents($uid, $es->Id, $es->Token, 'EC');
 		}
 		if (isset($ts)) {
-			$ts = $HarmonizationService->consumeEvents($uid, $ts->Id, $ts->Token, 'TO');
+			$ts = $HarmonizationService->consumeEvents($uid, $ts->Id, $ts->Token, 'TC');
 		}
 		
 		// execute actions
-		$HarmonizationService->performActions($uid);
+		$HarmonizationService->performLiveHarmonization($uid);
 
 		$executionConclusion = 'N';
 

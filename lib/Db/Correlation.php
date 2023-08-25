@@ -49,13 +49,16 @@ use OCP\AppFramework\Db\Entity;
  * @method setrostate(string $token): void
  * @method getrcid(): string
  * @method setrcid(string $rcid): void
- * @method gethlock(): string
+ * @method gethlock(): int
  * @method sethlock(int $status): void
- * @method gethlockhd(): string
+ * @method gethlockhd(): int
  * @method sethlockhd(int $id): void
- * @method gethlockhb(): string
+ * @method gethlockhb(): int
  * @method sethlockhb(int $timestamp): void
-
+ * @method gethaltered(): int
+ * @method sethaltered(int $timestamp): void
+ * @method gethperformed(): int
+ * @method sethperformed(int $timestamp): void
  */
 class Correlation extends Entity implements JsonSerializable {
 	protected string $uid = '';
@@ -74,6 +77,8 @@ class Correlation extends Entity implements JsonSerializable {
 	protected int $hlock = 0;
 	protected int $hlockhd = 0;
 	protected int $hlockhb = 0;
+	protected ?int $haltered = null;
+	protected ?int $hperformed = null;
 		
 	public function jsonSerialize(): array {
 		return [
@@ -89,6 +94,8 @@ class Correlation extends Entity implements JsonSerializable {
 			'hlock' => $this->hlock,
 			'hlockhd' => $this->hlockhd,
 			'hlockhb' => $this->hlockhb,
+			'haltered' => $this->haltered,
+			'hperformed' => $this->hperformed,
 		];
 	}
 }

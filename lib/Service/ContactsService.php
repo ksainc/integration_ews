@@ -33,7 +33,6 @@ use Psr\Log\LoggerInterface;
 use OCA\DAV\CardDAV\CardDavBackend;
 
 use OCA\EWS\AppInfo\Application;
-use OCA\EWS\Db\ActionMapper;
 use OCA\EWS\Service\CorrelationsService;
 use OCA\EWS\Service\Local\LocalContactsService;
 use OCA\EWS\Service\Remote\RemoteContactsService;
@@ -77,13 +76,11 @@ class ContactsService {
 
 	public function __construct (string $appName,
 								LoggerInterface $logger,
-								ActionMapper $ActionMapper,
 								CorrelationsService $CorrelationsService,
 								LocalContactsService $LocalContactsService,
 								RemoteContactsService $RemoteContactsService,
 								CardDavBackend $LocalStore) {
 		$this->logger = $logger;
-		$this->ActionsManager = $ActionMapper;
 		$this->CorrelationsService = $CorrelationsService;
 		$this->LocalContactsService = $LocalContactsService;
 		$this->RemoteContactsService = $RemoteContactsService;
@@ -265,123 +262,6 @@ class ContactsService {
 		$this->CorrelationsService->update($correlation);
 		// destroy UUID's place holder
 		unset($this->RemoteUUIDs);
-
-		// return statistics
-		return $statistics;
-
-	}
-
-	/**
-	 * Perform actions for contacts events
-	 * 
-	 * @since Release 1.0.0
-	 *
-	 * @return void
-	 */
-	public function performActions($syncedOn, $configuration) : object {
-		$this->Configuration = $configuration;
-		// assign data stores
-		$this->LocalContactsService->DataStore = $this->LocalStore;
-		$this->RemoteContactsService->DataStore = $this->RemoteStore;
-		// construct statistics object
-		$statistics = new \OCA\EWS\Objects\HarmonizationStatisticsObject();
-		// retrieve list of actions
-		$actions = $this->ActionsManager->findByType($this->Configuration->UserId, 'CO');
-		// iterate through correlation items
-		foreach ($actions as $action) {
-			// evaluate action, if action was created before last harmonization ignore it and delete it.
-			// harmonization already processed the changes
-			if ($syncedOn !== '' && intval($syncedOn) > strtotime($action->getcreatedon())) {
-				$this->ActionsManager->delete($action);
-				continue;
-			}
-			// evaluate, action origin
-			if ($action->getorigin() == "L") {
-				// retrieve collection correlation
-				$cc = $this->CorrelationsService->findByLocalId($this->Configuration->UserId, 'CC', $action->getlcid());
-				// evaluate correlation, if correlation exists for the local collection create action
-				if ($cc instanceof \OCA\EWS\Db\Correlation) {
-					// process based on action
-					switch ($action->getaction()) {
-						case 'C':
-						case 'U':
-							$as = $this->harmonizeLocalAltered(
-								$this->Configuration->UserId,
-								$cc->getloid(),
-								$action->getloid(),
-								$cc->getroid(),
-								$cc->getid()
-							);
-							// increment statistics
-							switch ($as) {
-								case 'RC':
-									$statistics->RemoteCreated += 1;
-									break;
-								case 'RU':
-									$statistics->RemoteUpdated += 1;
-									break;
-								case 'LU':
-									$statistics->LocalUpdate += 1;
-									break;
-							}
-							break;
-						case 'D':
-							$as = $this->harmonizeLocalDelete(
-								$this->Configuration->UserId,
-								$cc->getloid(),
-								$action->getloid()
-							);
-							$statistics->RemoteDeleted += 1;
-							break;
-					}
-				}
-			}
-			elseif ($action->getorigin() == "R") {
-				// retrieve collection correlation
-				$cc = $this->CorrelationsService->findByRemoteId($this->Configuration->UserId, 'CC', $action->getrcid());
-				// evaluate correlation, if correlation exists for the remote collection create action
-				if ($cc instanceof \OCA\EWS\Db\Correlation) {
-					// process based on action
-					switch ($action->getaction()) {
-						case 'C':
-						case 'U':
-							$as = $this->harmonizeRemoteAltered(
-								$this->Configuration->UserId,
-								$cc->getroid(),
-								$action->getroid(),
-								$cc->getloid(),
-								$cc->getid()
-							);
-							// increment statistics
-							switch ($as) {
-								case 'LC':
-									$statistics->LocalCreated += 1;
-									break;
-								case 'LU':
-									$statistics->LocalUpdated += 1;
-									break;
-								case 'RU':
-									$statistics->RemoteUpdate += 1;
-									break;
-							}
-							break;
-						case 'D':
-							$as = $this->harmonizeRemoteDelete(
-								$this->Configuration->UserId,
-								$cc->getroid(),
-								$action->getroid()
-							);
-							if ($as == 'LD') {
-								// increment statistics
-								$statistics->LocalDeleted += 1;
-							}
-							break;
-					}
-				}
-			}
-			// destroy action
-			$this->ActionsManager->delete($action);
-		}
 
 		// return statistics
 		return $statistics;
