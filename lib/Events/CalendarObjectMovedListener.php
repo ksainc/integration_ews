@@ -49,8 +49,7 @@ class CalendarObjectMovedListener implements IEventListener {
 
         if ($event instanceof CalendarObjectMovedEvent) {
 			try {
-				// retrieve collection attributes
-				$ec = $event->getCalendarData();
+				// retrieve object attributes
 				$eo = $event->getObjectData();
 				// evaluate object type
 				if (strtoupper($eo['component']) == 'VEVENT') {
@@ -59,6 +58,23 @@ class CalendarObjectMovedListener implements IEventListener {
 				elseif (strtoupper($eo['component']) == 'VTODO') {
 					$ccs = 'TC';
 				}
+				// retrieve source collection attributes
+				$ec = $event->getSourceCalendarData();
+				// evaluate if collection selector is populated
+				if (isset($ccs)) {
+					// determine ids and state  
+					$uid = str_replace('principals/users/', '', $ec['principaluri']);
+					$cid = (string) $ec['id'];
+					// retrieve collection correlation
+					$cc = $this->CorrelationsService->findByLocalId($uid, $ccs, $cid);
+					// evaluate, if correlation exists for the local collection
+					if ($cc instanceof \OCA\EWS\Db\Correlation) {
+						$cc->sethaltered(time());
+						$this->CorrelationsService->update($cc);
+					}
+				}
+				// retrieve target collection attributes
+				$ec = $event->getTargetCalendarData();
 				// evaluate if collection selector is populated
 				if (isset($ccs)) {
 					// determine ids and state  

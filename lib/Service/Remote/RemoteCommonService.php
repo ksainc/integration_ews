@@ -929,6 +929,7 @@ class RemoteCommonService {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\DeleteItemType();
+		$request->SendMeetingCancellations = 'SendToNone';
 		$request->DeleteType = $type;
 		// define objects to delete
 		$request->ItemIds = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfBaseItemIdsType($ids);

@@ -782,15 +782,9 @@ class RemoteEventsService {
 		if (!empty($so->Availability)) {
 			$rm[] = $this->updateFieldUnindexed('calendar:LegacyFreeBusyStatus', 'LegacyFreeBusyStatus', $so->Availability);
 		}
-		else {
-			$rd[] = $this->deleteFieldUnindexed('calendar:LegacyFreeBusyStatus');
-		}
 		// Priority
 		if (!empty($so->Priority)) {
 			$rm[] = $this->updateFieldUnindexed('item:Importance', 'Importance', $this->toImportance($so->Priority));
-		}
-		else {
-			$rd[] = $this->deleteFieldUnindexed('item:Importance');
 		}
 		// Sensitivity
 		if (!empty($so->Sensitivity)) {
@@ -1078,7 +1072,7 @@ class RemoteEventsService {
         // create object
         $o = new \OCA\EWS\Components\EWS\Type\ItemIdType($iid);
 
-        $result = $this->RemoteCommonService->deleteItem($this->DataStore, array($o));
+        $result = $this->RemoteCommonService->deleteItem($this->DataStore, array($o), 'HardDelete');
 
         if ($result) {
             return true;
