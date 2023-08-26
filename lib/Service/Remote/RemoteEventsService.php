@@ -1576,7 +1576,7 @@ class RemoteEventsService {
 
 		// Periods
 		$o->Periods = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPeriodsType();
-		if (count($zone->Periods->Period) > 0) {
+		if (isset($zone->Periods->Period) && count($zone->Periods->Period) > 0) {
 			foreach ($zone->Periods->Period as $entry) {
 				$o->Periods->Period[] = new \OCA\EWS\Components\EWS\Type\PeriodType(
 					$entry->Id,
@@ -1589,7 +1589,7 @@ class RemoteEventsService {
 		// Transitions
 		$o->Transitions = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
 		// Transition
-		if (count($zone->Transitions->Transition) > 0) {
+		if (isset($zone->Transitions->Transition) && count($zone->Transitions->Transition) > 0) {
 			foreach ($zone->Transitions->Transition as $entry) {
 				$o->Transitions->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
 					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
@@ -1601,7 +1601,7 @@ class RemoteEventsService {
 		}
 		// Absolute Date Transition
 		/*
-		if (count($zone->Transitions->AbsoluteDateTransition) > 0) {
+		if (isset($zone->Transitions->AbsoluteDateTransition) && count($zone->Transitions->AbsoluteDateTransition) > 0) {
 			foreach ($zone->Transitions->AbsoluteDateTransition as $entry) {
 				$o->Transitions->AbsoluteDateTransition[] = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType(
 					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
@@ -1613,73 +1613,98 @@ class RemoteEventsService {
 			}
 		}
 		*/
+		
 		// Recurring Date Transition
-		if (count($zone->Transitions->RecurringDateTransition) > 0) {
-			// TODO: Recurring Date Transition Code
+		if (isset($zone->Transitions->RecurringDateTransition) && count($zone->Transitions->RecurringDateTransition) > 0) {
+			foreach ($zone->Transitions->RecurringDateTransition as $entry) {
+				$o->Transitions->RecurringDateTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDateTransitionType(
+					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+						$entry->To->Kind,
+						$entry->To->_
+					),
+					$entry->TimeOffset,
+					$entry->Month,
+					$entry->Day
+				);
+			}
 		}
 		// Recurring Day Transition
-		if (count($zone->Transitions->RecurringDayTransition) > 0) {
-			// TODO: Recurring Day Transition Code
+		if (isset($zone->Transitions->RecurringDayTransition) && count($zone->Transitions->RecurringDayTransition) > 0) {
+			foreach ($zone->Transitions->RecurringDayTransition as $entry) {
+				$o->Transitions->RecurringDayTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDayTransitionType(
+					new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+						$entry->To->Kind,
+						$entry->To->_
+					),
+					$entry->TimeOffset,
+					$entry->Month,
+					$entry->DayOfWeek,
+					$entry->Occurrence
+				);
+			}
 		}
 
 		// Transitions Groups
-		$o->TransitionsGroups = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsGroupsType();
-		foreach ($zone->TransitionsGroups->TransitionsGroup as $key => $group) {
-			$o->TransitionsGroups->TransitionsGroup[$key] = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
-			$o->TransitionsGroups->TransitionsGroup[$key]->Id = $group->Id;
-			// Transition
-			if (count($group->Transition) > 0) {
-				foreach ($group->Transition as $entry) {
-					$o->TransitionsGroups->TransitionsGroup[$key]->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
-						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
-							$entry->To->Kind,
-							$entry->To->_
-						)
-					);
+		if (isset($zone->TransitionsGroups->TransitionsGroup) && count($zone->TransitionsGroups->TransitionsGroup) > 0) {
+			$o->TransitionsGroups = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsGroupsType();
+			foreach ($zone->TransitionsGroups->TransitionsGroup as $key => $group) {
+				$o->TransitionsGroups->TransitionsGroup[$key] = new \OCA\EWS\Components\EWS\ArrayType\ArrayOfTransitionsType();
+				$o->TransitionsGroups->TransitionsGroup[$key]->Id = $group->Id;
+				// Transition
+				if (isset($group->Transition) && count($group->Transition) > 0) {
+					foreach ($group->Transition as $entry) {
+						$o->TransitionsGroups->TransitionsGroup[$key]->Transition[] = new \OCA\EWS\Components\EWS\Type\TransitionType(
+							new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+								$entry->To->Kind,
+								$entry->To->_
+							)
+						);
+					}
 				}
-			}
-			// Absolute Date Transition
-			if (count($group->AbsoluteDateTransition) > 0) {
-				foreach ($group->AbsoluteDateTransition as $entry) {
-					$o->TransitionsGroups->TransitionsGroup[$key]->AbsoluteDateTransition[] = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType(
-						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
-							$entry->To->Kind,
-							$entry->To->_
-						),
-						$entry->DateTime
-					);
+				// Absolute Date Transition
+				if (isset($group->AbsoluteDateTransition) && count($group->AbsoluteDateTransition) > 0) {
+					foreach ($group->AbsoluteDateTransition as $entry) {
+						$o->TransitionsGroups->TransitionsGroup[$key]->AbsoluteDateTransition[] = new \OCA\EWS\Components\EWS\Type\AbsoluteDateTransitionType(
+							new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+								$entry->To->Kind,
+								$entry->To->_
+							),
+							$entry->DateTime
+						);
+					}
 				}
-			}
-			// Recurring Date Transition
-			if (count($group->RecurringDateTransition) > 0) {
-				foreach ($group->RecurringDateTransition as $entry) {
-					$o->TransitionsGroups->TransitionsGroup[$key]->RecurringDateTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDateTransitionType(
-						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
-							$entry->To->Kind,
-							$entry->To->_
-						),
-						$entry->TimeOffset,
-						$entry->Month,
-						$entry->Day
-					);
+				// Recurring Date Transition
+				if (isset($group->RecurringDateTransition) && count($group->RecurringDateTransition) > 0) {
+					foreach ($group->RecurringDateTransition as $entry) {
+						$o->TransitionsGroups->TransitionsGroup[$key]->RecurringDateTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDateTransitionType(
+							new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+								$entry->To->Kind,
+								$entry->To->_
+							),
+							$entry->TimeOffset,
+							$entry->Month,
+							$entry->Day
+						);
+					}
 				}
-			}
-			// Recurring Day Transition
-			if (count($group->RecurringDayTransition) > 0) {
-				foreach ($group->RecurringDayTransition as $entry) {
-					$o->TransitionsGroups->TransitionsGroup[$key]->RecurringDayTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDayTransitionType(
-						new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
-							$entry->To->Kind,
-							$entry->To->_
-						),
-						$entry->TimeOffset,
-						$entry->Month,
-						$entry->DayOfWeek,
-						$entry->Occurrence
-					);
+				// Recurring Day Transition
+				if (isset($group->RecurringDayTransition) && count($group->RecurringDayTransition) > 0) {
+					foreach ($group->RecurringDayTransition as $entry) {
+						$o->TransitionsGroups->TransitionsGroup[$key]->RecurringDayTransition[] = new \OCA\EWS\Components\EWS\Type\RecurringDayTransitionType(
+							new \OCA\EWS\Components\EWS\Type\TransitionTargetType(
+								$entry->To->Kind,
+								$entry->To->_
+							),
+							$entry->TimeOffset,
+							$entry->Month,
+							$entry->DayOfWeek,
+							$entry->Occurrence
+						);
+					}
 				}
 			}
 		}
+		// return time zone definition object
         return $o;
     }
 
