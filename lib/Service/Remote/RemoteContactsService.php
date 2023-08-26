@@ -324,7 +324,7 @@ class RemoteContactsService {
             }
             // Prefix
             if (!empty($so->Name->Prefix)) {
-                $ro->ExtendedProperty[] = $this->createFieldExtendedById('Address', '14917', 'String', $so->Name->Prefix);
+                $ro->ExtendedProperty[] = $this->createFieldExtendedByTag('14917', 'String', $so->Name->Prefix);
             }
             // Suffix
             if (!empty($so->Name->Suffix)) {
@@ -348,11 +348,9 @@ class RemoteContactsService {
             $ro->Birthday = $so->BirthDay->format('Y-m-d\TH:i:s\Z');
         }
         // Gender
-        /*
         if (!empty($so->Gender)) {
-            $ro->ExtendedProperty[] = $this->createFieldExtendedByTag('0x3A4D', 'String', $so->Gender);
+            $ro->ExtendedProperty[] = $this->createFieldExtendedByTag('14925', 'String', $so->Gender);
         }
-        */
         // Partner
         if (!empty($so->Partner)) {
             $ro->SpouseName = $so->Partner;
@@ -539,14 +537,12 @@ class RemoteContactsService {
                 $rd[] = $this->deleteFieldUnindexed('contacts:MiddleName');
             }
             // Prefix
-            /*
             if (!empty($so->Name->Prefix)) {
-                $rm[] = $this->updateFieldExtendedById('Address', '14917', 'String', $so->Name->Prefix);
+                $rm[] = $this->updateFieldExtendedByTag('14917', 'String', $so->Name->Prefix);
             }
             else {
-                $rd[] = $this->deleteFieldExtendedById('Address', '14917', 'String');
+                $rd[] = $this->deleteFieldExtendedByTag('14917', 'String');
             }
-            */
             // Suffix
             if (!empty($so->Name->Suffix)) {
                 $rm[] = $this->updateFieldUnindexed('contacts:Generation', 'Generation', $so->Name->Suffix);
@@ -557,17 +553,17 @@ class RemoteContactsService {
             /*
             // Phonetic Last
             if (!empty($so->Name->PhoneticLast)) {
-                $rm[] = $this->updateFieldExtendedByTag('0x802D', 'String', $so->Name->PhoneticLast);
+                $rm[] = $this->updateFieldExtendedByTag('32813', 'String', $so->Name->PhoneticLast);
             }
             else {
-                $rd[] = $this->deleteFieldExtendedByTag('0x802D', 'String');
+                $rd[] = $this->deleteFieldExtendedByTag('32813', 'String');
             }
             // Phonetic First
             if (!empty($so->Name->PhoneticFirst)) {
-                $rm[] = $this->updateFieldExtendedByTag('0x802C', 'String', $so->Name->PhoneticFirst);
+                $rm[] = $this->updateFieldExtendedByTag('32812', 'String', $so->Name->PhoneticFirst);
             }
             else {
-                $rd[] = $this->deleteFieldExtendedByTag('0x802C', 'String');
+                $rd[] = $this->deleteFieldExtendedByTag('32812', 'String');
             }
             */
             // Aliases
@@ -586,14 +582,12 @@ class RemoteContactsService {
             $rd[] = $this->deleteFieldUnindexed('contacts:Birthday');
         }
         // Gender
-        /*
         if (!empty($so->Gender)) {
-            $rm[] = $this->updateFieldExtendedByTag('0x3A4D', 'String', $so->Gender);
+            $rm[] = $this->updateFieldExtendedByTag('14925', 'String', $so->Gender);
         }
         else {
-            $rd[] = $this->deleteFieldExtendedByTag('0x3A4D', 'String');
+            $rd[] = $this->deleteFieldExtendedByTag('14925', 'String');
         }
-        */
         // Partner
         if (!empty($so->Partner)) {
             $rm[] = $this->updateFieldUnindexed('contacts:SpouseName', 'SpouseName', $so->Partner);
