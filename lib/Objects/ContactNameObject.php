@@ -45,7 +45,7 @@ class ContactNameObject {
         ?string $suffix = null,
         ?string $phoneticlast = null,
         ?string $phoneticfirst = null,
-        ?string $aliases = null,
+        ?string $aliases = null
     ) {
         $this->Last = $last;
         $this->First = $first;

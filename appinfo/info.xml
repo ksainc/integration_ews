@@ -13,13 +13,12 @@
     </documentation>
     <category>integration</category>
     <website>https://github.com/ksainc/integration_ews</website>
-    <discussion></discussion>
+    <discussion>https://github.com/ksainc/integration_ews/issues</discussion>
     <bugs>https://github.com/ksainc/integration_ews/issues</bugs>
     <repository>https://github.com/ksainc/integration_ews</repository>
     <screenshot>https://github.com/ksainc/integration_ews/blob/main/img/EWS%20Notification%20Screen.png?raw=true</screenshot>
     <dependencies>
-        <nextcloud min-version="25" max-version="28"/>
-        <php min-version="7.4" max-version="8.2"  min-int-size="64" />
+        <php min-version="8.0" max-version="8.2"  min-int-size="64" />
         <database min-version="9.4">pgsql</database>
         <database>sqlite</database>
         <database min-version="5.5">mysql</database>
@@ -28,6 +27,7 @@
         <command>kill</command>
         <lib>curl</lib>
         <lib>soap</lib>
+        <nextcloud min-version="26" max-version="28"/>
     </dependencies>
     <commands>
 		<command>OCA\EWS\Commands\Connect</command>
