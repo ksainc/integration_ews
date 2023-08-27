@@ -696,5 +696,6 @@ class ClassMap
         'InstalledAppType' => 'OCA\\EWS\\Components\\EWS\\Type\\InstalledAppType',
         'StringArrayAttributedValueType' => 'OCA\\EWS\\Components\\EWS\\Type\\StringArrayAttributedValueType',
         'TransitionType' => 'OCA\\EWS\\Components\\EWS\\Type\\TransitionType',
+        'FlagType' => 'OCA\\EWS\\Components\\EWS\\Type\\FlagType',
     ];
 }
