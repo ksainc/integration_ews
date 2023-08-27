@@ -75,9 +75,9 @@ The following is a very long list of things that work and limitations.
 - Supported Authentications: Basic, NTLM, OAuth2
 - Passive (scheduled) and Active (live) Syncronization
 - Account Auto Discovery
-- Calendar Syncronization
-- Contacts Syncronization
-- Tasks Syncronization
+- Personal and Public Calendar Syncronization
+- Personal and Public Contacts Syncronization
+- Personal and Public Tasks Syncronization
 - Mail App Integration
 
 About 95% of the properties between Nextcloud and EWS are transferable and supported for both Contacts, Calendars and Tasks, some properties are limited due to the limitations of both systems.
