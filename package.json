@@ -1,6 +1,6 @@
 {
 	"name": "integration_ews",
-	"description": "EWS Integration",
+	"description": "EWS Connector",
 	"version": "1.0.0-alpha",
 	"author": "Sebastian Krupinski",
 	"license": "AGPL-3.0",
