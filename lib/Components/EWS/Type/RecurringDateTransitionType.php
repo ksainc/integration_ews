@@ -2,8 +2,10 @@
 //declare(strict_types=1);
 
 /**
+* @copyright Copyright (c) 2023 Sebastian Krupinski <krupinski01@gmail.com>
 * @copyright Copyright (c) 2016 James I. Armes http://jamesarmes.com/
-*
+* 
+* @author Sebastian Krupinski <krupinski01@gmail.com>
 * @author James I. Armes http://jamesarmes.com/
 *
 * @license AGPL-3.0-or-later
