@@ -81,18 +81,21 @@ class RemoteTasksService {
 	 * retrieve list of collections in remote storage
      * 
      * @since Release 1.0.0
+	 * 
+	 * @param string $source		folder source (U - User Folders, P - Public Folders)
+	 * @param string $prefixName	string to append to folder name
 	 *
 	 * @return array of collections and properties
 	 */
-	public function listCollections(): array {
+	public function listCollections(string $source = 'U', string $prefixName = ''): array {
 
 		// execute command
-		$cr = $this->RemoteCommonService->fetchFoldersByType($this->DataStore, 'IPF.Task', 'I', $this->constructDefaultCollectionProperties());
+		$cr = $this->RemoteCommonService->fetchFoldersByType($this->DataStore, 'IPF.Task', 'I', $this->constructDefaultCollectionProperties(), $source);
 		// process response
 		$cl = array();
 		if (isset($cr)) {
 			foreach ($cr->TasksFolder as $folder) {
-				$cl[] = array('id'=>$folder->FolderId->Id, 'name'=>$folder->DisplayName,'count'=>$folder->TotalCount);
+				$cl[] = array('id'=>$folder->FolderId->Id, 'name'=>$prefixName . $folder->DisplayName,'count'=>$folder->TotalCount);
 			}
 		}
 		// return collections

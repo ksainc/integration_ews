@@ -125,14 +125,20 @@ class RemoteCommonService {
 	 * 
 	 * @return object Folder Object on success / Null on failure
 	 */
-	public function fetchFoldersByType(EWSClient $DataStore, string $type, string $base = 'D', object $additional = null): object {
+	public function fetchFoldersByType(EWSClient $DataStore, string $type, string $base = 'D', object $additional = null, string $source = 'U'): object {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\FindFolderType();
 		$request->FolderShape = new \OCA\EWS\Components\EWS\Type\FolderResponseShapeType();
 		// define start
 		$request->ParentFolderIds = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfBaseFolderIdsType();
-		$request->ParentFolderIds->DistinguishedFolderId[] = new \OCA\EWS\Components\EWS\Type\DistinguishedFolderIdType('root');
+		if ($source == 'P') {
+			$request->ParentFolderIds->DistinguishedFolderId[] = new \OCA\EWS\Components\EWS\Type\DistinguishedFolderIdType('publicfoldersroot');
+		}
+		else {
+			$request->ParentFolderIds->DistinguishedFolderId[] = new \OCA\EWS\Components\EWS\Type\DistinguishedFolderIdType('msgfolderroot');
+		}
+		
 		// define recursion
 		$request->Traversal = 'Deep';
 		// define required base properties

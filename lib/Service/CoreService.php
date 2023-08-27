@@ -563,22 +563,32 @@ class CoreService {
 		
 		// create remote store client
 		$RemoteStore = $this->createClient($uid);
-		// assign remote data store and settings
-		$this->RemoteContactsService->DataStore = $RemoteStore;
-		$this->RemoteEventsService->DataStore = $RemoteStore;
-		$this->RemoteTasksService->DataStore = $RemoteStore;
-		
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
-		// retrieve local collections
+		// retrieve remote collections
 		if ($this->ConfigurationService->isContactsAppAvailable()) {
-			$response['ContactCollections'] = $this->RemoteContactsService->listCollections();
+			// assign remote data store
+			$this->RemoteContactsService->DataStore = $RemoteStore;
+			// retrieve remote personal collections
+			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('U', 'Personal - '));
+			// retrieve remote public collections
+			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable()) {
-			$response['EventCollections'] = $this->RemoteEventsService->listCollections();
+			// assign remote data store
+			$this->RemoteEventsService->DataStore = $RemoteStore;
+			// retrieve remote personal collections
+			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('U', 'Personal - '));
+			// retrieve remote public collections
+			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
 		}
 		if ($this->ConfigurationService->isTasksAppAvailable()) {
-			$response['TaskCollections'] = $this->RemoteTasksService->listCollections();
+			// assign remote data store
+			$this->RemoteTasksService->DataStore = $RemoteStore;
+			// retrieve remote personal collections
+			$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('U', 'Personal - '));
+			// retrieve remote public collections
+			$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('P', 'Public - '));
 		}
 		// return response
 		return $response;
