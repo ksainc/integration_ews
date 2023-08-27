@@ -74,22 +74,38 @@ class HarmonizationLauncher extends TimedJob {
         // evaluate harmonization mode
         // active mode
         if ($this->ConfigurationService->getHarmonizationMode() == 'A') {
-            // retrieve thread id
-            $tid = $this->HarmonizationThreadService->getId($uid);
-            // evaluate if thread is live and launch new thred if needed
-            if (!$this->HarmonizationThreadService->isActive($uid, $tid)) {
-                // launch new thread
-                $tid = $this->HarmonizationThreadService->launch($uid);
-            }
+            try {
 
-            if ($tid > 0) {
-                $this->HarmonizationThreadService->setId($uid, $tid);
-                $this->HarmonizationThreadService->setHeartBeat($uid, time());
+                // retrieve thread id
+                $tid = $this->HarmonizationThreadService->getId($uid);
+                // evaluate if thread is live and launch new thred if needed
+                if (!$this->HarmonizationThreadService->isActive($uid, $tid)) {
+                    // launch new thread
+                    $tid = $this->HarmonizationThreadService->launch($uid);
+                }
+
+                if ($tid > 0) {
+                    $this->HarmonizationThreadService->setId($uid, $tid);
+                    $this->HarmonizationThreadService->setHeartBeat($uid, time());
+                }
+                
+            } catch (\Throwable $e) {
+                $logger->error("Harmonization launcher encountered an error while starting a thread for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+            } catch (\Exception $e) {
+                $logger->error("Harmonization launcher encountered an error while starting a thread for $uid", ['app' => 'integration_ews', 'exception' => $e]);
             }
         }
         // passive mode
         else {
-            $this->HarmonizationService->performHarmonization($uid);
+            try {
+
+                $this->HarmonizationService->performHarmonization($uid);
+            
+            } catch (\Throwable $e) {
+                $logger->error("Harmonization launcher encountered an error while harmonizing for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+            } catch (\Exception $e) {
+                $logger->error("Harmonization launcher encountered an error while harmonizing for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+            }
         } 
     }
 }
