@@ -125,7 +125,7 @@ class RemoteCommonService {
 	 * 
 	 * @return object Folder Object on success / Null on failure
 	 */
-	public function fetchFoldersByType(EWSClient $DataStore, string $type, string $base = 'D', object $additional = null, string $source = 'U'): object {
+	public function fetchFoldersByType(EWSClient $DataStore, string $type, string $base = 'D', object $additional = null, string $source = 'U'): ?object {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\FindFolderType();
