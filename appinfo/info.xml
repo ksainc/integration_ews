@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>integration_ews</id>
-    <name>EWS Connector</name>
+    <name>Exchange EWS Connector (Exchange Web Services)</name>
     <summary>Exchange Server data sync with Nextcloud</summary>
-    <description><![CDATA[EWS Connector allows you to automatically sync your calendars and contacts with Nextcloud.]]></description>
+    <description><![CDATA[Exchange EWS Connector (Exchange Web Services) allows you to automatically sync your calendars and contacts from any EWS compatible service with Nextcloud.]]></description>
     <version>1.0.0-alpha</version>
     <licence>agpl</licence>
     <author mail="krupinski01@gmail.com">Sebastian Krupinski</author>
