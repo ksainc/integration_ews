@@ -65,12 +65,27 @@ class Microsoft365 {
 		$data = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
 
 		if (is_array($data)) {
+
+            $email = '';
+            $name = '';
+            if (isset($data['id_token'])) {
+                $id = json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $data['id_token'])[1]))));
+                if (isset($id->email)) {
+                    $email = $id->email;
+                }
+                if (isset($id->name)) {
+                    $name = $id->name;
+                }
+            }
+
 			return [
                 'access' => $data['access_token'],
                 'expiry' => (int) $data['expires_in'] + time(),
                 'refresh' => $data['refresh_token'],
                 'service_server' => self::ServiceServer,
                 'service_protocol' => self::ServiceProtocol,
+                'email' => $email,
+                'name' => $name
             ];
 		} else {
 			return null;
@@ -102,19 +117,34 @@ class Microsoft365 {
                 'client_id' => $aid,
                 'client_secret' => $asecret,
                 'grant_type' => 'refresh_token',
-                'scope' => 'https://outlook.office.com/EWS.AccessAsUser.All offline_access',
+                'scope' => 'https://outlook.office.com/EWS.AccessAsUser.All offline_access openid email',
                 'refresh_token' => $code,
             ],
         ]);
 		$data = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
 
 		if (is_array($data)) {
+
+            $email = '';
+            $name = '';
+            if (isset($data['id_token'])) {
+                $id = json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.', $data['id_token'])[1]))));
+                if (isset($id->email)) {
+                    $email = $id->email;
+                }
+                if (isset($id->name)) {
+                    $name = $id->name;
+                }
+            }
+
 			return [
                 'access' => $data['access_token'],
                 'expiry' => (int) $data['expires_in'] + time(),
                 'refresh' => $data['refresh_token'],
                 'service_server' => self::ServiceServer,
                 'service_protocol' => self::ServiceProtocol,
+                'email' => $email,
+                'name' => $name
             ];
 		} else {
 			return null;
@@ -135,6 +165,5 @@ class Microsoft365 {
 				'&response_type=code' . 
 				'&scope=' . urlencode('https://outlook.office.com/EWS.AccessAsUser.All') .
 				'&redirect_uri=' . urlencode($UrlGenerator->getAbsoluteURL('/apps/integration_ews/connect-ms365'));
-            }
-
+    }
 }

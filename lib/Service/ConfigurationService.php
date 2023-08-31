@@ -60,6 +60,7 @@ class ConfigurationService {
 		'account_server' => '',
 		'account_id' => '',
 		'account_secret' => '',
+		'account_name' => '',
 		'account_protocol' => 'Exchange2007',
 		'account_connected' => '0',
 		'account_harmonization_state' => '0',
@@ -166,14 +167,15 @@ class ConfigurationService {
 	 * 
 	 * @return void
 	 */
-	public function depositAuthenticationBasic(string $uid, string $server, string $protocol, string $id, string $secret): void {
+	public function depositAuthenticationBasic(string $uid, string $server, string $protocol, string $id, string $secret, string $name = ''): void {
 		
 		// deposit user authentication parameters
 		$this->depositUserValue($uid, 'account_server', $server);
 		$this->depositUserValue($uid, 'account_protocol', $protocol);
 		$this->depositUserValue($uid, 'account_id', $id);
 		$this->depositUserValue($uid, 'account_secret', $this->_cs->encrypt($secret));
-		
+		$this->depositUserValue($uid, 'account_name', $id);
+
 	}
 
 	/**
@@ -212,7 +214,7 @@ class ConfigurationService {
 	 * 
 	 * @return void
 	 */
-	public function depositAuthenticationOAuth(string $uid, string $server, string $protocol, string $token, string $expiry, string $refresh): void {
+	public function depositAuthenticationOAuth(string $uid, string $server, string $protocol, string $token, string $expiry, string $refresh, string $id = '', string $name = ''): void {
 		
 		// deposit user oauth authentication parameters
 		$this->depositUserValue($uid, 'account_server', $server);
@@ -220,6 +222,8 @@ class ConfigurationService {
 		$this->depositUserValue($uid, 'account_oauth_access', $this->_cs->encrypt($token));
 		$this->depositUserValue($uid, 'account_oauth_expiry', $expiry);
 		$this->depositUserValue($uid, 'account_oauth_refresh', $this->_cs->encrypt($refresh));
+		$this->depositUserValue($uid, 'account_id', $id);
+		$this->depositUserValue($uid, 'account_name', $name);
 
 	}
 

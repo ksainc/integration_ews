@@ -1,6 +1,6 @@
 {
 	"name": "nextcloud/integration_ews",
-	"description": "EWS Integration",
+	"description": "EWS Connector",
 	"type": "project",
 	"license": "AGPL-3.0-or-later",
 	"authors": [
@@ -32,7 +32,7 @@
 			"composer/package-versions-deprecated": true
 		},
 		"platform": {
-			"php": "7.4"
+			"php": "8.1"
 		}
 	}
 }

@@ -428,18 +428,20 @@
 						</template>
 						{{ t('integration_ews', 'Sync') }}
 					</NcButton>
-					<NcButton @click="onTestClick('C')">
-						<template #icon>
-							<LinkIcon />
-						</template>
-						{{ t('integration_ews', 'Create Test Data') }}
-					</NcButton>
-					<NcButton @click="onTestClick('D')">
-						<template #icon>
-							<LinkIcon />
-						</template>
-						{{ t('integration_ews', 'Delete Test Data') }}
-					</NcButton>
+					<span v-if="false">
+						<NcButton @click="onTestClick('C')">
+							<template #icon>
+								<LinkIcon />
+							</template>
+							{{ t('integration_ews', 'Create Test Data') }}
+						</NcButton>
+						<NcButton @click="onTestClick('D')">
+							<template #icon>
+								<LinkIcon />
+							</template>
+							{{ t('integration_ews', 'Delete Test Data') }}
+						</NcButton>
+					</span>
 				</div>
 			</div>
 		</div>
