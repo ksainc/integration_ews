@@ -367,7 +367,9 @@ class CoreService {
 				$data['service_protocol'],
 				$data['access'],
 				(int) $data['expiry'],
-				$data['refresh']
+				$data['refresh'],
+				$data['email'],
+				$data['name']
 			);
 			// deposit configuration to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
@@ -409,7 +411,9 @@ class CoreService {
 				$data['service_protocol'],
 				$data['access'],
 				(int) $data['expiry'],
-				$data['refresh']
+				$data['refresh'],
+				$data['email'],
+				$data['name']
 			);
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
 			$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
