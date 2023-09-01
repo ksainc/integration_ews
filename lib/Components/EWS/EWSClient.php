@@ -212,8 +212,7 @@ class EWSClient extends \SoapClient
     /**
      * {@inheritdoc}
      */
-    public function __doRequest($request, $location, $action, $version, $one_way = 0): null|string
-    {
+    public function __doRequest($request, $location, $action, $version, $one_way = 0): null|string {
         // clear last headers and response
         $this->__last_headers = '';
         $this->__last_response = '';
@@ -262,24 +261,20 @@ class EWSClient extends \SoapClient
         $this->__last_headers = substr($response, 0, $size);
         $this->__last_response = substr($response, $size);
 
-        $this->cleanResponse();
-
         return $this->__last_response;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function __getLastRequestHeaders(): null|string
-    {
+    public function __getLastRequestHeaders(): null|string {
         return implode("\n", $this->__last_headers) . "\n";
     }
 
     /**
      * Builds the soap headers to be included with the request.
      */
-    protected function constructSoapHeaders()
-    {
+    protected function constructSoapHeaders(): void {
         // construct place holder
         $headers = [];
         // Set the schema version.
@@ -312,15 +307,14 @@ class EWSClient extends \SoapClient
 
     }
 
-    protected function constructLocation()
-    {
+    protected function constructLocation(): void {
         // set service location
         self::__setLocation($this->_transport_mode . $this->server . $this->_transport_path);
 
     }
 
-    protected function constructAuthentication()
-    {
+    protected function constructAuthentication(): void {
+
         // set service basiic authentication
         if ($this->authentication instanceof AuthenticationBasic) {
             $this->_http_options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM;
@@ -336,56 +330,128 @@ class EWSClient extends \SoapClient
 
     }
 
+    public function configureTransportVersion(int $value): void {
+        
+        // store parameter
+        $this->_http_options[CURLOPT_HTTP_VERSION] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+
+    }
+    
+    public function configureTransportMode(string $value): void {
+
+        // store parameter
+        $this->_transport_mode = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+        // reconstruct service location
+        $this->constructLocation();
+
+    }
+
+    public function configureTransportPath(string $value): void {
+
+        // store parameter
+        $this->_transport_path = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+        // reconstruct service location
+        $this->constructLocation();
+
+    }
+
+    public function configureTransportAgent(string $value): void {
+
+        // store parameter
+        $this->_http_options[CURLOPT_USERAGENT] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+
+    }
+
+    public function configureTransportOptions(array $options): void {
+
+        // store parameter
+        $this->_http_options = array_replace($this->_http_options, $options);
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+
+    }
+
+    public function configureTransportVerification(bool $value): void {
+
+        // store parameter
+        $this->_http_options[CURLOPT_SSL_VERIFYPEER] = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+
+    }
+
     /**
-     * Sets the server property
+     * Gets the server parameter
+     *
+     * @return string
+     */
+    public function getServer(): string {
+        
+        // return version information
+        return $this->server;
+
+    }
+
+    /**
+     * Sets the server parameter to be used for all requests
      *
      * @param string $server
      */
-    public function setServer($server)
-    {
-        $this->server = $server;
+    public function setServer(string $value): void {
 
+        // store server
+        $this->server = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
         // reconstruct service location
         $this->constructLocation();
+
     }
 
     /**
-     * Sets the user name property
+     * Gets the protocol version parameter
      *
-     * @param string $username
+     * @return string
      */
-    public function setUsername($username)
-    {
-        $this->username = $username;
+    public function getVersion(): string {
+        
+        // return version information
+        return $this->version;
 
-        // assign http options
-        $this->constructAuthentication();
     }
 
     /**
-     * Sets the password property
+     * Sets the protocol version parameter to be used for all requests
      *
-     * @param string $password
+     * @param string $value
      */
-    public function setPassword($password)
-    {
-        $this->password = $password;
+    public function setVersion(string $value): void {
 
-        // assign http options
-        $this->constructAuthentication();
-    }
-
-    /**
-     * Sets the version property
-     *
-     * @param string $version
-     */
-    public function setVersion($version)
-    {
-        $this->version = $version;
-
+        // store version
+        $this->version = $value;
         // We need to re-build the SOAP headers.
         $this->constructSoapHeaders();
+
+    }
+
+    /**
+     * Gets the timezone parameter
+     *
+     * @return string
+     */
+    public function getTimezone(): string {
+        
+        // return timezone information
+        return $this->timezone;
+
     }
 
     /**
@@ -393,111 +459,69 @@ class EWSClient extends \SoapClient
      *
      * @param string $timezone
      */
-    public function setTimezone($timezone)
-    {
-        $this->timezone = $timezone;
+    public function setTimezone(string $value): void {
 
+        // store timezone
+        $this->timezone = $value;
         // We need to re-build the SOAP headers.
         $this-constructSoapHeaders();
+
     }
 
     /**
-     * Sets the impersonation property
+     * Gets the impersonation parameters object
+     *
+     * @return \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType
+     */
+    public function getImpersonation(): mixed {
+        
+        // return impersonation information
+        return $this->impersonation;
+
+    }
+
+    /**
+     * Sets the impersonation parameters to be used for all requests
      *
      * @param \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType $impersonation
      */
-    public function setImpersonation($impersonation)
-    {
-        $this->impersonation = $impersonation;
+    public function setImpersonation($value): void {
 
+        // store impersonation
+        $this->impersonation = $value;
         // SOAP headers need to be rebuilt
         $this->constructSoapHeaders();
+
     }
 
-    public function configureTransportVersion(int $value)
-    {
-        $this->_http_options[CURLOPT_HTTP_VERSION] = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-    }
-    
-    public function configureTransportMode(string $value)
-    {
-        $this->_transport_mode = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-        // reconstruct service location
-        $this->constructLocation();
-    }
-
-    public function configureTransportPath(string $value)
-    {
-        $this->_transport_path = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-        // reconstruct service location
-        $this->constructLocation();
-    }
-
-    public function configureTransportAgent(string $value)
-    {
-        $this->_http_options[CURLOPT_USERAGENT] = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-    }
-
-    public function configureTransportOptions(array $options)
-    {
-        $this->_http_options = array_replace($this->_http_options, $options);
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-    }
-
-    public function configureTransportAuthenticationMode(int $value)
-    {
-        $this->_http_options[CURLOPT_SSL_VERIFYPEER] = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-    }
-
-    public function configureTransportVerification(bool $value)
-    {
-        $this->_http_options[CURLOPT_SSL_VERIFYPEER] = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-    }
-
-    /**
-     * Cleans the response body by stripping bad characters if instructed to.
+     /**
+     * Gets the authentication parameters object
+     *
+     * @return AuthenticationBasic|AuthenticationBeare
      */
-    protected function cleanResponse()
-    {
-        // If the option to strip bad characters is not set, then we shouldn't
-        // do anything here.
-        /*
-        if (!$this->options['strip_bad_chars']) {
-            return;
-        }
+    public function getAuthentication(): AuthenticationBasic|AuthenticationBearer {
+        
+        // return authentication information
+        return $this->authentication;
 
-        // Strip invalid characters from the XML response body.
-        $count = 0;
-        $this->__last_response = preg_replace(
-            '/(?!&#x0?([9AD]))(&#x[0-1]?[0-9A-F];)/',
-            ' ',
-            $this->__last_response,
-            -1,
-            $count
-        );
-
-        // If the option to warn on bad characters is set, and some characters
-        // were stripped, then trigger a warning.
-        if ($this->options['warn_on_bad_chars'] && $count > 0) {
-            trigger_error(
-                'Invalid characters were stripped from the XML SOAP response.',
-                E_USER_WARNING
-            );
-        }
-        */
     }
+
+     /**
+     * Sets the authentication parameters to be used for all requests
+     *
+     * @param AuthenticationBasic|AuthenticationBearer $value
+     */
+    public function setAuthentication(AuthenticationBasic|AuthenticationBearer $value): void {
+        
+        // store parameter
+        $this->authentication = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+        // construct service authentication
+        $this->constructAuthentication();
+
+    }
+
+
 
 }

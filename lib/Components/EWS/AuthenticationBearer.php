@@ -28,8 +28,10 @@ namespace OCA\EWS\Components\EWS;
 class AuthenticationBearer
 {
     public string $Token;
+    public int $Expiry;
 
-    public function __construct (string $token = '') {
+    public function __construct (string $token = '', int $expiry = 0) {
         $this->Token = $token;
+        $this->Expiry = $expiry;
     }
 }
