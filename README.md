@@ -1,4 +1,4 @@
-# EWS Connector in Nextcloud
+# Exchange EWS Connector (Exchange Web Services) for Nextcloud
 
 EWS (Exchange Web Services) integration allows you to automatically bidirectionally synchronize your Nextcloud calendars and contacts with an external EWS protocol capable system like Microsoft Exchange, Kerio Connect, etc
 
@@ -20,7 +20,7 @@ Once your accounts is connected and the remote calendars and contacts folders ar
 
 ##### WARNING
 
-This is an initial release. Although the app has been thoroughly tested in our environment with live data, we recommend creating a new address book and calendar in both the local and remote systems and linking them together first. Testing the functionality then once satisfied with the results, unlink the test address books/calendars and linking to your live data. To assist in the testing process there are two function buttons "Create Test Data" and "Delete Test Data". The create button will automatically create a new address book and calendar on both systems and populate it with some random contacts and events.
+This is an initial alpha release. Although the app has been thoroughly tested in our environment with live data, we recommend creating a new address book and calendar in both the local and remote systems and linking them together first. Testing the functionality then once satisfied with the results, unlink the test address books/calendars and linking to your live data.
 
 ## How it works
 
@@ -60,11 +60,11 @@ This app has some minimal requirements for passive synchronization and a few mor
 
 ## Installation
 
-It will be available through the Nextcloud app store soon.
+Please read the requirements section and make sure the PHP requirements are met.
 
-But at the moment this app needs to be installed manually by coping all the files to the Nextcloud apps folder (Installation Folder)/apps/integration_ews. Make sure to change the owner of the files to same user as your server.
+Then search for "Exchange EWS Connector" in your apps manager, click download then enable.
 
-Once the files are in place, proceed to the apps administration screen and enable it.
+Configure the application in the personal settings section.
 
 ## Capabilities and Limitations
 
