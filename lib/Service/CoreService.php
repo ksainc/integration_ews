@@ -770,9 +770,10 @@ class CoreService {
 	 */
 	public function createClient(string $uid): EWSClient {
 
-		if (!$this->RemoteStore instanceof EWSClient) {
-			switch ($this->ConfigurationService->retrieveProvider($uid)) {
-				case ConfigurationService::ProviderMS365:
+		switch ($this->ConfigurationService->retrieveProvider($uid)) {
+			case ConfigurationService::ProviderMS365:
+				// evaluate, if client does not exists or token is expired
+				if (!$this->RemoteStore instanceof EWSClient || $this->RemoteStore->getAuthentication()->Expiry < time()) {
 					// retrieve connection information
 					$ac = $this->ConfigurationService->retrieveAuthenticationOAuth($uid);
 
@@ -787,7 +788,10 @@ class CoreService {
 						new \OCA\EWS\Components\EWS\AuthenticationBearer($ac['account_oauth_access']), 
 						$ac['account_protocol']);
 					break;
-				case ConfigurationService::ProviderAlternate:
+				}
+			case ConfigurationService::ProviderAlternate:
+				// evaluate, if client does not exists
+				if (!$this->RemoteStore instanceof EWSClient) {
 					// retrieve connection information
 					$ac = $this->ConfigurationService->retrieveAuthenticationBasic($uid);
 					// construct remote data store client
@@ -796,9 +800,9 @@ class CoreService {
 						new \OCA\EWS\Components\EWS\AuthenticationBasic($ac['account_id'], $ac['account_secret']), 
 						$ac['account_protocol']);
 					break;
-			}
+				}
 		}
-
+		
 		return $this->RemoteStore;
 
 	}
