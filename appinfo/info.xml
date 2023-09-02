@@ -4,7 +4,7 @@
     <name>Exchange EWS Connector (Exchange Web Services)</name>
     <summary>Exchange Server data sync with Nextcloud</summary>
     <description><![CDATA[Exchange EWS Connector (Exchange Web Services) allows you to automatically sync your calendars and contacts from any EWS compatible service with Nextcloud.]]></description>
-    <version>1.0.0-alpha</version>
+    <version>1.0.1-alpha</version>
     <licence>agpl</licence>
     <author mail="krupinski01@gmail.com">Sebastian Krupinski</author>
     <namespace>EWS</namespace>
@@ -18,10 +18,10 @@
     <repository>https://github.com/ksainc/integration_ews</repository>
     <screenshot>https://github.com/ksainc/integration_ews/blob/main/img/EWS%20Notification%20Screen.png?raw=true</screenshot>
     <dependencies>
-        <php min-version="8.0" max-version="8.2"  min-int-size="64" />
-        <database min-version="9.4">pgsql</database>
+        <php min-version="8.0"  min-int-size="64" />
+        <database>pgsql</database>
         <database>sqlite</database>
-        <database min-version="5.5">mysql</database>
+        <database>mysql</database>
         <command>php</command>
         <command>ps</command>
         <command>kill</command>

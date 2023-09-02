@@ -1,11 +1,14 @@
 {
 	"name": "nextcloud/integration_ews",
-	"description": "EWS Connector",
+	"description": "Exchange EWS Connector (Exchange Web Services)",
 	"type": "project",
 	"license": "AGPL-3.0-or-later",
 	"authors": [
 		{
-			"name": "Sebastian Krupinski"
+			"name": "Sebastian Krupinski",
+			"email": "krupinski01@gmail.com",
+            "homepage": "https://github.com/ksainc/",
+            "role": "Just another Minion in the cogs of time"
 		}
 	],
 	"require-dev": {
