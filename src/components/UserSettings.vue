@@ -41,7 +41,7 @@
 				<div v-if="state.account_provider == 'MS365'">
 					<div class="fields">
 						<div v-if="state.system_ms365_authrization_uri === ''">
-							{{ t('integration_ews', 'No Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 connected accounts admin section.') }}
+							{{ t('integration_ews', 'Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 in the EWS Connector section in the administration section.') }}
 						</div>
 						<div v-else class="ews-connect-ms365">
 							<label>

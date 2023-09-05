@@ -56,7 +56,7 @@ class Microsoft365 {
                 'client_id' => $aid,
                 'client_secret' => $asecret,
                 'grant_type' => 'authorization_code',
-                'scope' => 'https://outlook.office.com/EWS.AccessAsUser.All offline_access',
+                'scope' => 'https://outlook.office.com/EWS.AccessAsUser.All offline_access openid email',
                 'redirect_uri' => $UrlGenerator->getAbsoluteURL('/apps/integration_ews/connect-ms365'),
                 'code' => $code,
             ],
@@ -152,18 +152,35 @@ class Microsoft365 {
 
 	}
 
+    /**
+	 * Generate MS365 Authorization URL
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @return string
+	 */
     public static function constructAuthorizationUrl(): string {
         
+        // Load required modules
         $ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
         $UrlGenerator = \OC::$server->get(\OCP\IURLGenerator::class);
-
+        // retrieve required application parameters
         $tid = $ConfigurationService->retrieveSystemValue('ms365_tenant_id');
-		$aid = $ConfigurationService->retrieveSystemValue('ms365_application_id');
-
-        return 'https://login.microsoftonline.com/' . $tid . '/oauth2/v2.0/authorize' .
-				'?client_id=' . urlencode($aid) . 
-				'&response_type=code' . 
-				'&scope=' . urlencode('https://outlook.office.com/EWS.AccessAsUser.All') .
-				'&redirect_uri=' . urlencode($UrlGenerator->getAbsoluteURL('/apps/integration_ews/connect-ms365'));
+        $aid = $ConfigurationService->retrieveSystemValue('ms365_application_id');
+        $asecret = $ConfigurationService->retrieveSystemValue('ms365_application_secret');
+        // evaluate if required parameters
+        if (!empty($tid) && !empty($aid) && !empty($asecret)) {
+            // return authorization url
+            return 'https://login.microsoftonline.com/' . $tid . '/oauth2/v2.0/authorize' .
+                    '?client_id=' . urlencode($aid) . 
+                    '&response_type=code' . 
+                    '&scope=' . urlencode('https://outlook.office.com/EWS.AccessAsUser.All') .
+                    '&redirect_uri=' . urlencode($UrlGenerator->getAbsoluteURL('/apps/integration_ews/connect-ms365'));
+        }
+        else {
+            // return empty string
+            return '';
+        }
+        
     }
 }
