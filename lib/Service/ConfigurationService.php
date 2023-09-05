@@ -52,6 +52,16 @@ class ConfigurationService {
 	];
 
 	/**
+	 * Default System Secure Parameters 
+	 * @var array
+	 * */
+	private const _SYSTEM_SECURE = [
+		'ms365_tenant_id' => 1,
+		'ms365_application_id' => 1,
+		'ms365_application_secret' => 1,
+	];
+
+	/**
 	 * Default User Configuration 
 	 * @var array
 	 * */
@@ -81,6 +91,16 @@ class ConfigurationService {
 		'tasks_harmonize' => '5',
 		'tasks_prevalence' => 'R',
 		'tasks_attachment_path' => '/Tasks',
+	];
+
+	/**
+	 * Default User Secure Parameters 
+	 * @var array
+	 * */
+	private const _USER_SECURE = [
+		'account_secret' => 1,
+		'account_oauth_access' => 1,
+		'account_oauth_refresh' => 1,
 	];
 
 	/** @var LoggerInterface */
@@ -148,7 +168,7 @@ class ConfigurationService {
 		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
 		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
 		$parameters['account_id'] = $this->retrieveUserValue($uid, 'account_id');
-		$parameters['account_secret'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_secret'));
+		$parameters['account_secret'] = $this->retrieveUserValue($uid, 'account_secret');
 		// return configuration parameters
 		return $parameters;
 
@@ -173,7 +193,7 @@ class ConfigurationService {
 		$this->depositUserValue($uid, 'account_server', $server);
 		$this->depositUserValue($uid, 'account_protocol', $protocol);
 		$this->depositUserValue($uid, 'account_id', $id);
-		$this->depositUserValue($uid, 'account_secret', $this->_cs->encrypt($secret));
+		$this->depositUserValue($uid, 'account_secret', $secret);
 		$this->depositUserValue($uid, 'account_name', $id);
 
 	}
@@ -193,9 +213,9 @@ class ConfigurationService {
 		$parameters = [];
 		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
 		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
-		$parameters['account_oauth_access'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_access'));
+		$parameters['account_oauth_access'] = $this->retrieveUserValue($uid, 'account_oauth_access');
 		$parameters['account_oauth_expiry'] = $this->retrieveUserValue($uid, 'account_oauth_expiry');
-		$parameters['account_oauth_refresh'] = $this->_cs->decrypt($this->retrieveUserValue($uid, 'account_oauth_refresh'));
+		$parameters['account_oauth_refresh'] = $this->retrieveUserValue($uid, 'account_oauth_refresh');
 		// return configuration parameters
 		return $parameters;
 
@@ -219,9 +239,9 @@ class ConfigurationService {
 		// deposit user oauth authentication parameters
 		$this->depositUserValue($uid, 'account_server', $server);
 		$this->depositUserValue($uid, 'account_protocol', $protocol);
-		$this->depositUserValue($uid, 'account_oauth_access', $this->_cs->encrypt($token));
+		$this->depositUserValue($uid, 'account_oauth_access', $token);
 		$this->depositUserValue($uid, 'account_oauth_expiry', $expiry);
-		$this->depositUserValue($uid, 'account_oauth_refresh', $this->_cs->encrypt($refresh));
+		$this->depositUserValue($uid, 'account_oauth_refresh', $refresh);
 		$this->depositUserValue($uid, 'account_id', $id);
 		$this->depositUserValue($uid, 'account_name', $name);
 
@@ -298,6 +318,10 @@ class ConfigurationService {
 		$value = $this->_ds->getUserValue($uid, Application::APP_ID, $key);
 		// evaluate if value was returned
 		if (!empty($value)) {
+			// evaluate if parameter is on the secure list
+			if (isset(self::_USER_SECURE[$key])) {
+				$value = $this->_cs->decrypt($value);
+			}
 			// return configuration parameter value
 			return $value;
 		} else {
@@ -339,6 +363,12 @@ class ConfigurationService {
 	 */
 	public function depositUserValue(string $uid, string $key, string $value): void {
 		
+		// trim whitespace
+		$value = trim($value);
+		// evaluate if parameter is on the secure list
+		if (isset(self::_USER_SECURE[$key]) && !empty($value)) {
+			$value = $this->_cs->encrypt($value);
+		}
 		// deposit user configuration parameter value
 		$this->_ds->setUserValue($uid, Application::APP_ID, $key, $value);
 
@@ -410,30 +440,6 @@ class ConfigurationService {
 	}
 
 	/**
-	 * Retrieves single system configuration parameter
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $key	configuration parameter key
-	 * 
-	 * @return string configuration parameter value
-	 */
-	public function retrieveSystemValue(string $key): string {
-
-		// retrieve configured parameter value
-		$value = $this->_ds->getAppValue(Application::APP_ID, $key);
-		// evaluate if value was returned
-		if (!empty($value)) {
-			// return configuration parameter value
-			return $value;
-		} else {
-			// return default system configuration value
-			return self::_SYSTEM[$key];
-		}
-
-	}
-
-	/**
 	 * Deposit collection of system configuration parameters
 	 * 
 	 * @since Release 1.0.0
@@ -452,6 +458,33 @@ class ConfigurationService {
 	}
 
 	/**
+	 * Retrieves single system configuration parameter
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $key	configuration parameter key
+	 * 
+	 * @return string configuration parameter value
+	 */
+	public function retrieveSystemValue(string $key): string {
+
+		// retrieve configured parameter value
+		$value = $this->_ds->getAppValue(Application::APP_ID, $key);
+		// evaluate if value was returned
+		if (!empty($value)) {
+			if (isset(self::_SYSTEM_SECURE[$key])) {
+				$value = $this->_cs->decrypt($value);
+			}
+			// return configuration parameter value
+			return $value;
+		} else {
+			// return default system configuration value
+			return self::_SYSTEM[$key];
+		}
+
+	}
+
+	/**
 	 * Deposit single system configuration parameter
 	 * 
 	 * @since Release 1.0.0
@@ -463,6 +496,12 @@ class ConfigurationService {
 	 */
 	public function depositSystemValue(string $key, string $value): void {
 		
+		// trim whitespace
+		$value = trim($value);
+		// evaluate if parameter is on the secure list
+		if (isset(self::_SYSTEM_SECURE[$key]) && !empty($value)) {
+			$value = $this->_cs->encrypt($value);
+		}
 		// deposit system configuration parameter value
 		$this->_ds->setAppValue(Application::APP_ID, $key, $value);
 
