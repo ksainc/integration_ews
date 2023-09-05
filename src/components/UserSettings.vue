@@ -561,7 +561,7 @@ export default {
 		onConnectMS365Click() {
 			const ssoWindow = window.open(
 				this.state.system_ms365_authrization_uri,
-				t('integration_onedrive', 'Sign in Nextcloud EWS Connector'),
+				t('integration_ews', 'Sign in Nextcloud EWS Connector'),
 				' width=600, height=700'
 			)
 			ssoWindow.focus()
