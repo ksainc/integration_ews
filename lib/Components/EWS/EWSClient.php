@@ -153,6 +153,14 @@ class EWSClient extends \SoapClient
      * @var CurlHandle
      */
     protected $_client;
+
+    /**
+     * last response information
+     *
+     * @var string
+     */
+    protected $__last_headers;
+    protected $__last_response;
     
     /**
      * Constructor for the ExchangeWebServices class

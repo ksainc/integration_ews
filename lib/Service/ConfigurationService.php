@@ -114,7 +114,7 @@ class ConfigurationService {
 
 	public function __construct(LoggerInterface $logger, IConfig $config, ICrypto $crypto)
 	{
-		$this->logger = $logger;
+		$this->_logger = $logger;
 		$this->_ds = $config;
 		$this->_cs = $crypto;
 	}

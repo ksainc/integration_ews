@@ -81,6 +81,10 @@ class CoreService {
 	 */
 	private $CorrelationsService;
 	/**
+	 * @var HarmonizationThreadService
+	 */
+	private $HarmonizationThreadService;
+	/**
 	 * @var LocalContactsService
 	 */
 	private $LocalContactsService;
@@ -104,6 +108,22 @@ class CoreService {
 	 * @var RemoteTasksService
 	 */
 	private $RemoteTasksService;
+	/**
+	 * @var RemoteCommonService
+	 */
+	private $RemoteCommonService;
+	/**
+	 * @var ContactsService
+	 */
+	private $ContactsService;
+	/**
+	 * @var EventsService
+	 */
+	private $EventsService;
+	/**
+	 * @var TasksService
+	 */
+	private $TasksService;
 	/**
 	 * @var CardDavBackend
 	 */
