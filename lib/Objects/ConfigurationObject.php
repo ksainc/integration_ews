@@ -38,12 +38,16 @@ class ConfigurationObject {
 	public string $ContactsPresentation = '';
 	public int $EventsHarmonize = -1;				// events harmonize
 	public string $EventsPrevalence = '';			// events prevalence
+	public string $EventsAttachmentPath = '';
 	public int $TasksHarmonize = -1;				// tasks harmonize
 	public string $TasksPrevalence = '';			// tasks prevalence
+	public string $TasksAttachmentPath = '';
 	public ?DateTimeZone $EventsTimezone = null;
 	public string $AccountProvider = '';
 	public string $AccountId = '';
+	public string $AccountServer = '';
 	public string $AccountProtocol = '';
 	public string $AccountConnected = '';
+	
 	
 }
