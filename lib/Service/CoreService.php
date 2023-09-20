@@ -306,7 +306,6 @@ class CoreService {
 			return false;
 		}
 
-
 		// evaluate validate flag
 		if (in_array("VALIDATE", $flags)) {
 			// construct remote data store client
@@ -314,6 +313,11 @@ class CoreService {
 				$account_server, 
 				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_id, $account_secret), 
 				'Exchange2007');
+
+			// retrieve and evaluate transport verification option
+			if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
+				$RemoteStore->configureTransportVerification(false);
+			}
 			// retrieve root folder attributes
 			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
 			// evaluate server response
@@ -330,9 +334,11 @@ class CoreService {
 		}
 		else {
 			$connect = true;
+		}
+		// evaluate if account protocol has been set.
+		if (empty(trim($account_protocol))) {
 			$account_protocol = 'Exchange2010';
 		}
-
 		// evaluate connect status
 		if ($connect) {
 			// deposit authentication to datastore
@@ -807,6 +813,10 @@ class CoreService {
 						$ac['account_server'], 
 						new \OCA\EWS\Components\EWS\AuthenticationBearer($ac['account_oauth_access']), 
 						$ac['account_protocol']);
+					// retrieve and evaluate transport verification option
+					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
+						$RemoteStore->configureTransportVerification(true);
+					}
 					break;
 				}
 			case ConfigurationService::ProviderAlternate:
@@ -819,6 +829,10 @@ class CoreService {
 						$ac['account_server'], 
 						new \OCA\EWS\Components\EWS\AuthenticationBasic($ac['account_id'], $ac['account_secret']), 
 						$ac['account_protocol']);
+					// retrieve and evaluate transport verification option
+					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
+						$RemoteStore->configureTransportVerification(true);
+					}
 					break;
 				}
 		}

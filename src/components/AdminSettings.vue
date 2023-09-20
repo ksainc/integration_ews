@@ -67,6 +67,11 @@
 						{{ t('integration_ews', 'Seconds') }}
 					</label>
 				</div>
+				<div>
+					<NcCheckboxRadioSwitch :checked.sync="transportVerification" type="switch">
+						{{ t('integration_ews', 'Secure Transport Verification (SSL Certificate Verification). Should always be ON, unless connecting to a Exchange system over an internal LAN.') }}
+					</NcCheckboxRadioSwitch>
+				</div>
 			</div>
 			<br>
 			<div>
@@ -133,6 +138,7 @@ import { loadState } from '@nextcloud/initial-state'
 import { showSuccess, showError } from '@nextcloud/dialogs'
 
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 import NcSelect from '@nextcloud/vue/dist/Components/NcSelect.js'
 
 import EwsIcon from './icons/EwsIcon.vue'
@@ -143,6 +149,7 @@ export default {
 
 	components: {
 		NcButton,
+		NcCheckboxRadioSwitch,
 		NcSelect,
 		EwsIcon,
 		CheckIcon,
@@ -158,12 +165,21 @@ export default {
 	},
 
 	computed: {
+		transportVerification: {
+			get: function() {
+				return (this.state.transport_verification === '1') ? true : false
+			},
+			set: function(value) {
+				this.state.transport_verification = (value === true) ? '1' : '0'
+			}
+		}
 	},
 
 	methods: {
 		onSaveClick() {
 			const req = {
 				values: {
+					transport_verification: this.state.transport_verification,
 					harmonization_mode: this.state.harmonization_mode,
 					harmonization_thread_duration: this.state.harmonization_thread_duration,
 					harmonization_thread_pause: this.state.harmonization_thread_pause,
