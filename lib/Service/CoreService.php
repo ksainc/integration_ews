@@ -312,20 +312,22 @@ class CoreService {
 			$RemoteStore = new EWSClient(
 				$account_server, 
 				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_id, $account_secret), 
-				'Exchange2007');
-
+				'Exchange2007'
+			);
 			// retrieve and evaluate transport verification option
 			if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
 				$RemoteStore->configureTransportVerification(false);
 			}
+			// enable transport body retention
+			$RemoteStore->retainTransportResponseBody(true);
 			// retrieve root folder attributes
 			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
 			// evaluate server response
 			if (isset($rs)) {
-				// extract server version from response
+				// extract server version from response body message
 				preg_match_all(
 					'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
-					$RemoteStore->__last_response,
+					$RemoteStore->discloseTransportResponseBody(),
 					$match
 				);
 				$account_protocol = $match[2][0];
