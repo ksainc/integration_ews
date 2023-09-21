@@ -209,6 +209,48 @@ class ConfigurationService {
 	}
 
 	/**
+	 * Deposit collection of system configuration parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid			nextcloud user id
+	 * @param array $parameters		collection of key/value pairs, of parameters
+	 * 
+	 * @return void
+	 */
+	public function depositUser($uid, array $parameters): void {
+		
+		// deposit system configuration parameters
+		foreach ($parameters as $key => $value) {
+			$this->depositUserValue($uid, $key, $value);
+		}
+
+	}
+
+	/**
+	 * Destroy collection of system configuration parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * @param array $keys		collection of configuration parameter keys
+	 * 
+	 * @return void
+	 */
+	public function destroyUser(string $uid, ?array $keys = null): void {
+
+		// evaluate if we are looking for specific parameters
+		if (!isset($keys) || count($keys) == 0) {
+			$keys = $this->_ds->getUserKeys($uid, Application::APP_ID);
+		}
+		// destroy system configuration parameter
+		foreach ($keys as $entry) {
+			$this->destroyUserValue($uid, $entry);
+		}
+
+	}
+	
+	/**
 	 * Retrieves single system configuration parameter
 	 * 
 	 * @since Release 1.0.0
@@ -238,25 +280,6 @@ class ConfigurationService {
 	}
 
 	/**
-	 * Deposit collection of system configuration parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid			nextcloud user id
-	 * @param array $parameters		collection of key/value pairs, of parameters
-	 * 
-	 * @return void
-	 */
-	public function depositUser($uid, array $parameters): void {
-		
-		// deposit system configuration parameters
-		foreach ($parameters as $key => $value) {
-			$this->depositUserValue($uid, $key, $value);
-		}
-
-	}
-
-	/**
 	 * Deposit single system configuration parameter
 	 * 
 	 * @since Release 1.0.0
@@ -277,29 +300,6 @@ class ConfigurationService {
 		}
 		// deposit user configuration parameter value
 		$this->_ds->setUserValue($uid, Application::APP_ID, $key, $value);
-
-	}
-
-	/**
-	 * Destroy collection of system configuration parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid		nextcloud user id
-	 * @param array $keys		collection of configuration parameter keys
-	 * 
-	 * @return void
-	 */
-	public function destroyUser(string $uid, ?array $keys = null): void {
-
-		// evaluate if we are looking for specific parameters
-		if (!isset($keys) || count($keys) == 0) {
-			$keys = $this->_ds->getUserKeys($uid, Application::APP_ID);
-		}
-		// destroy system configuration parameter
-		foreach ($keys as $entry) {
-			$this->destroyUserValue($uid, $entry);
-		}
 
 	}
 
@@ -363,6 +363,29 @@ class ConfigurationService {
 
 	}
 
+	
+	/**
+	 * Destroy collection of system configuration parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param array $keys	collection of configuration parameter keys
+	 * 
+	 * @return void
+	 */
+	public function destroySystem(?array $keys = null): void {
+
+		// evaluate if we are looking for specific parameters
+		if (!isset($keys) || count($keys) == 0) {
+			$keys = $this->_ds->getAppKeys(Application::APP_ID);
+		}
+		// destroy system configuration parameter
+		foreach ($keys as $entry) {
+			$this->destroySystemValue($entry);
+		}
+
+	}
+
 	/**
 	 * Retrieves single system configuration parameter
 	 * 
@@ -410,28 +433,6 @@ class ConfigurationService {
 		}
 		// deposit system configuration parameter value
 		$this->_ds->setAppValue(Application::APP_ID, $key, $value);
-
-	}
-
-	/**
-	 * Destroy collection of system configuration parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param array $keys	collection of configuration parameter keys
-	 * 
-	 * @return void
-	 */
-	public function destroySystem(?array $keys = null): void {
-
-		// evaluate if we are looking for specific parameters
-		if (!isset($keys) || count($keys) == 0) {
-			$keys = $this->_ds->getAppKeys(Application::APP_ID);
-		}
-		// destroy system configuration parameter
-		foreach ($keys as $entry) {
-			$this->destroySystemValue($entry);
-		}
 
 	}
 
