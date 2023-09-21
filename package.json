@@ -1,7 +1,7 @@
 {
 	"name": "integration_ews",
 	"description": "Exchange EWS Connector (Exchange Web Services)",
-	"version": "1.0.3-beta",
+	"version": "1.0.4-beta",
 	"author": "Sebastian Krupinski <krupinski01@gmail.com> (https://github.com/ksainc/)",
 	"license": "AGPL-3.0",
 	"private": true,
@@ -30,6 +30,7 @@
 		"npm": "^9.0.0"
 	},
 	"dependencies": {
+		"20": "^1.0.0",
 		"@nextcloud/auth": "^2.1.0",
 		"@nextcloud/axios": "^2.4.0",
 		"@nextcloud/dialogs": "^4.1.0",
@@ -40,6 +41,7 @@
 		"@nextcloud/paths": "^2.1.0",
 		"@nextcloud/router": "^2.1.2",
 		"@nextcloud/vue": "^7.12.2",
+		"node": "^20.6.0",
 		"vue": "^2.7.14",
 		"vue-material-design-icons": "^5.2.0"
 	},
