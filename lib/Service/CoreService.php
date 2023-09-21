@@ -357,7 +357,7 @@ class CoreService {
 		}
 
 		// evaluate validate flag
-		if (in_array("CONNECT_MAIL", $flags)) {
+		if (in_array("CONNECT_MAIL", $flags) && isset($configuration)) {
 			$this->connectMail($uid, $configuration);
 		}
 
