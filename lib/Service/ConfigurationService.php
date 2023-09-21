@@ -267,9 +267,13 @@ class ConfigurationService {
 		$value = $this->_ds->getUserValue($uid, Application::APP_ID, $key);
 		// evaluate if value was returned
 		if ($value != '') {
-			// evaluate if parameter is on the secure list
-			if (isset(self::_USER_SECURE[$key])) {
-				$value = $this->_cs->decrypt($value);
+			// evaluate if parameter is on the secure list and is not empty
+			if (isset(self::_USER_SECURE[$key]) && !empty($value)) {
+				try {
+					$value = $this->_cs->decrypt($value);
+				} catch (\Throwable $th) {
+					// Do nothing just return the original value
+				}
 			}
 			// return configuration parameter value
 			return $value;
@@ -402,8 +406,13 @@ class ConfigurationService {
 		$value = $this->_ds->getAppValue(Application::APP_ID, $key);
 		// evaluate if value was returned
 		if ($value != '') {
-			if (isset(self::_SYSTEM_SECURE[$key])) {
-				$value = $this->_cs->decrypt($value);
+			// evaluate if parameter is on the secure list and is not empty
+			if (isset(self::_SYSTEM_SECURE[$key])  && !empty($value)) {
+				try {
+					$value = $this->_cs->decrypt($value);
+				} catch (\Throwable $th) {
+					// Do nothing just return the original value
+				}
 			}
 			// return configuration parameter value
 			return $value;
