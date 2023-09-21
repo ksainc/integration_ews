@@ -70,7 +70,8 @@ class ConfigurationService {
 		'account_provider' => 'A',
 		'account_server' => '',
 		'account_id' => '',
-		'account_secret' => '',
+		'account_bauth_id' => '',
+		'account_bauth_secret' => '',
 		'account_name' => '',
 		'account_protocol' => 'Exchange2007',
 		'account_connected' => '0',
@@ -99,7 +100,7 @@ class ConfigurationService {
 	 * @var array
 	 * */
 	private const _USER_SECURE = [
-		'account_secret' => 1,
+		'account_bauth_secret' => 1,
 		'account_oauth_access' => 1,
 		'account_oauth_refresh' => 1,
 	];
