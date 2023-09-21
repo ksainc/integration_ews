@@ -66,6 +66,10 @@ class LocalTasksService {
 	 * @var LazyUserFolder
 	 */
 	public ?LazyUserFolder $FileStore = null;
+    /**
+	 * @var TasksUtile
+	 */
+    private $TasksUtile;
 
 	public function __construct (string $appName, LoggerInterface $logger, TasksUtile $TasksUtile) {
 		$this->logger = $logger;

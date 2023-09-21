@@ -38,6 +38,10 @@ class AdminSettings implements ISettings {
 	 * @var IInitialState
 	 */
 	private $initialStateService;
+	/**
+	 * @var ConfigurationService
+	 */
+	private $ConfigurationService;
 
 	public function __construct(IInitialState $initialStateService, ConfigurationService $ConfigurationService) {
 		$this->initialStateService = $initialStateService;

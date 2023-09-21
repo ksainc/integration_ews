@@ -43,6 +43,7 @@ class ConfigurationService {
 	 * @var array
 	 * */
 	private const _SYSTEM = [
+		'transport_verification' => '1',
 		'harmonization_mode' => 'P',
 		'harmonization_thread_duration' => '3600',
 		'harmonization_thread_pause' => '15',
@@ -114,7 +115,7 @@ class ConfigurationService {
 
 	public function __construct(LoggerInterface $logger, IConfig $config, ICrypto $crypto)
 	{
-		$this->logger = $logger;
+		$this->_logger = $logger;
 		$this->_ds = $config;
 		$this->_cs = $crypto;
 	}
@@ -149,101 +150,6 @@ class ConfigurationService {
 		
 		// deposit account provider
 		$this->depositUserValue($uid, 'account_provider', $id);
-
-	}
-
-	/**
-	 * Retrieves user basic authentication parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid	nextcloud user id
-	 * 
-	 * @return array of key/value pairs, of parameters
-	 */
-	public function retrieveAuthenticationBasic(string $uid): array {
-		
-		// retrieve user authentication parameters
-		$parameters = [];
-		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
-		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
-		$parameters['account_id'] = $this->retrieveUserValue($uid, 'account_id');
-		$parameters['account_secret'] = $this->retrieveUserValue($uid, 'account_secret');
-		// return configuration parameters
-		return $parameters;
-
-	}
-
-	/**
-	 * Deposit user basic authentication parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid			nextcloud user id
-	 * @param string $server		FQDN or IP
-	 * @param string $protocol		account protocol version
-	 * @param string $id			account username
-	 * @param string $secret		account secret
-	 * 
-	 * @return void
-	 */
-	public function depositAuthenticationBasic(string $uid, string $server, string $protocol, string $id, string $secret, string $name = ''): void {
-		
-		// deposit user authentication parameters
-		$this->depositUserValue($uid, 'account_server', $server);
-		$this->depositUserValue($uid, 'account_protocol', $protocol);
-		$this->depositUserValue($uid, 'account_id', $id);
-		$this->depositUserValue($uid, 'account_secret', $secret);
-		$this->depositUserValue($uid, 'account_name', $id);
-
-	}
-
-	/**
-	 * Retrieves user oauth authentication parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid	nextcloud user id
-	 * 
-	 * @return array of key/value pairs, of parameters
-	 */
-	public function retrieveAuthenticationOAuth(string $uid): array {
-		
-		// retrieve user authentication parameters
-		$parameters = [];
-		$parameters['account_server'] = $this->retrieveUserValue($uid, 'account_server');
-		$parameters['account_protocol'] = $this->retrieveUserValue($uid, 'account_protocol');
-		$parameters['account_oauth_access'] = $this->retrieveUserValue($uid, 'account_oauth_access');
-		$parameters['account_oauth_expiry'] = $this->retrieveUserValue($uid, 'account_oauth_expiry');
-		$parameters['account_oauth_refresh'] = $this->retrieveUserValue($uid, 'account_oauth_refresh');
-		// return configuration parameters
-		return $parameters;
-
-	}
-
-	/**
-	 * Deposit user oauth authentication parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid			nextcloud user id
-	 * @param string $server		FQDN or IP 
-	 * @param string $token			oauth token
-	 * @param string $expiry		oauth expiry timestamp
-	 * @param string $refresh		oauth refresh code
-	 * 
-	 * @return void
-	 */
-	public function depositAuthenticationOAuth(string $uid, string $server, string $protocol, string $token, string $expiry, string $refresh, string $id = '', string $name = ''): void {
-		
-		// deposit user oauth authentication parameters
-		$this->depositUserValue($uid, 'account_server', $server);
-		$this->depositUserValue($uid, 'account_protocol', $protocol);
-		$this->depositUserValue($uid, 'account_oauth_access', $token);
-		$this->depositUserValue($uid, 'account_oauth_expiry', $expiry);
-		$this->depositUserValue($uid, 'account_oauth_refresh', $refresh);
-		$this->depositUserValue($uid, 'account_id', $id);
-		$this->depositUserValue($uid, 'account_name', $name);
 
 	}
 
@@ -303,35 +209,6 @@ class ConfigurationService {
 	}
 
 	/**
-	 * Retrieves single system configuration parameter
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid		nextcloud user id
-	 * @param string $key		configuration parameter key
-	 * 
-	 * @return string configuration parameter value
-	 */
-	public function retrieveUserValue(string $uid, string $key): string {
-
-		// retrieve configured parameter value
-		$value = $this->_ds->getUserValue($uid, Application::APP_ID, $key);
-		// evaluate if value was returned
-		if (!empty($value)) {
-			// evaluate if parameter is on the secure list
-			if (isset(self::_USER_SECURE[$key])) {
-				$value = $this->_cs->decrypt($value);
-			}
-			// return configuration parameter value
-			return $value;
-		} else {
-			// return default system configuration value
-			return self::_USER[$key];
-		}
-
-	}
-
-	/**
 	 * Deposit collection of system configuration parameters
 	 * 
 	 * @since Release 1.0.0
@@ -346,6 +223,58 @@ class ConfigurationService {
 		// deposit system configuration parameters
 		foreach ($parameters as $key => $value) {
 			$this->depositUserValue($uid, $key, $value);
+		}
+
+	}
+
+	/**
+	 * Destroy collection of system configuration parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * @param array $keys		collection of configuration parameter keys
+	 * 
+	 * @return void
+	 */
+	public function destroyUser(string $uid, ?array $keys = null): void {
+
+		// evaluate if we are looking for specific parameters
+		if (!isset($keys) || count($keys) == 0) {
+			$keys = $this->_ds->getUserKeys($uid, Application::APP_ID);
+		}
+		// destroy system configuration parameter
+		foreach ($keys as $entry) {
+			$this->destroyUserValue($uid, $entry);
+		}
+
+	}
+	
+	/**
+	 * Retrieves single system configuration parameter
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param string $uid		nextcloud user id
+	 * @param string $key		configuration parameter key
+	 * 
+	 * @return string configuration parameter value
+	 */
+	public function retrieveUserValue(string $uid, string $key): string {
+
+		// retrieve configured parameter value
+		$value = $this->_ds->getUserValue($uid, Application::APP_ID, $key);
+		// evaluate if value was returned
+		if ($value != '') {
+			// evaluate if parameter is on the secure list
+			if (isset(self::_USER_SECURE[$key])) {
+				$value = $this->_cs->decrypt($value);
+			}
+			// return configuration parameter value
+			return $value;
+		} else {
+			// return default system configuration value
+			return self::_USER[$key];
 		}
 
 	}
@@ -371,29 +300,6 @@ class ConfigurationService {
 		}
 		// deposit user configuration parameter value
 		$this->_ds->setUserValue($uid, Application::APP_ID, $key, $value);
-
-	}
-
-	/**
-	 * Destroy collection of system configuration parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $uid		nextcloud user id
-	 * @param array $keys		collection of configuration parameter keys
-	 * 
-	 * @return void
-	 */
-	public function destroyUser(string $uid, ?array $keys = null): void {
-
-		// evaluate if we are looking for specific parameters
-		if (!isset($keys) || count($keys) == 0) {
-			$keys = $this->_ds->getUserKeys($uid, Application::APP_ID);
-		}
-		// destroy system configuration parameter
-		foreach ($keys as $entry) {
-			$this->destroyUserValue($uid, $entry);
-		}
 
 	}
 
@@ -457,6 +363,29 @@ class ConfigurationService {
 
 	}
 
+	
+	/**
+	 * Destroy collection of system configuration parameters
+	 * 
+	 * @since Release 1.0.0
+	 * 
+	 * @param array $keys	collection of configuration parameter keys
+	 * 
+	 * @return void
+	 */
+	public function destroySystem(?array $keys = null): void {
+
+		// evaluate if we are looking for specific parameters
+		if (!isset($keys) || count($keys) == 0) {
+			$keys = $this->_ds->getAppKeys(Application::APP_ID);
+		}
+		// destroy system configuration parameter
+		foreach ($keys as $entry) {
+			$this->destroySystemValue($entry);
+		}
+
+	}
+
 	/**
 	 * Retrieves single system configuration parameter
 	 * 
@@ -471,7 +400,7 @@ class ConfigurationService {
 		// retrieve configured parameter value
 		$value = $this->_ds->getAppValue(Application::APP_ID, $key);
 		// evaluate if value was returned
-		if (!empty($value)) {
+		if ($value != '') {
 			if (isset(self::_SYSTEM_SECURE[$key])) {
 				$value = $this->_cs->decrypt($value);
 			}
@@ -504,28 +433,6 @@ class ConfigurationService {
 		}
 		// deposit system configuration parameter value
 		$this->_ds->setAppValue(Application::APP_ID, $key, $value);
-
-	}
-
-	/**
-	 * Destroy collection of system configuration parameters
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param array $keys	collection of configuration parameter keys
-	 * 
-	 * @return void
-	 */
-	public function destroySystem(?array $keys = null): void {
-
-		// evaluate if we are looking for specific parameters
-		if (!isset($keys) || count($keys) == 0) {
-			$keys = $this->_ds->getAppKeys(Application::APP_ID);
-		}
-		// destroy system configuration parameter
-		foreach ($keys as $entry) {
-			$this->destroySystemValue($entry);
-		}
 
 	}
 

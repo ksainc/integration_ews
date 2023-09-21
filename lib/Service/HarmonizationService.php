@@ -96,6 +96,26 @@ class HarmonizationService {
 	 * @var RemoteTasksService
 	 */
 	private $RemoteTasksService;
+	/**
+	 * @var RemoteCommonService
+	 */
+	private $RemoteCommonService;
+	/**
+	 * @var ContactsService
+	 */
+	private $ContactsService;
+	/**
+	 * @var EventsService
+	 */
+	private $EventsService;
+	/**
+	 * @var TasksService
+	 */
+	private $TasksService;
+	/**
+	 * @var HarmonizationThreadService
+	 */
+	private $HarmonizationThreadService;
 	
 
 	public function __construct (string $appName,

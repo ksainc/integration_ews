@@ -39,6 +39,10 @@ class UserSettings implements ISettings {
 	 */
 	private $initialStateService;
 	/**
+	 * @var ConfigurationService
+	 */
+	private $ConfigurationService;
+	/**
 	 * @var string|null
 	 */
 	private $userId;

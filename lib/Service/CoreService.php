@@ -81,6 +81,10 @@ class CoreService {
 	 */
 	private $CorrelationsService;
 	/**
+	 * @var HarmonizationThreadService
+	 */
+	private $HarmonizationThreadService;
+	/**
 	 * @var LocalContactsService
 	 */
 	private $LocalContactsService;
@@ -104,6 +108,22 @@ class CoreService {
 	 * @var RemoteTasksService
 	 */
 	private $RemoteTasksService;
+	/**
+	 * @var RemoteCommonService
+	 */
+	private $RemoteCommonService;
+	/**
+	 * @var ContactsService
+	 */
+	private $ContactsService;
+	/**
+	 * @var EventsService
+	 */
+	private $EventsService;
+	/**
+	 * @var TasksService
+	 */
+	private $TasksService;
 	/**
 	 * @var CardDavBackend
 	 */
@@ -167,16 +187,16 @@ class CoreService {
 	 * 
 	 * @since Release 1.0.0
 	 * 
-	 * @param string $uid				nextcloud user id
-	 * @param string $account_id		account username
-	 * @param string $account_secret	account secret
+	 * @param string $uid					nextcloud user id
+	 * @param string $account_bauth_id		account username
+	 * @param string $account_bauth_secret	account secret
 	 * 
 	 * @return object
 	 */
-	public function locateAccount(string $account_id, string $account_secret): ?object {
+	public function locateAccount(string $account_bauth_id, string $account_bauth_secret): ?object {
 
 		// construct locator
-		$locator = new Autodiscover($account_id, $account_secret);
+		$locator = new Autodiscover($account_bauth_id, $account_bauth_secret);
 		// find configuration
 		$result = $locator->discover();
 
@@ -187,7 +207,7 @@ class CoreService {
 			$o->UserDisplayName = $data['User']['DisplayName'];
 			$o->UserEMailAddress = $data['User']['EMailAddress'];
 			$o->UserSMTPAddress = $data['User']['AutoDiscoverSMTPAddress'];
-			$o->UserSecret = $account_secret;
+			$o->UserSecret = $account_bauth_secret;
 
 			foreach ($data['Account']['Protocol'] as $entry) {
 				// evaluate if type is EXCH
@@ -247,15 +267,15 @@ class CoreService {
 	 * 
 	 * @since Release 1.0.0
 	 * 
-	 * @param string $uid				nextcloud user id
-	 * @param string $account_id		account username
-	 * @param string $account_secret	account secret
-	 * @param string $account_server	FQDN or IP
+	 * @param string $uid					nextcloud user id
+	 * @param string $account_bauth_id		account username
+	 * @param string $account_bauth_secret	account secret
+	 * @param string $account_server		FQDN or IP
 	 * @param array $flags
 	 * 
 	 * @return bool
 	 */
-	public function connectAccountAlternate(string $uid, string $account_id, string $account_secret, string $account_server = '', array $flags = []): bool {
+	public function connectAccountAlternate(string $uid, string $account_bauth_id, string $account_bauth_secret, string $account_server = '', array $flags = []): bool {
 
 		// define connect status place holder
 		$connect = false;
@@ -264,7 +284,7 @@ class CoreService {
 		// evaluate if provider is empty
 		if (empty($account_server) || in_array('CONNECT_MAIL', $flags)) {
 			// locate provider
-			$configuration = $this->locateAccount($account_id, $account_secret);
+			$configuration = $this->locateAccount($account_bauth_id, $account_bauth_secret);
 			//
 			if (isset($configuration->EXCH->Server)) {
 				$account_server = $configuration->EXCH->Server;
@@ -277,31 +297,37 @@ class CoreService {
 		}
 
 		// validate id
-		if (!\OCA\EWS\Utile\Validator::username($account_id)) {
+		if (!\OCA\EWS\Utile\Validator::username($account_bauth_id)) {
 			return false;
 		}
 
 		// validate secret
-		if (empty($account_secret)) {
+		if (empty($account_bauth_secret)) {
 			return false;
 		}
-
 
 		// evaluate validate flag
 		if (in_array("VALIDATE", $flags)) {
 			// construct remote data store client
 			$RemoteStore = new EWSClient(
 				$account_server, 
-				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_id, $account_secret), 
-				'Exchange2007');
+				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_bauth_id, $account_bauth_secret), 
+				'Exchange2007'
+			);
+			// retrieve and evaluate transport verification option
+			if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
+				$RemoteStore->configureTransportVerification(false);
+			}
+			// enable transport body retention
+			$RemoteStore->retainTransportResponseBody(true);
 			// retrieve root folder attributes
 			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
 			// evaluate server response
 			if (isset($rs)) {
-				// extract server version from response
+				// extract server version from response body message
 				preg_match_all(
 					'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
-					$RemoteStore->__last_response,
+					$RemoteStore->discloseTransportResponseBody(),
 					$match
 				);
 				$account_protocol = $match[2][0];
@@ -310,16 +336,22 @@ class CoreService {
 		}
 		else {
 			$connect = true;
+		}
+		// evaluate if account protocol has been set.
+		if (empty(trim($account_protocol))) {
 			$account_protocol = 'Exchange2010';
 		}
-
 		// evaluate connect status
 		if ($connect) {
 			// deposit authentication to datastore
-			$this->ConfigurationService->depositAuthenticationBasic($uid, $account_server, $account_protocol, $account_id, $account_secret);
-			// deposit configuration to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderAlternate);
-			$this->ConfigurationService->depositUser($uid, ['account_connected' => '1']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $account_bauth_id);
+			$this->ConfigurationService->depositUserValue($uid, 'account_name', (string) $account_name);
+			$this->ConfigurationService->depositUserValue($uid, 'account_server', (string) $account_server);
+			$this->ConfigurationService->depositUserValue($uid, 'account_protocol', (string) $account_protocol);
+			$this->ConfigurationService->depositUserValue($uid, 'account_bauth_id', (string) $account_bauth_id);
+			$this->ConfigurationService->depositUserValue($uid, 'account_bauth_secret', (string) $account_bauth_secret);
+			$this->ConfigurationService->depositUserValue($uid, 'account_connected', 1);
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
 		}
@@ -343,6 +375,8 @@ class CoreService {
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid				nextcloud user id
+	 * @param string $code				authentication code
+	 * @param array $flags
 	 * 
 	 * @return bool
 	 */
@@ -360,19 +394,15 @@ class CoreService {
 		}
 
 		if (is_array($data)) {
-			// deposit authentication to datastore
-			$this->ConfigurationService->depositAuthenticationOAuth(
-				$uid,
-				$data['service_server'],
-				$data['service_protocol'],
-				$data['access'],
-				(int) $data['expiry'],
-				$data['refresh'],
-				$data['email'],
-				$data['name']
-			);
 			// deposit configuration to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
+			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $data['email']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_name', (string) $data['name']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_server', (string) $data['service_server']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_protocol', (string) $data['service_protocol']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_oauth_access', (string) $data['access']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_oauth_expiry', (string) $data['expiry']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_oauth_refresh', (string) $data['refresh']);
 			$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
@@ -390,6 +420,7 @@ class CoreService {
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid				nextcloud user id
+	 * @param string $code				authentication refresh code
 	 * 
 	 * @return bool
 	 */
@@ -405,17 +436,14 @@ class CoreService {
 		}
 
 		if (is_array($data)) {
-			$this->ConfigurationService->depositAuthenticationOAuth(
-				$uid,
-				$data['service_server'],
-				$data['service_protocol'],
-				$data['access'],
-				(int) $data['expiry'],
-				$data['refresh'],
-				$data['email'],
-				$data['name']
-			);
+			// deposit authentication to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderMS365);
+			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $data['email']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_name', (string) $data['name']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_server', (string) $data['service_server']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_oauth_access', (string) $data['access']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_oauth_expiry', (string) $data['expiry']);
+			$this->ConfigurationService->depositUserValue($uid, 'account_oauth_refresh', (string) $data['refresh']);
 			$this->ConfigurationService->depositUserValue($uid, 'account_connected', '1');
 
 			return true;
@@ -774,35 +802,54 @@ class CoreService {
 			case ConfigurationService::ProviderMS365:
 				// evaluate, if client does not exists or token is expired
 				if (!$this->RemoteStore instanceof EWSClient || $this->RemoteStore->getAuthentication()->Expiry < time()) {
-					// retrieve connection information
-					$ac = $this->ConfigurationService->retrieveAuthenticationOAuth($uid);
-
-					if ($ac['account_oauth_expiry'] < time()) {
-						$this->refreshAccountMS365($uid, $ac['account_oauth_refresh']);
-						// retrieve connection information again
-						$ac = $this->ConfigurationService->retrieveAuthenticationOAuth($uid);
+					// retrieve oauth expiry information
+					$account_oauth_expiry = (int) $this->ConfigurationService->retrieveUserValue($uid, 'account_oauth_expiry');
+					//evaluate if token expired
+					if ($account_oauth_expiry < time()) {
+						// retrieve refresh token information
+						$account_oauth_refresh = $this->ConfigurationService->retrieveUserValue($uid, 'account_oauth_refresh');
+						// refresh access token
+						$this->refreshAccountMS365($uid, $account_oauth_refresh);
 					}
+					// retrieve connection information
+					$account_server = $this->ConfigurationService->retrieveUserValue($uid, 'account_server');
+					$account_protocol = $this->ConfigurationService->retrieveUserValue($uid, 'account_protocol');
+					$account_oauth_access = $this->ConfigurationService->retrieveUserValue($uid, 'account_oauth_access');
+					$account_oauth_expiry = $this->ConfigurationService->retrieveUserValue($uid, 'account_oauth_expiry');
 					// construct remote data store client
 					$this->RemoteStore = new EWSClient(
-						$ac['account_server'], 
-						new \OCA\EWS\Components\EWS\AuthenticationBearer($ac['account_oauth_access']), 
-						$ac['account_protocol']);
-					break;
+						$account_server, 
+						new \OCA\EWS\Components\EWS\AuthenticationBearer($account_oauth_access, $account_oauth_expiry), 
+						$account_protocol
+					);
+					// retrieve and evaluate transport verification option
+					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
+						$this->RemoteStore->configureTransportVerification(true);
+					}
 				}
+				break;
 			case ConfigurationService::ProviderAlternate:
 				// evaluate, if client does not exists
 				if (!$this->RemoteStore instanceof EWSClient) {
 					// retrieve connection information
-					$ac = $this->ConfigurationService->retrieveAuthenticationBasic($uid);
+					$account_server = $this->ConfigurationService->retrieveUserValue($uid, 'account_server');
+					$account_protocol = $this->ConfigurationService->retrieveUserValue($uid, 'account_protocol');
+					$account_bauth_id = $this->ConfigurationService->retrieveUserValue($uid, 'account_bauth_id');
+					$account_bauth_secret = $this->ConfigurationService->retrieveUserValue($uid, 'account_bauth_secret');
 					// construct remote data store client
 					$this->RemoteStore = new EWSClient(
-						$ac['account_server'], 
-						new \OCA\EWS\Components\EWS\AuthenticationBasic($ac['account_id'], $ac['account_secret']), 
-						$ac['account_protocol']);
-					break;
+						$account_server, 
+						new \OCA\EWS\Components\EWS\AuthenticationBasic($account_bauth_id, $account_bauth_secret),
+						$account_protocol
+					);
+					// retrieve and evaluate transport verification option
+					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
+						$this->RemoteStore->configureTransportVerification(true);
+					}
 				}
+				break;
 		}
-		
+
 		return $this->RemoteStore;
 
 	}

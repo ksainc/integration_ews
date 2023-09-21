@@ -25,7 +25,6 @@
 
 namespace OCA\EWS\Components\EWS;
 
-use BadMethodCallException;
 use CurlHandle;
 use RuntimeException;
 
@@ -81,9 +80,16 @@ class EWSClient extends \SoapClient
     const SERVICE_VERSION_2010 = 'Exchange2010';
     const SERVICE_VERSION_2010_SP1 = 'Exchange2010_SP1';
     const SERVICE_VERSION_2010_SP2 = 'Exchange2010_SP2';
+    const SERVICE_VERSION_2012 = 'Exchange2012';
     const SERVICE_VERSION_2013 = 'Exchange2013';
     const SERVICE_VERSION_2013_SP1 = 'Exchange2013_SP1';
+    const SERVICE_VERSION_2015 = 'Exchange2015';
+    const SERVICE_VERSION_2015_1005 = 'V2015_10_05';
     const SERVICE_VERSION_2016 = 'Exchange2016';
+    const SERVICE_VERSION_2016_0106 = 'V2016_01_06';
+    const SERVICE_VERSION_2016_0413 = 'V2016_04_13';
+    const SERVICE_VERSION_2016_0713 = 'V2016_07_13';
+    const SERVICE_VERSION_2016_1010 = 'V2016_10_10';
 
     /**
      * Transport Type
@@ -117,6 +123,60 @@ class EWSClient extends \SoapClient
     protected string $_soap_description_file = DIRECTORY_SEPARATOR . 'Assets' . DIRECTORY_SEPARATOR . 'services.wsdl';
 
      /**
+     * cURL resource used to make the request
+     *
+     * @var CurlHandle
+     */
+    protected $_client;
+    /**
+     * Retain Last Transport Request Header Flag
+     *
+     * @var bool
+     */
+    protected $_TransportRequestHeaderFlag = false;
+    /**
+     * Retain Last Transport Request Body Flag
+     *
+     * @var bool
+     */
+    protected $_TransportRequestBodyFlag = false;
+    /**
+     * Last Transport Request Header Data
+     *
+     * @var string
+     */
+    protected $_TransportRequestHeaderData = '';
+    /**
+     * Last Transport Request Body Data
+     *
+     * @var string
+     */
+    protected $_TransportRequestBodyData = '';
+    /**
+     * Retain Last Transport Response Header Flag
+     *
+     * @var bool
+     */
+    protected $_TransportRepsonseHeaderFlag = false;
+    /**
+     * Retain Last Transport Response Body Flag
+     *
+     * @var bool
+     */
+    protected $_TransportRepsonseBodyFlag = false;
+    /**
+     * Last Transport Response Header Data
+     *
+     * @var string
+     */
+    protected $_TransportRepsonseHeaderData = '';
+    /**
+     * Last Transport Response Header Data
+     *
+     * @var string
+     */
+    protected $_TransportRepsonseBodyData = '';
+     /**
      * Location of the Exchange server.
      *
      * @var string
@@ -146,13 +206,6 @@ class EWSClient extends \SoapClient
      * @var \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType
      */
     protected $impersonation;
-
-    /**
-     * cURL resource used to make the request
-     *
-     * @var CurlHandle
-     */
-    protected $_client;
     
     /**
      * Constructor for the ExchangeWebServices class
@@ -209,13 +262,7 @@ class EWSClient extends \SoapClient
 		return $result;
 	}
 
-    /**
-     * {@inheritdoc}
-     */
     public function __doRequest($request, $location, $action, $version, $one_way = 0): null|string {
-        // clear last headers and response
-        $this->__last_headers = '';
-        $this->__last_response = '';
 
         // evaluate if http client is initilized and location is the same
         if (!isset($this->_client) || curl_getinfo($this->_client, CURLINFO_EFFECTIVE_URL) != $location) {
@@ -229,6 +276,12 @@ class EWSClient extends \SoapClient
         curl_setopt($this->_client, CURLOPT_HTTPHEADER, $header);
         // set request data
         curl_setopt($this->_client, CURLOPT_POSTFIELDS, $request);
+
+        // evaluate, if we are retaining request headers
+        if ($this->_TransportRequestHeaderFlag) { $this->_TransportRequestHeaderData = $header; }
+        // evaluate, if we are retaining request body
+        if ($this->_TransportRequestBodyFlag) { $this->_TransportRequestBodyData = $request; }
+
         // execute request
         $response = curl_exec($this->_client);
         // evealuate execution errors
@@ -256,24 +309,16 @@ class EWSClient extends \SoapClient
             }
         }
 
-        // Then, after your curl_exec call:
-        $size = curl_getinfo($this->_client, CURLINFO_HEADER_SIZE);
-        $this->__last_headers = substr($response, 0, $size);
-        $this->__last_response = substr($response, $size);
+        // extract header size
+        $header_size = curl_getinfo($this->_client, CURLINFO_HEADER_SIZE);
+        // evaluate, if we are retaining request headers
+        if ($this->_TransportRepsonseHeaderFlag) { $this->_TransportRepsonseHeaderData = substr($response, 0, $header_size); }
+        // evaluate, if we are retaining request body
+        if ($this->_TransportRepsonseBodyFlag) { $this->_TransportRepsonseBodyData = substr($response, $header_size); }
 
-        return $this->__last_response;
+        return substr($response, $header_size);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __getLastRequestHeaders(): null|string {
-        return implode("\n", $this->__last_headers) . "\n";
-    }
-
-    /**
-     * Builds the soap headers to be included with the request.
-     */
     protected function constructSoapHeaders(): void {
         // construct place holder
         $headers = [];
@@ -388,6 +433,37 @@ class EWSClient extends \SoapClient
 
     }
 
+    public function retainTransportRequestHeader(bool $value) {
+        $this->_TransportRequestHeaderFlag = $value;
+    }
+
+    public function retainTransportRequestBody(bool $value) {
+        $this->_TransportRequestBodyFlag = $value;
+    }
+
+    public function retainTransportResponseHeader(bool $value) {
+        $this->_TransportRepsonseHeaderFlag = $value;
+    }
+
+    public function retainTransportResponseBody(bool $value) {
+        $this->_TransportRepsonseBodyFlag = $value;
+    }
+
+    public function discloseTransportRequestHeader() {
+        return $this->_TransportRequestHeaderData;
+    }
+
+    public function discloseTransportRequestBody() {
+        return $this->_TransportRequestBodyData;
+    }
+
+    public function discloseTransportResponseHeader() {
+        return $this->_TransportRepsonseHeaderData;
+    }
+
+    public function discloseTransportResponseBody() {
+        return $this->_TransportRepsonseBodyData;
+    }
     /**
      * Gets the server parameter
      *

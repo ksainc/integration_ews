@@ -66,6 +66,10 @@ class LocalEventsService {
 	 * @var LazyUserFolder
 	 */
 	public ?LazyUserFolder $FileStore = null;
+    /**
+	 * @var EventsUtile
+	 */
+    private $EventsUtile;
 
 	public function __construct (string $appName, LoggerInterface $logger, EventsUtile $EventsUtile) {
 		$this->logger = $logger;

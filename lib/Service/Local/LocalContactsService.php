@@ -43,10 +43,14 @@ class LocalContactsService {
 	 * @var LoggerInterface
 	 */
 	private $logger;
-        /**
+    /**
 	 * @var CardDavBackend
 	 */
 	public ?CardDavBackend $DataStore = null;
+    /**
+	 * @var ContactsUtile
+	 */
+    private $ContactsUtile;
 
 	public function __construct (string $appName, LoggerInterface $logger, ContactsUtile $ContactsUtile) {
 		$this->logger = $logger;
