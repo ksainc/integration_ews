@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.5 - 2023-09-21
+### Modifications
+- Added migration script to change remote item id and sync token fileds to unlimited lenght
+- Modified mail app provisioning mechanisim. Do not attempt to configure mail app if autodiscovery failed.
+
 ## 1.0.3 - 2023-09-21
 ### Additions
 - Added ability to disable SSL verification
