@@ -1615,6 +1615,8 @@ class RemoteContactsService {
 
 		// create object
 		$o = new ContactObject();
+        // Origin
+		$o->Origin = 'R';
         // ID + State
         if (isset($data->ItemId)) {
             $o->ID = $data->ItemId->Id;

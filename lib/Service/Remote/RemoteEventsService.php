@@ -1724,6 +1724,7 @@ class RemoteEventsService {
 	 * @return EventObject item as EventObject
 	 */
 	public function toEventObject(CalendarItemType $data): EventObject {
+		
 		// create object
 		$o = new EventObject();
 		// Origin

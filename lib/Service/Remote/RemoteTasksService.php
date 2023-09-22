@@ -1456,6 +1456,7 @@ class RemoteTasksService {
 	 * @return TaskObject item as TaskObject
 	 */
 	public function toTaskObject(TaskType $data): TaskObject {
+		
 		// create object
 		$o = new TaskObject();
 		// Origin
