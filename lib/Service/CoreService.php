@@ -277,35 +277,39 @@ class CoreService {
 	 */
 	public function connectAccountAlternate(string $uid, string $account_bauth_id, string $account_bauth_secret, string $account_server = '', array $flags = []): bool {
 
-		// define connect status place holder
+		// define place holders
 		$connect = false;
-		$configuration = null;
+		$service_configuration = null;
 
-		// evaluate if provider is empty
+		// evaluate, if server is empty or connect mail app flag is set
 		if (empty($account_server) || in_array('CONNECT_MAIL', $flags)) {
-			// locate provider
-			$configuration = $this->locateAccount($account_bauth_id, $account_bauth_secret);
-			//
-			if (isset($configuration->EXCH->Server)) {
-				$account_server = $configuration->EXCH->Server;
+			// locate service information
+			$service_configuration = $this->locateAccount($account_bauth_id, $account_bauth_secret);
+			// evaluate, if ews server information exists in the located service information
+			if (isset($service_configuration->EXCH->Server)) {
+				$account_server = $service_configuration->EXCH->Server;
+			}
+			// evaluate, if account id information exists in the located service information
+			if (isset($service_configuration->UserEMailAddress)) {
+				$account_id = $service_configuration->UserEMailAddress;
+			}
+			// evaluate, if account name information exists in the located service information
+			if (isset($service_configuration->UserDisplayName)) {
+				$account_name = $service_configuration->UserDisplayName;
 			}
 		}
-
 		// validate server
 		if (!\OCA\EWS\Utile\Validator::host($account_server)) {
 			return false;
 		}
-
-		// validate id
+		// validate auth id
 		if (!\OCA\EWS\Utile\Validator::username($account_bauth_id)) {
 			return false;
 		}
-
-		// validate secret
+		// validate auth secret
 		if (empty($account_bauth_secret)) {
 			return false;
 		}
-
 		// evaluate validate flag
 		if (in_array("VALIDATE", $flags)) {
 			// construct remote data store client
@@ -330,22 +334,33 @@ class CoreService {
 					$RemoteStore->discloseTransportResponseBody(),
 					$match
 				);
-				$account_protocol = $match[2][0];
+				// evaluate, if server version was found.
+				if ($match[2][0]) {
+					$account_protocol = $match[2][0];
+				}
 				$connect = true;
 			}
 		}
 		else {
 			$connect = true;
 		}
-		// evaluate if account protocol has been set.
-		if (empty(trim($account_protocol))) {
-			$account_protocol = 'Exchange2010';
-		}
 		// evaluate connect status
 		if ($connect) {
+			// evaluate if account protocol has been set.
+			if (empty(trim($account_protocol))) {
+				$account_protocol = 'Exchange2010';
+			}
+			// evaluate if account id has been set.
+			if (empty($account_id)) {
+				$account_id = $account_bauth_id;
+			}
+			// evaluate if account name has been set.
+			if (empty($account_name)) {
+				$account_name = '';
+			}
 			// deposit authentication to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderAlternate);
-			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $account_bauth_id);
+			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $account_id);
 			$this->ConfigurationService->depositUserValue($uid, 'account_name', (string) $account_name);
 			$this->ConfigurationService->depositUserValue($uid, 'account_server', (string) $account_server);
 			$this->ConfigurationService->depositUserValue($uid, 'account_protocol', (string) $account_protocol);
@@ -355,10 +370,9 @@ class CoreService {
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
 		}
-
-		// evaluate validate flag
-		if (in_array("CONNECT_MAIL", $flags) && isset($configuration)) {
-			$this->connectMail($uid, $configuration);
+		// evaluate, if connect mail flag was set and if auto config was found
+		if ($connect && in_array("CONNECT_MAIL", $flags) && isset($service_configuration)) {
+			$this->connectMail($uid, $service_configuration);
 		}
 
 		if ($connect) {

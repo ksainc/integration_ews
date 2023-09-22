@@ -113,9 +113,9 @@ class UserConfigurationController extends Controller {
 	 * @param string $account_id		users login name
 	 * @param string $account_secret	users login password
 	 * 
-	 * @return DataResponse
+	 * @return DataResponse|DataResponse
 	 */
-	public function ConnectMS365(string $code): TemplateResponse {
+	public function ConnectMS365(string $code): TemplateResponse|DataResponse {
 		
 		// evaluate if user id is present
 		if ($this->userId === null) {

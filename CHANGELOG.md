@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.7 - 2023-09-22
+### Modifications
+- Minor Code Cleanup
+- Improved UI Wording
+- Improved On-Premise Connection Logic
+- Corrected Lint Errors
+
+## 1.0.6 - 2023-09-21
+### Modifications
+- Fixed bug with code failure if parameter decryption fails
+
 ## 1.0.5 - 2023-09-21
 ### Modifications
 - Added migration script to change remote item id and sync token fileds to unlimited lenght
