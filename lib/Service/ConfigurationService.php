@@ -68,11 +68,11 @@ class ConfigurationService {
 	 * */
 	private const _USER = [
 		'account_provider' => 'A',
-		'account_server' => '',
 		'account_id' => '',
+		'account_name' => '',
+		'account_server' => '',
 		'account_bauth_id' => '',
 		'account_bauth_secret' => '',
-		'account_name' => '',
 		'account_protocol' => 'Exchange2007',
 		'account_connected' => '0',
 		'account_harmonization_state' => '0',
