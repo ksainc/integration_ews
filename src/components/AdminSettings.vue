@@ -166,10 +166,10 @@ export default {
 
 	computed: {
 		transportVerification: {
-			get: function() {
-				return (this.state.transport_verification === '1') ? true : false
+			get() {
+				return (this.state.transport_verification === '1')
 			},
-			set: function(value) {
+			set(value) {
 				this.state.transport_verification = (value === true) ? '1' : '0'
 			}
 		}
