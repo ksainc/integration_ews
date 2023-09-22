@@ -2098,20 +2098,20 @@ class RemoteTasksService {
 	 */
 	private function fromImportance(?string $level): int {
 		
-		// importance conversion reference
-		$levels = array(
-			'Low' => 0,
-			'Normal' => 1,
-			'High' => 2
-		);
-		// evaluate if importance value exists
-		if (isset($levels[$level])) {
-			// return converted priority value
-			return $levels[$level];
-		} else {
-			// return default priority value
-			return 1;
+		// EWS: 0 = low, 1 = normal (default), 2 = high
+		// VTODO: 0 = undefined, 1-3 = high, 4-6 = normal, 7-9 = low
+
+		// evaluate remote level and return local equvialent
+		if ($level == 'High') {
+			return 2;		// high priority
 		}
+		elseif ($level == 'Low') {
+			return 8;		// low priority
+		}
+		else {
+			return 5;		// normal priority
+		}
+		
 		
 	}
 
@@ -2126,19 +2126,18 @@ class RemoteTasksService {
 	 */
 	private function toImportance(?int $level): string {
 
-		// priority conversion reference
-		$levels = array(
-			0 => 'Low',
-			1 => 'Normal',
-			2 => 'High'
-		);
-		// evaluate if priority value exists
-		if (isset($levels[$level])) {
-			// return converted importance value
-			return $levels[$level];
-		} else {
-			// return default importance value
-			return 'Normal';
+		// EWS: 0 = low, 1 = normal (default), 2 = high
+		// VTODO: 0 = undefined, 1-3 = high, 4-6 = normal, 7-9 = low
+
+		// evaluate local level and return remote equvialent
+		if ($level > 0 && $level < 4) {
+			return 'High';		// high priority
+		}
+		elseif ($level > 6 && $level < 10) {
+			return 'Low';		// low priority
+		}
+		else {
+			return 'Normal';	// normal priority
 		}
 
 	}
