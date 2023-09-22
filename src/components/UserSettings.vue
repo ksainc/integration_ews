@@ -128,7 +128,7 @@
 				<div class="ews-connected">
 					<EwsIcon />
 					<label>
-						{{ t('integration_ews', 'Connected as {0} to {1}', {0:state.account_id, 1:state.account_server}) }}
+						{{ t('integration_ews', 'Connected to {0} at {1}', {0:state.account_id, 1:state.account_server}) }}
 					</label>
 					<NcButton @click="onDisconnectClick">
 						<template #icon>
