@@ -101,7 +101,6 @@ class ContactsService {
 		$this->RemoteContactsService->DataStore = $this->RemoteStore;
 		// construct statistics object
 		$statistics = new HarmonizationStatisticsObject();
-
 		// construct UUID's place holder
 		$this->RemoteUUIDs = null;
 		// set local and remote collection id's

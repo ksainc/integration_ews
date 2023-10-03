@@ -23,13 +23,13 @@
 
 <template>
 	<div id="ews_settings" class="section">
-		<div class="ews-section-heading">
+		<div class="ews-page-title">
 			<EwsIcon :size="32" /><h2> {{ t('integration_ews', 'Exchange EWS Connector') }}</h2>
 		</div>
-		<div class="ews-content">
-			<h3>{{ t('integration_ews', 'Authentication') }}</h3>
-			<div v-if="state.account_connected !== '1'">
-				<div>
+		<div class="ews-section-content">
+			<div v-if="state.account_connected !== '1'" class="ews-section-connect">
+				<h3>{{ t('integration_ews', 'Authentication') }}</h3>
+				<div class="ews-section-connect-provider">
 					<label>
 						{{ t('integration_ews', 'Provider ') }}
 					</label>
@@ -37,16 +37,15 @@
 						:reduce="item => item.id"
 						:options="[{label: 'On-Premises / Alternate', id: 'A'}, {label: 'Microsoft Exchange 365 Online', id: 'MS365'}]" />
 				</div>
-				<br>
-				<div v-if="state.account_provider == 'MS365'">
-					<div class="fields">
-						<div v-if="state.system_ms365_authrization_uri === ''">
-							{{ t('integration_ews', 'Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 in the EWS Connector section in the administration section.') }}
+				<div v-if="state.account_provider == 'MS365'" class="ews-section-connect-ms365">
+					<div v-if="state.system_ms365_authrization_uri === ''">
+						{{ t('integration_ews', 'Microsoft Exchange 365 configuration missing. Ask your Nextcloud administrator to configure Microsoft Exchange 365 in the EWS Connector section in the administration section.') }}
+					</div>
+					<div v-else>
+						<div class="description">
+							{{ t('integration_ews', 'Press connect and enter your account information') }}
 						</div>
-						<div v-else class="ews-connect-ms365">
-							<label>
-								{{ t('integration_ews', 'Press connect and enter your account information') }}
-							</label>
+						<div class="actions">
 							<NcButton @click="onConnectMS365Click">
 								<template #icon>
 									<CheckIcon />
@@ -56,76 +55,75 @@
 						</div>
 					</div>
 				</div>
-				<div v-else>
-					<div class="settings-hint">
+				<div v-else class="ews-section-connect-alternate">
+					<div class="description">
 						{{ t('integration_ews', 'Enter your Exchange Server and account information then press connect.') }}
 					</div>
-					<div class="fields">
-						<div class="line">
-							<label for="ews-account-id">
-								<EwsIcon />
-								{{ t('integration_ews', 'Account ID') }}
-							</label>
-							<input id="ews-account-id"
-								v-model="state.account_id"
-								type="text"
-								:placeholder="t('integration_ews', 'Authentication ID for your EWS Account')"
-								autocomplete="off"
-								autocorrect="off"
-								autocapitalize="none">
-						</div>
-						<div class="line">
-							<label for="ews-account-secret">
-								<EwsIcon />
-								{{ t('integration_ews', 'Account Secret') }}
-							</label>
-							<input id="ews-account-secret"
-								v-model="state.account_secret"
-								type="password"
-								:placeholder="t('integration_ews', 'Authentication secret for your EWS Account')"
-								autocomplete="off"
-								autocorrect="off"
-								autocapitalize="none">
-						</div>
-						<div v-if="configureManually" class="line">
-							<label for="ews-server">
-								<EwsIcon />
-								{{ t('integration_ews', 'Account Server') }}
-							</label>
-							<input id="ews-server"
-								v-model="state.account_server"
-								type="text"
-								:placeholder="t('integration_ews', 'Account Server Address')"
-								autocomplete="off"
-								autocorrect="off"
-								autocapitalize="none">
-						</div>
-						<div>
-							<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
-								{{ t('integration_ews', 'Configure server manually') }}
-							</NcCheckboxRadioSwitch>
-						</div>
-						<div>
-							<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
-								{{ t('integration_ews', 'Configure mail app on successful connection') }}
-							</NcCheckboxRadioSwitch>
-						</div>
-						<div class="line">
-							<label class="ews-connect">
-								&nbsp;
-							</label>
-							<NcButton @click="onConnectAlternateClick">
-								<template #icon>
-									<CheckIcon />
-								</template>
-								{{ t('integration_ews', 'Connect') }}
-							</NcButton>
-						</div>
+					<div class="parameter">
+						<label for="ews-account-id">
+							<EwsIcon />
+							{{ t('integration_ews', 'Account ID') }}
+						</label>
+						<input id="ews-account-id"
+							v-model="state.account_id"
+							type="text"
+							:placeholder="t('integration_ews', 'Authentication Id for your EWS Account')"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="none"
+							:style="{ width: '48ch' }">
+					</div>
+					<div class="parameter">
+						<label for="ews-account-secret">
+							<EwsIcon />
+							{{ t('integration_ews', 'Account Secret') }}
+						</label>
+						<input id="ews-account-secret"
+							v-model="state.account_secret"
+							type="password"
+							:placeholder="t('integration_ews', 'Authentication Secret for your EWS Account')"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="none"
+							:style="{ width: '48ch' }">
+					</div>
+					<div v-if="configureManually" class="parameter">
+						<label for="ews-server">
+							<EwsIcon />
+							{{ t('integration_ews', 'Account Server') }}
+						</label>
+						<input id="ews-server"
+							v-model="state.account_server"
+							type="text"
+							:placeholder="t('integration_ews', 'Account Server IP or FQDN (server.example.com)')"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="none"
+							:style="{ width: '48ch' }">
+					</div>
+					<div class="parameter">
+						<NcCheckboxRadioSwitch :checked.sync="configureManually" type="switch">
+							{{ t('integration_ews', 'Configure server manually') }}
+						</NcCheckboxRadioSwitch>
+					</div>
+					<div class="parameter">
+						<NcCheckboxRadioSwitch :checked.sync="configureMail" type="switch">
+							{{ t('integration_ews', 'Configure mail app on successful connection') }}
+						</NcCheckboxRadioSwitch>
+					</div>
+					<div class="actions">
+						<NcButton @click="onConnectAlternateClick">
+							<template #icon>
+								<CheckIcon />
+							</template>
+							{{ t('integration_ews', 'Connect') }}
+						</NcButton>
 					</div>
 				</div>
 			</div>
-			<div v-else>
-				<div class="ews-connected">
+			<div v-else class="ews-section-connected">
+				<h3>{{ t('integration_ews', 'Connection') }}</h3>
+				<div class="ews-section-connected-status">
 					<EwsIcon />
 					<label>
 						{{ t('integration_ews', 'Connected to {0} at {1}', {0:state.account_id, 1:state.account_server}) }}
@@ -137,14 +135,14 @@
 						{{ t('integration_ews', 'Disconnect') }}
 					</NcButton>
 				</div>
-				<div>
+				<div class="ews-section-connected-status">
 					{{ t('integration_ews', 'Synchronization was last started on ') }} {{ formatDate(state.account_harmonization_start) }}
 					{{ t('integration_ews', 'and finished on ') }} {{ formatDate(state.account_harmonization_end) }}
 				</div>
 				<br>
-				<div class="ews-correlations-contacts">
-					<h3>{{ t('integration_ews', 'Contacts') }}</h3>
-					<div class="settings-hint">
+				<h3>{{ t('integration_ews', 'Contacts') }}</h3>
+				<div class="correlations-contacts">
+					<div class="description">
 						{{ t('integration_ews', 'Select the remote contacts folder(s) you wish to synchronize by pressing the link button next to the contact folder name and selecting the local contacts address book to synchronize to.') }}
 					</div>
 					<div v-if="state.system_contacts == 1">
@@ -180,7 +178,6 @@
 						<div v-else>
 							{{ t('integration_ews', 'Loading contacts collections from the connected account.') }}
 						</div>
-						<br>
 						<div>
 							<label>
 								{{ t('integration_ews', 'Synchronize ') }}
@@ -198,7 +195,6 @@
 								{{ t('integration_ews', 'prevails') }}
 							</label>
 						</div>
-						<br>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
@@ -231,11 +227,11 @@
 					<div v-else>
 						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
-					<br>
 				</div>
-				<div class="ews-correlations-events">
-					<h3>{{ t('integration_ews', 'Calendars') }}</h3>
-					<div class="settings-hint">
+				<br>
+				<h3>{{ t('integration_ews', 'Calendars') }}</h3>
+				<div class="correlations-events">
+					<div class="description">
 						{{ t('integration_ews', 'Select the remote calendar(s) you wish to synchronize by pressing the link button next to the calendars name and selecting the local calendar to synchronize to.') }}
 					</div>
 					<div v-if="state.system_events == 1">
@@ -271,7 +267,6 @@
 						<div v-else>
 							{{ t('integration_ews', 'Loading events collections from the connected account.') }}
 						</div>
-						<br>
 						<div>
 							<label>
 								{{ t('integration_ews', 'Synchronize ') }}
@@ -289,7 +284,6 @@
 								{{ t('integration_ews', 'prevails') }}
 							</label>
 						</div>
-						<br>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
@@ -322,11 +316,11 @@
 					<div v-else>
 						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
-					<br>
 				</div>
-				<div class="ews-correlations-tasks">
-					<h3>{{ t('integration_ews', 'Tasks') }}</h3>
-					<div class="settings-hint">
+				<br>
+				<h3>{{ t('integration_ews', 'Tasks') }}</h3>
+				<div class="correlations-tasks">
+					<div class="description">
 						{{ t('integration_ews', 'Select the remote Task(s) folder you wish to synchronize by pressing the link button next to the folder name and selecting the local calendar to synchronize to.') }}
 					</div>
 					<div v-if="state.system_tasks == 1">
@@ -362,7 +356,6 @@
 						<div v-else>
 							{{ t('integration_ews', 'Loading tasks collections from the connected account.') }}
 						</div>
-						<br>
 						<div>
 							<label>
 								{{ t('integration_ews', 'Synchronize ') }}
@@ -380,7 +373,6 @@
 								{{ t('integration_ews', 'prevails') }}
 							</label>
 						</div>
-						<br>
 						<div v-if="false" style="display: flex">
 							<label>
 								{{ t('integration_ews', 'Syncronized these local actions to the Remote system') }}
@@ -413,9 +405,9 @@
 					<div v-else>
 						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
-					<br>
 				</div>
-				<div class="ews-actions">
+				<br>
+				<div class="actions">
 					<NcButton @click="onSaveClick()">
 						<template #icon>
 							<CheckIcon />
@@ -989,46 +981,68 @@ export default {
 
 <style scoped lang="scss">
 #ews_settings {
-	.ews-section-heading {
-		display:inline-block;
-		vertical-align:middle;
+	.ews-page-title {
+		display: flex;
+		vertical-align: middle;
 	}
-
-	.ews-connected {
+	.ews-page-title h2 {
+		padding-left: 1%;
+	}
+	.ews-section-connect h3 {
+		font-weight: bolder;
+		font-size: larger;
+	}
+	.ews-section-connect-provider {
+		padding-bottom: 1%;
+	}
+	.ews-section-connect-ms365 {
+		padding-bottom: 1%;
+	}
+	.ews-section-connect-ms365 .description {
+		padding-bottom: 1%;
+	}
+	.ews-section-connect-alternate {
+		padding-bottom: 1%;
+	}
+	.ews-section-connect-alternate .description {
+		padding-bottom: 1%;
+	}
+	.ews-section-connect-alternate .parameter label {
+		display: inline-block;
+		width: 20ch;
+	}
+	.ews-section-connect-alternate .actions {
+		padding-top: 1%;
+	}
+	.ews-section-connected h3 {
+		font-weight: bolder;
+		font-size: larger;
+	}
+	.ews-section-connected-status {
 		display: flex;
 		align-items: center;
-
-		label {
-			padding-left: 1em;
-			padding-right: 1em;
-		}
 	}
-
+	.ews-section-connected-status label {
+		padding-right: 1%;
+	}
+	.ews-section-connected .description {
+		padding-bottom: 1%;
+	}
+	.ews-section-connected ul {
+		padding-bottom: 1%;
+	}
+	.ews-section-connected .actions {
+		display: flex;
+		align-items: center;
+	}
 	.ews-collectionlist-item {
 		display: flex;
 		align-items: center;
 
 		label {
-			padding-left: 1em;
-			padding-right: 1em;
+			padding-left: 1%;
+			padding-right: 1%;
 		}
-	}
-
-	.ews-actions {
-		display: flex;
-		align-items: center;
-	}
-
-	.external-label {
-		display: flex;
-		//width: 100%;
-		margin-top: 1rem;
-	}
-
-	.external-label label {
-		padding-top: 7px;
-		padding-right: 14px;
-		white-space: nowrap;
 	}
 }
 </style>

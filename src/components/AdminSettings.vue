@@ -24,109 +24,111 @@
 <template>
 	<div id="ews_settings" class="section">
 		<div class="ews-section-heading">
-			<EwsIcon :size="32" /><h2> {{ t('integration_ews', 'Exchange EWS Connector') }}</h2>
+			<EwsIcon :size="32" />
+			<h2>{{ t('integration_ews', 'Exchange EWS Connector') }}</h2>
 		</div>
-		<p class="settings-hint">
-			{{ t('integration_ews', 'Select the system settings for Exchange Integration') }}
-		</p>
-		<div class="fields">
+		<div class="ews-section-settings">
+			<div class="ews-section-description">
+				{{ t('integration_ews', 'Select the system settings for Exchange Integration') }}
+			</div>
+			<div class="ews-section-settings-option">
+				<label>
+					{{ t('integration_ews', 'Synchronization Mode') }}
+				</label>
+				<NcSelect v-model="state.harmonization_mode"
+					:reduce="item => item.id"
+					:options="[{label: 'Passive', id: 'P'}, {label: 'Active', id: 'A'}]" />
+			</div>
+			<div v-if="state.harmonization_mode === 'A'" class="ews-section-settings-option">
+				<label>
+					{{ t('integration_ews', 'Synchronization Thread Duration') }}
+				</label>
+				<input id="ews-thread-duration"
+					v-model="state.harmonization_thread_duration"
+					type="text"
+					:autocomplete="'off'"
+					:autocorrect="'off'"
+					:autocapitalize="'none'">
+				<label>
+					{{ t('integration_ews', 'Seconds') }}
+				</label>
+			</div>
+			<div v-if="state.harmonization_mode === 'A'" class="ews-section-settings-option">
+				<label>
+					{{ t('integration_ews', 'Synchronization Thread Pause') }}
+				</label>
+				<input id="ews-thread-pause"
+					v-model="state.harmonization_thread_pause"
+					type="text"
+					:autocomplete="off"
+					:autocorrect="off"
+					:autocapitalize="none">
+				<label>
+					{{ t('integration_ews', 'Seconds') }}
+				</label>
+			</div>
 			<div>
-				<div class="line">
-					<label>
-						{{ t('integration_ews', 'Synchronization Mode') }}
-					</label>
-					<NcSelect v-model="state.harmonization_mode"
-						:reduce="item => item.id"
-						:options="[{label: 'Passive', id: 'P'}, {label: 'Active', id: 'A'}]" />
-				</div>
-				<div v-if="state.harmonization_mode === 'A'" class="line">
-					<label>
-						{{ t('integration_ews', 'Synchronization Thread Duration') }}
-					</label>
-					<input id="ews-thread-duration"
-						v-model="state.harmonization_thread_duration"
-						type="text"
-						:autocomplete="'off'"
-						:autocorrect="'off'"
-						:autocapitalize="'none'">
-					<label>
-						{{ t('integration_ews', 'Seconds') }}
-					</label>
-				</div>
-				<div v-if="state.harmonization_mode === 'A'" class="line">
-					<label>
-						{{ t('integration_ews', 'Synchronization Thread Pause') }}
-					</label>
-					<input id="ews-thread-pause"
-						v-model="state.harmonization_thread_pause"
-						type="text"
-						:autocomplete="off"
-						:autocorrect="off"
-						:autocapitalize="none">
-					<label>
-						{{ t('integration_ews', 'Seconds') }}
-					</label>
-				</div>
-				<div>
-					<NcCheckboxRadioSwitch :checked.sync="transportVerification" type="switch">
-						{{ t('integration_ews', 'Secure Transport Verification (SSL Certificate Verification). Should always be ON, unless connecting to a Exchange system over an internal LAN.') }}
-					</NcCheckboxRadioSwitch>
-				</div>
+				<NcCheckboxRadioSwitch :checked.sync="transportVerification" type="switch">
+					{{ t('integration_ews', 'Secure Transport Verification (SSL Certificate Verification). Should always be ON, unless connecting to a Exchange system over an internal LAN.') }}
+				</NcCheckboxRadioSwitch>
 			</div>
-			<br>
-			<div>
-				<p class="settings-hint">
-					{{ t('integration_ews', 'Microsoft 365 Authentication Settings') }}
-				</p>
-				<div class="line">
-					<label for="ews-microsoft-tenant-id">
-						<EwsIcon />
-						{{ t('integration_ews', 'Tenant ID') }}
-					</label>
-					<input id="ews-microsoft-tenant-id"
-						v-model="state.ms365_tenant_id"
-						type="text"
-						:placeholder="t('integration_ews', '')"
-						autocomplete="off"
-						autocorrect="off"
-						autocapitalize="none">
-				</div>
-				<div class="line">
-					<label for="ews-microsoft-application-id">
-						<EwsIcon />
-						{{ t('integration_ews', 'Application ID') }}
-					</label>
-					<input id="ews-microsoft-application-id"
-						v-model="state.ms365_application_id"
-						type="text"
-						:placeholder="t('integration_ews', '')"
-						autocomplete="off"
-						autocorrect="off"
-						autocapitalize="none">
-				</div>
-				<div class="line">
-					<label for="ews-microsoft-application-secret">
-						<EwsIcon />
-						{{ t('integration_ews', 'Application Secret') }}
-					</label>
-					<input id="ews-microsoft-application-secret"
-						v-model="state.ms365_application_secret"
-						type="password"
-						:placeholder="t('integration_ews', '')"
-						autocomplete="off"
-						autocorrect="off"
-						autocapitalize="none">
-				</div>
+		</div>
+		<br>
+		<div class="ews-section-settings">
+			<div class="ews-section-description">
+				{{ t('integration_ews', 'Microsoft 365 Authentication Settings') }}
 			</div>
-			<br>
-			<div class="ews-actions">
-				<NcButton @click="onSaveClick()">
-					<template #icon>
-						<CheckIcon />
-					</template>
-					{{ t('integration_ews', 'Save') }}
-				</NcButton>
+			<div class="ews-section-settings-option">
+				<label for="ews-microsoft-tenant-id">
+					<EwsIcon />
+					{{ t('integration_ews', 'Tenant ID') }}
+				</label>
+				<input id="ews-microsoft-tenant-id"
+					v-model="state.ms365_tenant_id"
+					type="text"
+					:placeholder="t('integration_ews', '')"
+					autocomplete="off"
+					autocorrect="off"
+					autocapitalize="none"
+					:style="{ width: '300px' }">
 			</div>
+			<div class="ews-section-settings-option">
+				<label for="ews-microsoft-application-id">
+					<EwsIcon />
+					{{ t('integration_ews', 'Application ID') }}
+				</label>
+				<input id="ews-microsoft-application-id"
+					v-model="state.ms365_application_id"
+					type="text"
+					:placeholder="t('integration_ews', '')"
+					autocomplete="off"
+					autocorrect="off"
+					autocapitalize="none"
+					:style="{ width: '300px' }">
+			</div>
+			<div class="ews-section-settings-option">
+				<label for="ews-microsoft-application-secret">
+					<EwsIcon />
+					{{ t('integration_ews', 'Application Secret') }}
+				</label>
+				<input id="ews-microsoft-application-secret"
+					v-model="state.ms365_application_secret"
+					type="password"
+					:placeholder="t('integration_ews', '')"
+					autocomplete="off"
+					autocorrect="off"
+					autocapitalize="none"
+					:style="{ width: '300px' }">
+			</div>
+		</div>
+		<br>
+		<div class="ews-section-actions">
+			<NcButton @click="onSaveClick()">
+				<template #icon>
+					<CheckIcon />
+				</template>
+				{{ t('integration_ews', 'Save') }}
+			</NcButton>
 		</div>
 	</div>
 </template>
@@ -171,8 +173,8 @@ export default {
 			},
 			set(value) {
 				this.state.transport_verification = (value === true) ? '1' : '0'
-			}
-		}
+			},
+		},
 	},
 
 	methods: {
@@ -209,45 +211,24 @@ export default {
 <style scoped lang="scss">
 #ews_settings {
 	.ews-section-heading {
-		display:inline-block;
-		vertical-align:middle;
-	}
-
-	.ews-connected {
 		display: flex;
-		align-items: center;
-
-		label {
-			padding-left: 1em;
-			padding-right: 1em;
-		}
+		vertical-align: middle;
 	}
-
-	.ews-collectionlist-item {
-		display: flex;
-		align-items: center;
-
-		label {
-			padding-left: 1em;
-			padding-right: 1em;
-		}
+	.ews-section-heading h2 {
+		padding-left: 1%;
 	}
-
-	.ews-actions {
+	.ews-section-actions {
 		display: flex;
 		align-items: center;
 	}
-
-	.external-label {
-		display: flex;
-		//width: 100%;
-		margin-top: 1rem;
+	.ews-section-description {
+		padding-bottom: 2%;
 	}
-
-	.external-label label {
-		padding-top: 7px;
-		padding-right: 14px;
-		white-space: nowrap;
+	.ews-section-settings-option {
+		display: block;
+	}
+	.ews-section-settings-option label{
+		padding-right: 1%;
 	}
 }
 </style>
