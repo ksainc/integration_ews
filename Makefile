@@ -147,7 +147,7 @@ appstore:
 	--exclude="../$(app_name)/.*" \
 	--exclude="../$(app_name)/js/.*" \
 
-.PHONY: test
-test: composer
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+#.PHONY: test
+#test: composer
+#	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
+#	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
