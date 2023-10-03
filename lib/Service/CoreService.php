@@ -210,8 +210,16 @@ class CoreService {
 			$o->UserSecret = $account_bauth_secret;
 
 			foreach ($data['Account']['Protocol'] as $entry) {
+				// evaluate if type is EXHTTP
+				if ($entry['Type'] == 'EXHTTP') {
+					$o->EXHTTP = new \stdClass();
+					$o->EXHTTP->Server = $entry['Server'];
+					$o->EXHTTP->ASUrl = $entry['ASUrl'];
+					$o->EXHTTP->EwsUrl = $entry['EwsUrl'];
+					$o->EXHTTP->OOFUrl = $entry['OOFUrl'];
+				}
 				// evaluate if type is EXCH
-				if ($entry['Type'] == 'EXCH') {
+				elseif ($entry['Type'] == 'EXCH') {
 					$o->EXCH = new \stdClass();
 					$o->EXCH->Server = $entry['Server'];
 					$o->EXCH->AD = $entry['AD'];
@@ -286,7 +294,10 @@ class CoreService {
 			// locate service information
 			$service_configuration = $this->locateAccount($account_bauth_id, $account_bauth_secret);
 			// evaluate, if ews server information exists in the located service information
-			if (isset($service_configuration->EXCH->Server)) {
+			if (isset($service_configuration->EXHTTP->Server)) {
+				$account_server = $service_configuration->EXHTTP->Server;
+			}
+			elseif (isset($service_configuration->EXCH->Server)) {
 				$account_server = $service_configuration->EXCH->Server;
 			}
 			// evaluate, if account id information exists in the located service information

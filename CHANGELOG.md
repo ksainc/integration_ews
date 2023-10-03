@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.8 - 2023-10-02
+### Additions
+- Implemented Support for EXHTTP definition in auto discovery
+### Modifications
+- Improved UI Layout
+
+
 ## 1.0.7 - 2023-09-22
 ### Modifications
 - Minor Code Cleanup
