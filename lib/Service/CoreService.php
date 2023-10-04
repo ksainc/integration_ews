@@ -204,9 +204,9 @@ class CoreService {
 			$data = $locator->discovered;
 
 			$o = new \stdClass();
-			$o->UserDisplayName = $data['User']['DisplayName'];
-			$o->UserEMailAddress = $data['User']['EMailAddress'];
-			$o->UserSMTPAddress = $data['User']['AutoDiscoverSMTPAddress'];
+			$o->UserDisplayName = (isset($data['User']['DisplayName'])) ? $data['User']['DisplayName'] : '';
+			$o->UserEMailAddress = (isset($data['User']['EMailAddress'])) ? $data['User']['EMailAddress'] : '';
+			$o->UserSMTPAddress = (isset($data['User']['AutoDiscoverSMTPAddress'])) ? $data['User']['AutoDiscoverSMTPAddress'] : '';
 			$o->UserSecret = $account_bauth_secret;
 
 			foreach ($data['Account']['Protocol'] as $entry) {
