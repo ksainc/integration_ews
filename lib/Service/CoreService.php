@@ -220,12 +220,12 @@ class CoreService {
 				}
 				// evaluate if type is EXPR
 				elseif ($entry['Type'] == 'EXPR') {
-					$o->EXCH = new \stdClass();
-					$o->EXCH->Server = $entry['Server'];
-					$o->EXCH->AD = $entry['AD'];
-					$o->EXCH->ASUrl = $entry['ASUrl'];
-					$o->EXCH->EwsUrl = $entry['EwsUrl'];
-					$o->EXCH->OOFUrl = $entry['OOFUrl'];
+					$o->EXPR = new \stdClass();
+					$o->EXPR->Server = $entry['Server'];
+					$o->EXPR->AD = $entry['AD'];
+					$o->EXPR->ASUrl = $entry['ASUrl'];
+					$o->EXPR->EwsUrl = $entry['EwsUrl'];
+					$o->EXPR->OOFUrl = $entry['OOFUrl'];
 				}
 				// evaluate if type is EXCH
 				elseif ($entry['Type'] == 'EXCH') {

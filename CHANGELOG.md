@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.10 - 2023-10-05
+### Modifications
+- Fixed autodiscovery EXPR definition logic
+
 ## 1.0.9 - 2023-10-05
 ### Additions
 - Implemented Support for EXPR protocol definition in auto discovery
