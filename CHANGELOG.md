@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.11 - 2023-10-05
+### Modifications
+- Improved apps availability check to work with apps limited to selected groups. #jkhradil - f29d195
+- Fixed UI app name correction. #jkhradil - f29d195
+
 ## 1.0.10 - 2023-10-05
 ### Modifications
 - Fixed autodiscovery EXPR definition logic
