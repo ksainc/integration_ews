@@ -95,7 +95,7 @@ class UserConfigurationController extends Controller {
 		// execute command
 		$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_server, $flags);
 		// return response
-		if (isset($rs)) {
+		if ($rs) {
 			return new DataResponse('success');
 		} else {
 			return new DataResponse($rs['error'], 401);

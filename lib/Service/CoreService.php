@@ -218,6 +218,15 @@ class CoreService {
 					$o->EXHTTP->EwsUrl = $entry['EwsUrl'];
 					$o->EXHTTP->OOFUrl = $entry['OOFUrl'];
 				}
+				// evaluate if type is EXPR
+				elseif ($entry['Type'] == 'EXPR') {
+					$o->EXCH = new \stdClass();
+					$o->EXCH->Server = $entry['Server'];
+					$o->EXCH->AD = $entry['AD'];
+					$o->EXCH->ASUrl = $entry['ASUrl'];
+					$o->EXCH->EwsUrl = $entry['EwsUrl'];
+					$o->EXCH->OOFUrl = $entry['OOFUrl'];
+				}
 				// evaluate if type is EXCH
 				elseif ($entry['Type'] == 'EXCH') {
 					$o->EXCH = new \stdClass();
@@ -297,12 +306,15 @@ class CoreService {
 			if (isset($service_configuration->EXHTTP->Server)) {
 				$account_server = $service_configuration->EXHTTP->Server;
 			}
+			elseif (isset($service_configuration->EXPR->Server)) {
+				$account_server = $service_configuration->EXPR->Server;
+			}
 			elseif (isset($service_configuration->EXCH->Server)) {
 				$account_server = $service_configuration->EXCH->Server;
 			}
 			// evaluate, if account id information exists in the located service information
-			if (isset($service_configuration->UserEMailAddress)) {
-				$account_id = $service_configuration->UserEMailAddress;
+			if (isset($service_configuration->UserSMTPAddress)) {
+				$account_id = $service_configuration->UserSMTPAddress;
 			}
 			// evaluate, if account name information exists in the located service information
 			if (isset($service_configuration->UserDisplayName)) {
@@ -327,7 +339,7 @@ class CoreService {
 			$RemoteStore = new EWSClient(
 				$account_server, 
 				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_bauth_id, $account_bauth_secret), 
-				'Exchange2007'
+				'Exchange2007_SP1'
 			);
 			// retrieve and evaluate transport verification option
 			if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
@@ -336,12 +348,12 @@ class CoreService {
 			// enable transport body retention
 			$RemoteStore->retainTransportResponseBody(true);
 			// retrieve root folder attributes
-			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
+			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'msgfolderroot', true, 'A');
 			// evaluate server response
 			if (isset($rs)) {
 				// extract server version from response body message
 				preg_match_all(
-					'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
+					'/ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
 					$RemoteStore->discloseTransportResponseBody(),
 					$match
 				);

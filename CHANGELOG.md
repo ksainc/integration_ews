@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.9 - 2023-10-05
+### Additions
+- Implemented Support for EXPR protocol definition in auto discovery
+### Modifications
+- Modified auto discovery logic to include EXPR
+- Modified default protocol version to Exchange2007_SP1
+- Modified messaging protocol version discovery regex
+- Modified user email discovery to use UserSMTPAddress
+- Modified connection verification to use "msgfolderroot" instead of "root"
+- Updated soap definitiions - Service.wsdl, Messages.xsd, Types.xsd
+- Fixed connectAccountAlternate result handler logic in User Configuration Controller
+
 ## 1.0.8 - 2023-10-02
 ### Additions
 - Implemented Support for EXHTTP definition in auto discovery
