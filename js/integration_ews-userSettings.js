@@ -5498,7 +5498,7 @@ var render = function render() {
       },
       expression: "state.events_prevalence"
     }
-  }), _vm._v(" "), _c('label', [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'prevails')) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c('div', [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.')) + "\n\t\t\t\t")])]), _vm._v(" "), _c('br'), _vm._v(" "), _c('h3', [_vm._v(_vm._s(_vm.t('integration_ews', 'Tasks')))]), _vm._v(" "), _c('div', {
+  }), _vm._v(" "), _c('label', [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'prevails')) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c('div', [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'The calendar app is either disabled or not installed. Please contact your administrator to install or enable the app.')) + "\n\t\t\t\t")])]), _vm._v(" "), _c('br'), _vm._v(" "), _c('h3', [_vm._v(_vm._s(_vm.t('integration_ews', 'Tasks')))]), _vm._v(" "), _c('div', {
     staticClass: "correlations-tasks"
   }, [_c('div', {
     staticClass: "description"
@@ -5583,7 +5583,7 @@ var render = function render() {
       },
       expression: "state.tasks_prevalence"
     }
-  }), _vm._v(" "), _c('label', [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'prevails')) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c('div', [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.')) + "\n\t\t\t\t")])]), _vm._v(" "), _c('br'), _vm._v(" "), _c('div', {
+  }), _vm._v(" "), _c('label', [_vm._v("\n\t\t\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'prevails')) + "\n\t\t\t\t\t\t")])], 1), _vm._v(" "),  false ? 0 : _vm._e(), _vm._v(" "),  false ? 0 : _vm._e()]) : _c('div', [_vm._v("\n\t\t\t\t\t" + _vm._s(_vm.t('integration_ews', 'The tasks app is either disabled or not installed. Please contact your administrator to install or enable the app.')) + "\n\t\t\t\t")])]), _vm._v(" "), _c('br'), _vm._v(" "), _c('div', {
     staticClass: "actions"
   }, [_c('NcButton', {
     on: {
