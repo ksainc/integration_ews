@@ -524,7 +524,7 @@ class CoreService {
 	public function connectMail(string $uid, object $configuration): void {
 
 		// evaluate if mail app exists
-		if (!$this->ConfigurationService->isMailAppAvailable()) {
+		if (!$this->ConfigurationService->isMailAppAvailable($uid)) {
 			return;
 		}
 		// evaluate if configuration contains the accounts email address
@@ -605,13 +605,13 @@ class CoreService {
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve local collections
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid);;
 		}
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid);
 		}
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			$response['TaskCollections'] = $this->LocalTasksService->listCollections($uid);
 		}
 		// return response
@@ -635,7 +635,7 @@ class CoreService {
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve remote collections
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			// assign remote data store
 			$this->RemoteContactsService->DataStore = $RemoteStore;
 			// retrieve remote personal collections
@@ -643,7 +643,7 @@ class CoreService {
 			// retrieve remote public collections
 			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
 		}
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			// assign remote data store
 			$this->RemoteEventsService->DataStore = $RemoteStore;
 			// retrieve remote personal collections
@@ -651,7 +651,7 @@ class CoreService {
 			// retrieve remote public collections
 			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
 		}
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			// assign remote data store
 			$this->RemoteTasksService->DataStore = $RemoteStore;
 			// retrieve remote personal collections
@@ -678,13 +678,13 @@ class CoreService {
 		// construct response object
 		$response = ['ContactCorrelations' => [], 'EventCorrelations' => [], 'TaskCorrelations' => []];
 		// retrieve local collections
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			$response['ContactCorrelations'] = $this->CorrelationsService->findByType($uid, 'CC');
 		}
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			$response['EventCorrelations'] = $this->CorrelationsService->findByType($uid, 'EC');
 		}
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			$response['TaskCorrelations'] = $this->CorrelationsService->findByType($uid, 'TC');
 		}
 		// return response
@@ -709,7 +709,7 @@ class CoreService {
 		// terminate harmonization thread, in case the user changed any correlations
 		$this->HarmonizationThreadService->terminate($uid);
 		// deposit contacts correlations
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			foreach ($cc as $entry) {
 				if (!empty($entry['action'])) {
 					try {
@@ -747,7 +747,7 @@ class CoreService {
 			}
 		}
 		// deposit events correlations
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			foreach ($ec as $entry) {
 				if (!empty($entry['action'])) {
 					try {
@@ -785,7 +785,7 @@ class CoreService {
 			}
 		}
 		// deposit tasks correlations
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			foreach ($tc as $entry) {
 				if (!empty($entry['action'])) {
 					try {

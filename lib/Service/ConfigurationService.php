@@ -30,6 +30,8 @@ use Psr\Log\LoggerInterface;
 
 use OCP\IConfig;
 use OCP\Security\ICrypto;
+use OCP\IUserManager;
+use OCP\App\IAppManager;
 
 use OCA\EWS\AppInfo\Application;
 
@@ -114,11 +116,19 @@ class ConfigurationService {
 	/** @var ICrypto */
 	private $_cs;
 
-	public function __construct(LoggerInterface $logger, IConfig $config, ICrypto $crypto)
+	/** @var IUserManager */
+	private $_usermanager;
+
+	/** @var IAppManager */
+	private $_appmanager;
+
+	public function __construct(LoggerInterface $logger, IConfig $config, ICrypto $crypto, IUserManager $userManager, IAppManager $appManager)
 	{
 		$this->_logger = $logger;
 		$this->_ds = $config;
 		$this->_cs = $crypto;
+		$this->_usermanager = $userManager;
+		$this->_appmanager = $appManager;
 	}
 
 	/**
@@ -179,9 +189,9 @@ class ConfigurationService {
 			}
 			// retrieve system parameters
 			$parameters['system_timezone'] = date_default_timezone_get();
-			$parameters['system_contacts'] = $this->isContactsAppAvailable();
-			$parameters['system_events'] = $this->isCalendarAppAvailable();
-			$parameters['system_tasks'] = $this->isTasksAppAvailable();
+			$parameters['system_contacts'] = $this->isContactsAppAvailable($uid);
+			$parameters['system_events'] = $this->isCalendarAppAvailable($uid);
+			$parameters['system_tasks'] = $this->isTasksAppAvailable($uid);
 			$parameters['user_id'] = $uid;
 			// user default time zone
 			$v = $this->_ds->getUserValue($uid, 'core', 'timezone');
@@ -885,17 +895,10 @@ class ConfigurationService {
 	 * 
 	 * @return bool
 	 */
-	public function isMailAppAvailable(): bool {
+	public function isMailAppAvailable(string $uid): bool {
 
-		// retrieve contacts app status
-		$status = $this->_ds->getAppValue('mail', 'enabled');
-		// evaluate status
-		if ($status == 'yes') {
-			return true;
-		}
-		else {
-			return false;
-		}
+		$user = $this->_usermanager->get($uid);
+		return $this->_appmanager->isEnabledForUser('mail', $user);
 
 	}
 
@@ -906,17 +909,10 @@ class ConfigurationService {
 	 * 
 	 * @return bool
 	 */
-	public function isContactsAppAvailable(): bool {
+	public function isContactsAppAvailable(string $uid): bool {
 
-		// retrieve contacts app status
-		$status = $this->_ds->getAppValue('contacts', 'enabled');
-		// evaluate status
-		if ($status == 'yes') {
-			return true;
-		}
-		else {
-			return false;
-		}
+		$user = $this->_usermanager->get($uid);
+		return $this->_appmanager->isEnabledForUser('contacts', $user);
 
 	}
 
@@ -927,17 +923,10 @@ class ConfigurationService {
 	 * 
 	 * @return bool
 	 */
-	public function isCalendarAppAvailable(): bool {
+	public function isCalendarAppAvailable(string $uid): bool {
 
-		// retrieve calendar app status
-		$status = $this->_ds->getAppValue('calendar', 'enabled');
-		// evaluate status
-		if ($status == 'yes') {
-			return true;
-		}
-		else {
-			return false;
-		}
+		$user = $this->_usermanager->get($uid);
+		return $this->_appmanager->isEnabledForUser('calendar', $user);
 
 	}
 
@@ -948,17 +937,10 @@ class ConfigurationService {
 	 * 
 	 * @return bool
 	 */
-	public function isTasksAppAvailable(): bool {
+	public function isTasksAppAvailable(string $uid): bool {
 
-		// retrieve calendar app status
-		$status = $this->_ds->getAppValue('tasks', 'enabled');
-		// evaluate status
-		if ($status == 'yes') {
-			return true;
-		}
-		else {
-			return false;
-		}
+		$user = $this->_usermanager->get($uid);
+		return $this->_appmanager->isEnabledForUser('tasks', $user);
 
 	}
 
