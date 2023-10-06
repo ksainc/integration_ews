@@ -314,7 +314,7 @@
 						</div>
 					</div>
 					<div v-else>
-						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
+						{{ t('integration_ews', 'The calendar app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
 				</div>
 				<br>
@@ -403,7 +403,7 @@
 						</div>
 					</div>
 					<div v-else>
-						{{ t('integration_ews', 'The contacts app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
+						{{ t('integration_ews', 'The tasks app is either disabled or not installed. Please contact your administrator to install or enable the app.') }}
 					</div>
 				</div>
 				<br>
