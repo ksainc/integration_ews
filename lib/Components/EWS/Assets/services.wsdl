@@ -750,38 +750,38 @@
 
     <!-- FindTags  Messages-->
     <wsdl:message name="FindTagsSoapIn">
-      <wsdl:part name="request" element="tns:FindTags" />
-      <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
-      <wsdl:part name="RequestVersion" element="t:RequestServerVersion" />
+        <wsdl:part name="request" element="tns:FindTags" />
+        <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
+        <wsdl:part name="RequestVersion" element="t:RequestServerVersion" />
     </wsdl:message>
     <wsdl:message name="FindTagsSoapOut">
-      <wsdl:part name="FindTagsResult" element="tns:FindTagsResponse" />
-      <wsdl:part name="ServerVersion" element="t:ServerVersionInfo" />
+        <wsdl:part name="FindTagsResult" element="tns:FindTagsResponse" />
+        <wsdl:part name="ServerVersion" element="t:ServerVersionInfo" />
     </wsdl:message>
 
     <!-- AddTag  Messages-->
     <wsdl:message name="AddTagSoapIn">
-      <wsdl:part name="request" element="tns:AddTag" />
-      <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
-      <wsdl:part name="RequestVersion" element="t:RequestServerVersion" />
+        <wsdl:part name="request" element="tns:AddTag" />
+        <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
+        <wsdl:part name="RequestVersion" element="t:RequestServerVersion" />
     </wsdl:message>
     <wsdl:message name="AddTagSoapOut">
-      <wsdl:part name="AddTagResult" element="tns:AddTagResponse" />
-      <wsdl:part name="ServerVersion" element="t:ServerVersionInfo" />
+        <wsdl:part name="AddTagResult" element="tns:AddTagResponse" />
+        <wsdl:part name="ServerVersion" element="t:ServerVersionInfo" />
     </wsdl:message>
 
     <!-- HideTag  Messages-->
     <wsdl:message name="HideTagSoapIn">
-      <wsdl:part name="request" element="tns:HideTag" />
-      <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
-      <wsdl:part name="RequestVersion" element="t:RequestServerVersion" />
+        <wsdl:part name="request" element="tns:HideTag" />
+        <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
+        <wsdl:part name="RequestVersion" element="t:RequestServerVersion" />
     </wsdl:message>
     <wsdl:message name="HideTagSoapOut">
-      <wsdl:part name="HideTagResult" element="tns:HideTagResponse" />
-      <wsdl:part name="ServerVersion" element="t:ServerVersionInfo" />
+        <wsdl:part name="HideTagResult" element="tns:HideTagResponse" />
+        <wsdl:part name="ServerVersion" element="t:ServerVersionInfo" />
     </wsdl:message>
 
-  <!-- GetPersona Messages-->
+    <!-- GetPersona Messages-->
     <wsdl:message name="GetPersonaSoapIn">
         <wsdl:part name="request" element="tns:GetPersona" />
         <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
@@ -1629,23 +1629,23 @@
             <wsdl:input message="tns:FindPeopleSoapIn" />
             <wsdl:output message="tns:FindPeopleSoapOut" />
         </wsdl:operation>
- 
+
         <!--FindTags-->
         <wsdl:operation name="FindTags">
-          <wsdl:input message="tns:FindTagsSoapIn" />
-          <wsdl:output message="tns:FindTagsSoapOut" />
+            <wsdl:input message="tns:FindTagsSoapIn" />
+            <wsdl:output message="tns:FindTagsSoapOut" />
         </wsdl:operation>
 
         <!--AddTag-->
         <wsdl:operation name="AddTag">
-          <wsdl:input message="tns:AddTagSoapIn" />
-          <wsdl:output message="tns:AddTagSoapOut" />
+            <wsdl:input message="tns:AddTagSoapIn" />
+            <wsdl:output message="tns:AddTagSoapOut" />
         </wsdl:operation>
 
         <!--HideTag-->
         <wsdl:operation name="HideTag">
-          <wsdl:input message="tns:HideTagSoapIn" />
-          <wsdl:output message="tns:HideTagSoapOut" />
+            <wsdl:input message="tns:HideTagSoapIn" />
+            <wsdl:output message="tns:HideTagSoapOut" />
         </wsdl:operation>
 
         <!--GetPersona-->
@@ -1721,7 +1721,7 @@
             <wsdl:output message="tns:ReportMessageSoapOut" />
         </wsdl:operation>
 
-      <wsdl:operation name="GetAppManifests">
+        <wsdl:operation name="GetAppManifests">
             <wsdl:input message="tns:GetAppManifestsSoapIn" />
             <wsdl:output message="tns:GetAppManifestsSoapOut" />
         </wsdl:operation>
@@ -2854,30 +2854,30 @@
 
         <!--FindTags-->
         <wsdl:operation name="FindTags">
-          <soap:operation soapAction="http://schemas.microsoft.com/exchange/services/2006/messages/FindTags" />
-          <wsdl:input>
-            <soap:body parts="request" use="literal" />
-            <soap:header message="tns:FindTagsSoapIn" part="RequestVersion" use="literal" />
-            <soap:header message="tns:FindTagsSoapIn" part="Impersonation" use="literal" />
-          </wsdl:input>
-          <wsdl:output>
-            <soap:body parts="FindTagsResult" use="literal" />
-            <soap:header message="tns:FindTagsSoapOut" part="ServerVersion" use="literal" />
-          </wsdl:output>
+            <soap:operation soapAction="http://schemas.microsoft.com/exchange/services/2006/messages/FindTags" />
+            <wsdl:input>
+                <soap:body parts="request" use="literal" />
+                <soap:header message="tns:FindTagsSoapIn" part="RequestVersion" use="literal" />
+                <soap:header message="tns:FindTagsSoapIn" part="Impersonation" use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body parts="FindTagsResult" use="literal" />
+                <soap:header message="tns:FindTagsSoapOut" part="ServerVersion" use="literal" />
+            </wsdl:output>
         </wsdl:operation>
 
         <!--AddTag-->
         <wsdl:operation name="AddTag">
-          <soap:operation soapAction="http://schemas.microsoft.com/exchange/services/2006/messages/AddTag" />
-          <wsdl:input>
-            <soap:body parts="request" use="literal" />
-            <soap:header message="tns:AddTagSoapIn" part="RequestVersion" use="literal" />
-            <soap:header message="tns:AddTagSoapIn" part="Impersonation" use="literal" />
-          </wsdl:input>
-          <wsdl:output>
-            <soap:body parts="AddTagResult" use="literal" />
-            <soap:header message="tns:AddTagSoapOut" part="ServerVersion" use="literal" />
-          </wsdl:output>
+            <soap:operation soapAction="http://schemas.microsoft.com/exchange/services/2006/messages/AddTag" />
+            <wsdl:input>
+                <soap:body parts="request" use="literal" />
+                <soap:header message="tns:AddTagSoapIn" part="RequestVersion" use="literal" />
+                <soap:header message="tns:AddTagSoapIn" part="Impersonation" use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body parts="AddTagResult" use="literal" />
+                <soap:header message="tns:AddTagSoapOut" part="ServerVersion" use="literal" />
+            </wsdl:output>
         </wsdl:operation>
 
         <!--HideTag-->
@@ -2893,7 +2893,7 @@
                 <soap:header message="tns:HideTagSoapOut" part="ServerVersion" use="literal" />
             </wsdl:output>
         </wsdl:operation>
-      
+
         <!--GetPersona-->
         <wsdl:operation name="GetPersona">
             <soap:operation soapAction="http://schemas.microsoft.com/exchange/services/2006/messages/GetPersona" />
@@ -3522,7 +3522,7 @@
             </wsdl:output>
         </wsdl:operation>
 
-        <!-- Start Seach Session -->
+        <!-- Start Search Session -->
         <wsdl:operation name="StartSearchSession">
             <soap:operation soapAction="http://schemas.microsoft.com/exchange/services/2006/messages/StartSearchSession" />
             <wsdl:input>
@@ -3618,4 +3618,10 @@
             </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
+
+    <wsdl:service name="ExchangeServices">
+        <wsdl:port name="ExchangeServicePort" binding="tns:ExchangeServiceBinding">
+            <soap:address location="" />
+        </wsdl:port>
+    </wsdl:service>
 </wsdl:definitions>

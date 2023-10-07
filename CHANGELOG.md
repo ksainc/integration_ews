@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.12 - 2023-10-06
+### Modifications
+- Fixed SOAP error caused by missing service.wsdl and types.xsd definitions
+
 ## 1.0.11 - 2023-10-05
 ### Modifications
 - Improved apps availability check to work with apps limited to selected groups. #jkhradil - f29d195
