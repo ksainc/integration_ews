@@ -936,6 +936,7 @@
 
     <wsdl:message name="InstallAppSoapIn">
         <wsdl:part name="request" element="tns:InstallApp" />
+        <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
         <wsdl:part name="RequestVersion" element="t:RequestServerVersion"/>
     </wsdl:message>
     <wsdl:message name="InstallAppSoapOut">
@@ -945,6 +946,7 @@
 
     <wsdl:message name="UninstallAppSoapIn">
         <wsdl:part name="request" element="tns:UninstallApp" />
+        <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
         <wsdl:part name="RequestVersion" element="t:RequestServerVersion"/>
     </wsdl:message>
     <wsdl:message name="UninstallAppSoapOut">
@@ -954,6 +956,7 @@
 
     <wsdl:message name="DisableAppSoapIn">
         <wsdl:part name="request" element="tns:DisableApp" />
+        <wsdl:part name="Impersonation" element="t:ExchangeImpersonation"/>
         <wsdl:part name="RequestVersion" element="t:RequestServerVersion"/>
     </wsdl:message>
     <wsdl:message name="DisableAppSoapOut">

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <xs:schema id="types"
            elementFormDefault="qualified"
            xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
@@ -180,6 +180,9 @@
             <xs:enumeration value="V2016_04_13" />
             <xs:enumeration value="V2016_07_13" />
             <xs:enumeration value="V2016_10_10" />
+            <xs:enumeration value="V2017_01_07" />
+            <xs:enumeration value="V2017_04_14" />
+            <xs:enumeration value="V2017_07_11" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -519,6 +522,12 @@
             <xs:enumeration value="message:ApprovalRequestData"/>
             <xs:enumeration value="message:VotingInformation"/>
             <xs:enumeration value="message:ReminderMessageData"/>
+            <xs:enumeration value="message:PublishedCalendarItemIcs"/>
+            <xs:enumeration value="message:PublishedCalendarItemName"/>
+            <xs:enumeration value="message:MessageSafety"/>
+
+            <!-- SharingMessage -->
+            <xs:enumeration value="sharingMessage:SharingMessageAction"/>
 
             <!-- Meeting Message -->
 
@@ -531,11 +540,14 @@
             <xs:enumeration value="meeting:ProposedStart"/>
             <xs:enumeration value="meeting:ProposedEnd"/>
 
+            <xs:enumeration value="meeting:DoNotForwardMeeting"/>
+
             <!-- Meeting Request -->
 
             <xs:enumeration value="meetingRequest:MeetingRequestType"/>
             <xs:enumeration value="meetingRequest:IntendedFreeBusyStatus"/>
             <xs:enumeration value="meetingRequest:ChangeHighlights"/>
+
 
             <!-- Calendar items and appointments -->
 
@@ -598,6 +610,7 @@
 
             <xs:enumeration value="calendar:IsOrganizer"/>
             <xs:enumeration value="calendar:CalendarActivityData"/>
+            <xs:enumeration value="calendar:DoNotForwardMeeting"/>
 
             <!-- Task properties -->
 
@@ -1126,7 +1139,7 @@
         <xs:annotation>
             <xs:documentation>
                 Represents an extended property.  Note that there are only a couple of valid attribute
-                combinations.  Note that all occurrences require the PropertyType attribute.
+                combinations.  Note that all occurances require the PropertyType attribute.
 
                 1.  (DistinguishedPropertySetId || PropertySetId) + (PropertyName || Property Id)
                 2.  PropertyTag
@@ -1331,6 +1344,7 @@
             <xs:enumeration value="ExtensionRestApiCallback" />
             <xs:enumeration value="Connectors" />
             <xs:enumeration value="Loki" />
+            <xs:enumeration value="DesktopOutlook" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -1345,6 +1359,7 @@
             <xs:element name="Id" type="xs:string" />
             <xs:element name="TokenType" type="t:ClientAccessTokenTypeType" />
             <xs:element name="Scope" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ResourceUri" type="xs:string" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
     </xs:complexType>
 
@@ -1399,6 +1414,7 @@
                 <xs:choice>
                     <xs:element name="Item" type="t:ItemType"/>
                     <xs:element name="Message" type="t:MessageType"/>
+                    <xs:element name="SharingMessage" type="t:SharingMessageType"/>
                     <xs:element name="CalendarItem" type="t:CalendarItemType"/>
                     <xs:element name="Contact" type="t:ContactItemType"/>
                     <xs:element name="DistributionList" type="t:DistributionListType"/>
@@ -1451,6 +1467,7 @@
                 <xs:choice>
                     <xs:element name="Item" type="t:ItemType"/>
                     <xs:element name="Message" type="t:MessageType"/>
+                    <xs:element name="SharingMessage" type="t:SharingMessageType"/>
                     <xs:element name="CalendarItem" type="t:CalendarItemType"/>
                     <xs:element name="Contact" type="t:ContactItemType"/>
                     <xs:element name="DistributionList" type="t:DistributionListType"/>
@@ -1599,6 +1616,7 @@
                 <xs:choice minOccurs="0" maxOccurs="1">
                     <xs:element name="Item" type="t:ItemType"/>
                     <xs:element name="Message" type="t:MessageType"/>
+                    <xs:element name="SharingMessage" type="t:SharingMessageType"/>
                     <xs:element name="CalendarItem" type="t:CalendarItemType"/>
                     <xs:element name="Contact" type="t:ContactItemType"/>
                     <xs:element name="MeetingMessage" type="t:MeetingMessageType"/>
@@ -1619,6 +1637,7 @@
         <xs:choice>
             <xs:element name="Item" type="t:ItemType"/>
             <xs:element name="Message" type="t:MessageType"/>
+            <xs:element name="SharingMessage" type="t:SharingMessageType"/>
             <xs:element name="CalendarItem" type="t:CalendarItemType"/>
             <xs:element name="Contact" type="t:ContactItemType"/>
             <xs:element name="DistributionList" type="t:DistributionListType"/>
@@ -1808,6 +1827,7 @@
             <xs:enumeration value="alltaggeditems" />
             <xs:enumeration value="externalcontacts" />
             <xs:enumeration value="teamchat" />
+            <xs:enumeration value="teamchathistory" />
             <xs:enumeration value="yammerroot" />
             <xs:enumeration value="yammerinbound" />
             <xs:enumeration value="yammeroutbound" />
@@ -1816,6 +1836,9 @@
             <xs:enumeration value="onedriverecylebin" />
             <xs:enumeration value="onedrivesystem" />
             <xs:enumeration value="onedrivevolume" />
+            <xs:enumeration value="important" />
+            <xs:enumeration value="starred" />
+            <xs:enumeration value="archive"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -3824,6 +3847,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element name="Item" type="t:ItemType"/>
                 <xs:element name="Message" type="t:MessageType"/>
+                <xs:element name="SharingMessage" type="t:SharingMessageType"/>
                 <xs:element name="CalendarItem" type="t:CalendarItemType"/>
                 <xs:element name="Contact" type="t:ContactItemType"/>
                 <xs:element name="DistributionList" type="t:DistributionListType"/>
@@ -3845,6 +3869,7 @@
             <xs:choice minOccurs="1" maxOccurs="unbounded">
                 <xs:element name="Item" type="t:ItemType"/>
                 <xs:element name="Message" type="t:MessageType"/>
+                <xs:element name="SharingMessage" type="t:SharingMessageType"/>
                 <xs:element name="CalendarItem" type="t:CalendarItemType"/>
                 <xs:element name="Contact" type="t:ContactItemType"/>
                 <xs:element name="DistributionList" type="t:DistributionListType"/>
@@ -4015,6 +4040,7 @@
                     <xs:element name="ApprovalRequestData" type="t:ApprovalRequestDataType" minOccurs="0" />
                     <xs:element name="VotingInformation" type="t:VotingInformationType" minOccurs="0" />
                     <xs:element name="ReminderMessageData" type="t:ReminderMessageDataType" minOccurs="0" />
+                    <xs:element name="MessageSafety" type="t:MessageSafetyType" minOccurs="0" />
                     <xs:element name="SenderSMTPAddress" type="t:SmtpAddressType" minOccurs="0"/>
                     <xs:element name="MailboxGuids" minOccurs="0" maxOccurs="1">
                         <xs:complexType>
@@ -4023,6 +4049,8 @@
                             </xs:sequence>
                         </xs:complexType>
                     </xs:element>
+                  <xs:element name="PublishedCalendarItemIcs" type="xs:string" minOccurs="0" />
+                  <xs:element name="PublishedCalendarItemName" type="xs:string" minOccurs="0" />
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -4099,6 +4127,53 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+
+  <xs:complexType name="SharingMessageType">
+    <xs:complexContent>
+      <xs:extension base="t:MessageType">
+        <xs:sequence>
+          <xs:element name="SharingMessageAction" type="t:SharingMessageActionType" minOccurs="0" />
+          <xs:element name="SharingMessageActions" type="t:ArrayOfSharingMessageActionType" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ArrayOfSharingMessageActionType">
+    <xs:sequence>
+      <xs:element name="SharingMessageAction" type="t:SharingMessageActionType" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SharingMessageActionType">
+    <xs:sequence>
+      <xs:element name="Importance" type="t:SharingActionImportance" minOccurs="0" />
+      <xs:element name="ActionType" type="t:SharingActionType" minOccurs="0" />
+      <xs:element name="Action" type="t:SharingAction" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="SharingActionImportance">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Primary" />
+      <xs:enumeration value="Secondary" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SharingAction">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AcceptAndViewCalendar" />
+      <xs:enumeration value="ViewCalendar" />
+      <xs:enumeration value="AddThisCalendar" />
+      <xs:enumeration value="Accept" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SharingActionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Accept" />
+    </xs:restriction>
+  </xs:simpleType>
 
     <!-- Paging specification -->
     <xs:complexType name="BasePagingType" abstract="true">
@@ -4926,6 +5001,7 @@
                     <xs:element name="OnlineMeetingSettings" type="t:OnlineMeetingSettingsType" minOccurs="0" maxOccurs="1"/>
                     <xs:element name="IsOrganizer" type="xs:boolean" minOccurs="0" />
                     <xs:element name="CalendarActivityData" type="t:CalendarActivityDataType" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="DoNotForwardMeeting" type="xs:boolean" minOccurs="0"/>             
                 </xs:sequence>
 
             </xs:extension>
@@ -5046,6 +5122,7 @@
                     <xs:element name="EndWallClock" type="xs:dateTime" minOccurs="0" maxOccurs="1" />
                     <xs:element name="StartTimeZoneId" type="xs:string" minOccurs="0" maxOccurs="1" />
                     <xs:element name="EndTimeZoneId" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="DoNotForwardMeeting" type="xs:boolean" minOccurs="0"/>        
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -5078,6 +5155,7 @@
                     <xs:element name="Recurrence" type="t:RecurrenceType" minOccurs="0" />
                     <xs:element name="CalendarItemType" type="xs:string" minOccurs="0" />
                     <xs:element name="EnhancedLocation" type="t:EnhancedLocationType" minOccurs="0" />
+                    <xs:element name="DoNotForwardMeeting" type="xs:boolean" minOccurs="0"/>         
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -6572,6 +6650,15 @@
         </xs:sequence>
     </xs:complexType>
 
+    <!-- MessageSafetyType -->
+    <xs:complexType name="MessageSafetyType">
+      <xs:sequence>
+        <xs:element name="MessageSafetyLevel" type="xs:int" minOccurs="0" />
+        <xs:element name="MessageSafetyReason" type="xs:int" minOccurs="0" />
+        <xs:element name="Info" type="xs:string" minOccurs="0" />
+      </xs:sequence>
+    </xs:complexType>
+
     <!-- SendPromptType -->
     <xs:simpleType name="SendPromptType">
         <xs:restriction base="xs:string">
@@ -6922,6 +7009,7 @@
                     <xs:enumeration value="InvalidRecipient" />
                     <xs:enumeration value="Scope" />
                     <xs:enumeration value="RecipientSuggestions" />
+                    <xs:enumeration value="PreferAccessibleContent" />
                 </xs:restriction>
             </xs:simpleType>
         </xs:list>
@@ -6960,6 +7048,7 @@
             <xs:element minOccurs="0" maxOccurs="1" name="InvalidRecipient" type="xs:boolean" />
             <xs:element minOccurs="0" maxOccurs="1" name="Scope" type="xs:int" />
             <xs:element minOccurs="0" maxOccurs="1" name="RecipientSuggestions" type="t:ArrayOfRecipientSuggestionsType" />
+            <xs:element minOccurs="0" maxOccurs="1" name="PreferAccessibleContent" type="xs:boolean" />
         </xs:sequence>
     </xs:complexType>
 
@@ -6986,6 +7075,7 @@
                     <xs:enumeration value="ProtectionRules" />
                     <xs:enumeration value="PolicyNudges" />
                     <xs:enumeration value="SharePointURLs" />
+                    <xs:enumeration value="OfficeIntegrationConfiguration" />
                 </xs:restriction>
             </xs:simpleType>
         </xs:list>
@@ -7034,6 +7124,16 @@
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="OfficeIntegrationConfiguration">
+      <xs:complexContent>
+        <xs:extension base="t:ServiceConfiguration">
+          <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="OfficeSidebarURL" type="xs:string" />
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="ConfigurationRequestDetailsType">
@@ -8192,6 +8292,15 @@
                     <xs:element name="VisualizationContainerUrl" type="xs:string" minOccurs="0" maxOccurs="1" />
                     <xs:element name="VisualizationContainerTitle" type="xs:string" minOccurs="0" maxOccurs="1" />
                     <xs:element name="VisualizationAccessUrl" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="ReferenceAttachmentProviderEndpoint" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="ReferenceAttachmentProviderType" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="ItemConversationId" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="SharepointItemListId" type="t:GuidType" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="SharepointItemListItemId" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="SharepointItemSiteId" type="t:GuidType" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="SharepointItemSitePath" type="xs:string" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="SharepointItemWebId" type="t:GuidType" minOccurs="0" maxOccurs="1" />
+                    <xs:element name="AttachmentId" type="xs:string" minOccurs="0" maxOccurs="1" />
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -8505,6 +8614,8 @@
             <xs:element name="IsVisible" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
             <xs:element name="OptedInto" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
             <xs:element name="IsArchive" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="ParentLabelIdentity" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="Priority" type="xs:int" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -8543,6 +8654,7 @@
             <xs:enumeration value="Private" />
             <xs:enumeration value="MarketPlace" />
             <xs:enumeration value="PrivateCatalog" />
+            <xs:enumeration value="MarketplacePrivateCatalog" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -8885,6 +8997,7 @@
                     <xs:enumeration value="OneDriveItems"/>
                     <xs:enumeration value="FileItems"/>
                     <xs:enumeration value="DelveItems"/>
+                    <xs:enumeration value="MessageItems"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:list>
@@ -9304,10 +9417,12 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="None" />
             <xs:enumeration value="EntityRelevanceApi" />
+            <xs:enumeration value="EntityRelevanceApiCache" />
             <xs:enumeration value="ActiveDirectory" />
             <xs:enumeration value="ExplicitTyping" />
             <xs:enumeration value="Paste" />
-            <xs:enumeration value="RecipientCache" />
+            <xs:enumeration value="LocalCacheAndEntityRelevanceApi" />
+            <xs:enumeration value="LocalCache" />
             <xs:enumeration value="Other" />
         </xs:restriction>
     </xs:simpleType>

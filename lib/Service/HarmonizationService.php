@@ -177,7 +177,7 @@ class HarmonizationService {
 		// contacts harmonization
 		try {
 			// evaluate, if contacts app is available and contacts harmonization is turned on
-			if ($this->ConfigurationService->isContactsAppAvailable() &&
+			if ($this->ConfigurationService->isContactsAppAvailable($uid) &&
 				(($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->ContactsHarmonize > -1))) {
 				$this->logger->info('Statred Harmonization of Contacts for ' . $uid);
@@ -226,7 +226,7 @@ class HarmonizationService {
 		// events harmonization
 		try {
 			// evaluate, if calendar app is available and events harmonization is turned on
-			if ($this->ConfigurationService->isCalendarAppAvailable() &&
+			if ($this->ConfigurationService->isCalendarAppAvailable($uid) &&
 				(($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->EventsHarmonize > -1))) {
 				$this->logger->info('Statred Harmonization of Events for ' . $uid);
@@ -275,7 +275,7 @@ class HarmonizationService {
 		// tasks harmonization
 		try {
 			// evaluate, if tasks app is available and tasks harmonization is turned on
-			if ($this->ConfigurationService->isTasksAppAvailable() &&
+			if ($this->ConfigurationService->isTasksAppAvailable($uid) &&
 				(($mode === 'S' && $Configuration->TasksHarmonize > 0) ||
 				($mode === 'M' && $Configuration->TasksHarmonize > -1))) {
 				$this->logger->info('Statred Harmonization of Tasks for ' . $uid);
@@ -355,7 +355,7 @@ class HarmonizationService {
 		// contacts harmonization
 		try {
 			// evaluate, if contacts app is available and contacts harmonization is turned on
-			if ($this->ConfigurationService->isContactsAppAvailable() && $Configuration->ContactsHarmonize > 0) {
+			if ($this->ConfigurationService->isContactsAppAvailable($uid) && $Configuration->ContactsHarmonize > 0) {
 				$this->logger->info('Statred Harmonization of Contacts for ' . $uid);
 				// assign remote data store
 				$this->ContactsService->RemoteStore = $RemoteStore;
@@ -406,7 +406,7 @@ class HarmonizationService {
 		// events harmonization
 		try {
 			// evaluate, if calendar app is available and events harmonization is turned on
-			if ($this->ConfigurationService->isCalendarAppAvailable() && $Configuration->EventsHarmonize > 0) {
+			if ($this->ConfigurationService->isCalendarAppAvailable($uid) && $Configuration->EventsHarmonize > 0) {
 				$this->logger->info('Statred Harmonization of Events for ' . $uid);
 				// assign remote data store
 				$this->EventsService->RemoteStore = $RemoteStore;
@@ -458,7 +458,7 @@ class HarmonizationService {
 		// tasks harmonization
 		try {
 			// evaluate, if tasks app is available and tasks harmonization is turned on
-			if ($this->ConfigurationService->isTasksAppAvailable() && $Configuration->TasksHarmonize > 0) {
+			if ($this->ConfigurationService->isTasksAppAvailable($uid) && $Configuration->TasksHarmonize > 0) {
 				$this->logger->info('Statred Harmonization of Tasks for ' . $uid);
 				// assign remote data store
 				$this->TasksService->RemoteStore = $RemoteStore;

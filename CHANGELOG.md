@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.12 - 2023-10-06
+### Modifications
+- Fixed SOAP error caused by missing service.wsdl and types.xsd definitions
+
+## 1.0.11 - 2023-10-05
+### Modifications
+- Improved apps availability check to work with apps limited to selected groups. #jkhradil - f29d195
+- Fixed UI app name correction. #jkhradil - f29d195
+
+## 1.0.10 - 2023-10-05
+### Modifications
+- Fixed autodiscovery EXPR definition logic
+
+## 1.0.9 - 2023-10-05
+### Additions
+- Implemented Support for EXPR protocol definition in auto discovery
+### Modifications
+- Modified auto discovery logic to include EXPR
+- Modified default protocol version to Exchange2007_SP1
+- Modified messaging protocol version discovery regex
+- Modified user email discovery to use UserSMTPAddress
+- Modified connection verification to use "msgfolderroot" instead of "root"
+- Updated soap definitiions - Service.wsdl, Messages.xsd, Types.xsd
+- Fixed connectAccountAlternate result handler logic in User Configuration Controller
+
+## 1.0.8 - 2023-10-02
+### Additions
+- Implemented Support for EXHTTP definition in auto discovery
+### Modifications
+- Improved UI Layout
+
+
 ## 1.0.7 - 2023-09-22
 ### Modifications
 - Minor Code Cleanup

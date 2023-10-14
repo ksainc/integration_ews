@@ -204,14 +204,31 @@ class CoreService {
 			$data = $locator->discovered;
 
 			$o = new \stdClass();
-			$o->UserDisplayName = $data['User']['DisplayName'];
-			$o->UserEMailAddress = $data['User']['EMailAddress'];
-			$o->UserSMTPAddress = $data['User']['AutoDiscoverSMTPAddress'];
+			$o->UserDisplayName = (isset($data['User']['DisplayName'])) ? $data['User']['DisplayName'] : '';
+			$o->UserEMailAddress = (isset($data['User']['EMailAddress'])) ? $data['User']['EMailAddress'] : '';
+			$o->UserSMTPAddress = (isset($data['User']['AutoDiscoverSMTPAddress'])) ? $data['User']['AutoDiscoverSMTPAddress'] : '';
 			$o->UserSecret = $account_bauth_secret;
 
 			foreach ($data['Account']['Protocol'] as $entry) {
+				// evaluate if type is EXHTTP
+				if ($entry['Type'] == 'EXHTTP') {
+					$o->EXHTTP = new \stdClass();
+					$o->EXHTTP->Server = $entry['Server'];
+					$o->EXHTTP->ASUrl = $entry['ASUrl'];
+					$o->EXHTTP->EwsUrl = $entry['EwsUrl'];
+					$o->EXHTTP->OOFUrl = $entry['OOFUrl'];
+				}
+				// evaluate if type is EXPR
+				elseif ($entry['Type'] == 'EXPR') {
+					$o->EXPR = new \stdClass();
+					$o->EXPR->Server = $entry['Server'];
+					$o->EXPR->AD = $entry['AD'];
+					$o->EXPR->ASUrl = $entry['ASUrl'];
+					$o->EXPR->EwsUrl = $entry['EwsUrl'];
+					$o->EXPR->OOFUrl = $entry['OOFUrl'];
+				}
 				// evaluate if type is EXCH
-				if ($entry['Type'] == 'EXCH') {
+				elseif ($entry['Type'] == 'EXCH') {
 					$o->EXCH = new \stdClass();
 					$o->EXCH->Server = $entry['Server'];
 					$o->EXCH->AD = $entry['AD'];
@@ -286,12 +303,18 @@ class CoreService {
 			// locate service information
 			$service_configuration = $this->locateAccount($account_bauth_id, $account_bauth_secret);
 			// evaluate, if ews server information exists in the located service information
-			if (isset($service_configuration->EXCH->Server)) {
+			if (isset($service_configuration->EXHTTP->Server)) {
+				$account_server = $service_configuration->EXHTTP->Server;
+			}
+			elseif (isset($service_configuration->EXPR->Server)) {
+				$account_server = $service_configuration->EXPR->Server;
+			}
+			elseif (isset($service_configuration->EXCH->Server)) {
 				$account_server = $service_configuration->EXCH->Server;
 			}
 			// evaluate, if account id information exists in the located service information
-			if (isset($service_configuration->UserEMailAddress)) {
-				$account_id = $service_configuration->UserEMailAddress;
+			if (isset($service_configuration->UserSMTPAddress)) {
+				$account_id = $service_configuration->UserSMTPAddress;
 			}
 			// evaluate, if account name information exists in the located service information
 			if (isset($service_configuration->UserDisplayName)) {
@@ -316,7 +339,7 @@ class CoreService {
 			$RemoteStore = new EWSClient(
 				$account_server, 
 				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_bauth_id, $account_bauth_secret), 
-				'Exchange2007'
+				'Exchange2007_SP1'
 			);
 			// retrieve and evaluate transport verification option
 			if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
@@ -325,12 +348,12 @@ class CoreService {
 			// enable transport body retention
 			$RemoteStore->retainTransportResponseBody(true);
 			// retrieve root folder attributes
-			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'root', true, 'A');
+			$rs = $this->RemoteCommonService->fetchFolder($RemoteStore, 'msgfolderroot', true, 'A');
 			// evaluate server response
 			if (isset($rs)) {
 				// extract server version from response body message
 				preg_match_all(
-					'/<ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
+					'/ServerVersionInfo[^>]*?\sVersion=(["\'])?((?:.(?!\1|>))*.?)\1?/',
 					$RemoteStore->discloseTransportResponseBody(),
 					$match
 				);
@@ -501,7 +524,7 @@ class CoreService {
 	public function connectMail(string $uid, object $configuration): void {
 
 		// evaluate if mail app exists
-		if (!$this->ConfigurationService->isMailAppAvailable()) {
+		if (!$this->ConfigurationService->isMailAppAvailable($uid)) {
 			return;
 		}
 		// evaluate if configuration contains the accounts email address
@@ -582,13 +605,13 @@ class CoreService {
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve local collections
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid);;
 		}
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid);
 		}
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			$response['TaskCollections'] = $this->LocalTasksService->listCollections($uid);
 		}
 		// return response
@@ -612,7 +635,7 @@ class CoreService {
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve remote collections
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			// assign remote data store
 			$this->RemoteContactsService->DataStore = $RemoteStore;
 			// retrieve remote personal collections
@@ -620,7 +643,7 @@ class CoreService {
 			// retrieve remote public collections
 			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
 		}
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			// assign remote data store
 			$this->RemoteEventsService->DataStore = $RemoteStore;
 			// retrieve remote personal collections
@@ -628,7 +651,7 @@ class CoreService {
 			// retrieve remote public collections
 			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
 		}
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			// assign remote data store
 			$this->RemoteTasksService->DataStore = $RemoteStore;
 			// retrieve remote personal collections
@@ -655,13 +678,13 @@ class CoreService {
 		// construct response object
 		$response = ['ContactCorrelations' => [], 'EventCorrelations' => [], 'TaskCorrelations' => []];
 		// retrieve local collections
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			$response['ContactCorrelations'] = $this->CorrelationsService->findByType($uid, 'CC');
 		}
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			$response['EventCorrelations'] = $this->CorrelationsService->findByType($uid, 'EC');
 		}
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			$response['TaskCorrelations'] = $this->CorrelationsService->findByType($uid, 'TC');
 		}
 		// return response
@@ -686,7 +709,7 @@ class CoreService {
 		// terminate harmonization thread, in case the user changed any correlations
 		$this->HarmonizationThreadService->terminate($uid);
 		// deposit contacts correlations
-		if ($this->ConfigurationService->isContactsAppAvailable()) {
+		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
 			foreach ($cc as $entry) {
 				if (!empty($entry['action'])) {
 					try {
@@ -724,7 +747,7 @@ class CoreService {
 			}
 		}
 		// deposit events correlations
-		if ($this->ConfigurationService->isCalendarAppAvailable()) {
+		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			foreach ($ec as $entry) {
 				if (!empty($entry['action'])) {
 					try {
@@ -762,7 +785,7 @@ class CoreService {
 			}
 		}
 		// deposit tasks correlations
-		if ($this->ConfigurationService->isTasksAppAvailable()) {
+		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			foreach ($tc as $entry) {
 				if (!empty($entry['action'])) {
 					try {

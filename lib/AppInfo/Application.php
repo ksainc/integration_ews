@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace OCA\EWS\AppInfo;
 
 use OCP\IConfig;
+use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Bootstrap\IBootContext;
@@ -73,8 +74,9 @@ class Application extends App implements IBootstrap {
 
         // retrieve harmonization mode
         $mode = \OC::$server->getConfig()->getAppValue(Application::APP_ID, 'harmonization_mode');
-        $contacts = \OC::$server->getConfig()->getAppValue('contacts', 'enabled');
-        $calendar = \OC::$server->getConfig()->getAppValue('calendar', 'enabled');
+        $appmanager = $this->getContainer()->get(IAppManager::class);
+        $contacts = $appmanager->isInstalled('contacts');
+        $calendar = $appmanager->isInstalled('calendar');
 
         // register notifications
         $manager = $this->getContainer()->get(INotificationManager::class);
@@ -83,7 +85,7 @@ class Application extends App implements IBootstrap {
         $dispatcher = $this->getContainer()->get(IEventDispatcher::class);
         $dispatcher->addServiceListener(UserDeletedEvent::class, UserDeletedListener::class);
 
-        if ($contacts == 'yes') {
+        if ($contacts == true) {
             $dispatcher->addServiceListener(AddressBookDeletedEvent::class, AddressBookDeletedListener::class);
             // evaluate harmonization mode, and only register if set to active
             if ($mode == 'A') {
@@ -93,7 +95,7 @@ class Application extends App implements IBootstrap {
             }
         }
         
-        if ($calendar == 'yes') {
+        if ($calendar == true) {
             $dispatcher->addServiceListener(CalendarDeletedEvent::class, CalendarDeletedListener::class);
             // evaluate harmonization mode, and only register if set to active
             if ($mode == 'A') {
