@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.13 - 2023-10-16
+### Modifications
+- Fixed PHP error - Undefined variable
+
 ## 1.0.12 - 2023-10-06
 ### Modifications
 - Fixed SOAP error caused by missing service.wsdl and types.xsd definitions

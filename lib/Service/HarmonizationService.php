@@ -525,7 +525,7 @@ class HarmonizationService {
 			$rs = $this->RemoteCommonService->connectEvents($RemoteStore, $duration, $ids, null, ['CreatedEvent', 'ModifiedEvent', 'DeletedEvent', 'CopiedEvent', 'MovedEvent']);
 		}
 		// return id and token
-		if ($rs instanceof \stdClass)
+		if (isset($rs) && $rs instanceof \stdClass)
 		{
 			return $rs;
 		}
