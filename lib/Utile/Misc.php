@@ -218,5 +218,120 @@ class Misc {
 		}
 		fwrite($file, "]\n");
 		fclose($file);
-    }
+
+		
+		$zones = [];
+		foreach (\OCA\EAS\Utile\TimeZoneEAS::zones() as $entry) {
+
+			$zone = (object) ['Id' => $entry['Id'], 'Description' => $entry['Name'], 'Mutations' => []];
+			$periods = json_decode($entry['Periods'])->Period;
+			$transitions = json_decode($entry['Transitions']);
+			$groups = json_decode($entry['TransitionsGroups'])->TransitionsGroup;
+
+			// Process Transition Groups
+
+			foreach ($groups as $tg) {
+				if (isset($tg->Transition) && count($tg->Transition) > 0) {
+					foreach ($tg->Transition as $values) {
+						$pk = array_search($values->To->_, array_column($periods, 'Id'));
+						$Bias = $periods[$pk]->Bias;
+						if (str_starts_with($Bias, '-')) {
+							$Bias = new DateInterval(substr($Bias, 1));
+							$Bias->invert = 1;
+						}
+						else {
+							$Bias = new DateInterval($Bias);
+							$Bias->invert = 0;
+						}
+						$zone->Mutations[$tg->Id] = (object) [
+							'Id' => $tg->Id, 
+							'Effective' => -2147483648, 
+							'Type' => 'Static', 
+							'Alterations' => []
+						];
+						$zone->Mutations[$tg->Id]->Alterations[] = (object) [
+							'Id' => str_replace($zone->Id . '/', '', $values->To->_),
+							'Class' => $periods[$pk]->Name,
+							'Bias' => (new DateTime('@0'))->add($Bias)->getTimeStamp() / 60,
+							'Period' => $periods[$pk]->Bias,
+						];
+					}
+				}
+
+				if (isset($tg->RecurringDayTransition) && count($tg->RecurringDayTransition) > 0) {
+					$zone->Mutations[$tg->Id] = (object) [
+						'Id' => $tg->Id,
+						'Effective' => -2147483648,
+						'Type' => 'Dynamic',
+						'Alterations' => []
+					];
+					foreach ($tg->RecurringDayTransition as $key => $values) {
+						$pk = array_search($values->To->_, array_column($periods, 'Id'));
+						$Bias = $periods[$pk]->Bias;
+						if (str_starts_with($Bias, '-')) {
+							$Bias = new DateInterval(substr($Bias, 1));
+							$Bias->invert = 1;
+						}
+						else {
+							$Bias = new DateInterval($Bias);
+							$Bias->invert = 0;
+						}
+						$zone->Mutations[$tg->Id]->Alterations[$key] = (object) [
+							'Id' => str_replace($zone->Id . '/', '', $values->To->_),
+							'Class' => $periods[$pk]->Name,
+							'Bias' => (new DateTime('@0'))->add($Bias)->getTimeStamp() / 60,
+							'Period' => $periods[$pk]->Bias,
+							'Month' => $values->MonthOfYear,
+							'Week' => $values->WeekOfMonth,
+							'Day' => $values->DayOfWeek,
+							'Time' => $values->TimeOffset
+						];
+						
+					}
+				}
+
+				if (isset($tg->AbsoluteDateTransition) && count($tg->AbsoluteDateTransition) > 0) {
+					throw new Exception("Unhandled Transition AbsoluteDateTransition", 1);
+				}
+
+				if (isset($tg->RecurringDateTransition) && count($tg->RecurringDateTransition) > 0) {
+					throw new Exception("Unhandled Transition RecurringDateTransition", 1);
+				}
+
+			}
+
+			// Process Transitions
+
+			if (isset($transitions->AbsoluteDateTransition) && count($transitions->AbsoluteDateTransition) > 0) {
+				foreach ($transitions->AbsoluteDateTransition as $values) {
+					$zone->Mutations[(int) $values->To->_]->Effective = strtotime($values->DateTime);
+				}
+			}
+
+			if (isset($transitions->RecurringDateTransition) && count($transitions->RecurringDateTransition) > 0) {
+				throw new Exception("Unhandled Transition RecurringDateTransition", 1);
+			}
+
+			if (isset($transitions->RecurringDayTransition) && count($transitions->RecurringDayTransition) > 0) {
+				throw new Exception("Unhandled Transition RecurringDayTransition", 1);
+			}
+
+			$zones[$entry['Id']] = $zone;
+		
+		}
+
+		$file = fopen("/var/www/nextcloud/data/EAS-Timezones.txt", "w") or die("Unable to open file!");
+		
+		fwrite($file, "[\n");
+		foreach ($zones as $zone) {
+			fwrite($file, 
+				"'$zone->Id' => '" .
+				json_encode($zone) . 
+				"',\n"
+			);
+		}
+		fwrite($file, "]\n");
+		fclose($file);
+		
+	}
 }
