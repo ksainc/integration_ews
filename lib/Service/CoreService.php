@@ -861,7 +861,7 @@ class CoreService {
 					);
 					// retrieve and evaluate transport verification option
 					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
-						$this->RemoteStore->configureTransportVerification(true);
+						$this->RemoteStore->configureTransportVerification(false);
 					}
 				}
 				break;
@@ -881,7 +881,7 @@ class CoreService {
 					);
 					// retrieve and evaluate transport verification option
 					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
-						$this->RemoteStore->configureTransportVerification(true);
+						$this->RemoteStore->configureTransportVerification(false);
 					}
 				}
 				break;

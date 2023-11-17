@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.14 - 2023-11-17
+### Modifications
+- Fixed Transport Verification Flag Issue #23
+
 ## 1.0.13 - 2023-10-16
 ### Modifications
 - Fixed PHP error - Undefined variable
