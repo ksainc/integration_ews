@@ -30,6 +30,7 @@ class Validator {
     private const _fqdn = '/(?=^.{1,254}$)(^(?:(?!\d|-)[a-z0-9\-]{1,63}(?<!-)\.)+(?:[a-z]{2,})$)/i';
     private const _ip4 = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
     private const _ip6 = "/^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/"; 
+    private const _username_ad = '/^[a-zA-Z][a-zA-Z0-9\-\_\.]{0,63}\\\\[a-zA-Z][a-zA-Z0-9\-\_\.]{0,48}$/';
 
     /**
      * validate fully quntified domain name
@@ -132,15 +133,28 @@ class Validator {
         if (self::email($username)) {
             return true;
         }
-        
-        // TODO: Windows Login Validator
-        /*
-        if (self::windows_username($username)) {
+
+        if (self::username_ad($username)) {
             return true;
         }
-        */
 
         return false;
 
     }
+
+    /**
+     * validate windows active directory username (domain\username)
+     * 
+     * @since Release 1.0.15
+     * 
+	 * @param string $username - windows active directory formented username (domain\username)
+	 * 
+	 * @return bool
+	 */
+    static function username_ad(string $username): bool {
+
+        return (!empty($username) && preg_match(self::_username_ad, $username) > 0);
+
+    }
+
 }

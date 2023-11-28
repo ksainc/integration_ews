@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.15 - 2023-11-27
+### Additions
+- Implemented Support for Windows Active Directory username format
+
 ## 1.0.14 - 2023-11-17
 ### Modifications
 - Fixed Transport Verification Flag Issue #23
