@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## 1.0.15 - 2023-11-27
 ### Additions
 - Implemented Support for Windows Active Directory username format
+### Modifications
+- Fixed Basic/NTLM authentication problem when using UTF8 characters Issue #22
 
 ## 1.0.14 - 2023-11-17
 ### Modifications

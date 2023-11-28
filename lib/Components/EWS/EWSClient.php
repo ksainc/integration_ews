@@ -363,10 +363,10 @@ class EWSClient extends \SoapClient
         // set service basiic authentication
         if ($this->authentication instanceof AuthenticationBasic) {
             $this->_http_options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM;
-            $this->_http_options[CURLOPT_USERPWD] = $this->authentication->Id . ':' . $this->authentication->Secret;
+            $this->_http_options[CURLOPT_USERPWD] = $this->authentication->Id . ':' . utf8_decode($this->authentication->Secret);
         }
         // set service bearer authentication
-        if ($this->authentication instanceof AuthenticationBearer) {
+        elseif ($this->authentication instanceof AuthenticationBearer) {
             unset($this->_http_options[CURLOPT_HTTPAUTH]);
             $this->_http_header['Authorization'] = 'Authorization: Bearer ' . $this->authentication->Token;
         }
