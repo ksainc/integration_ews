@@ -111,7 +111,7 @@ class EWSClient extends \SoapClient
      *
      * @var string
      */
-    protected string $_transport_path = '/EWS/Exchange.asmx';
+    protected string $_transport_path = '/ews/exchange.asmx';
 
     /**
      * Transport Authentication
