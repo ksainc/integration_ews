@@ -43,6 +43,7 @@ class EWSClient extends \SoapClient
     const TRANSPORT_VERSION_1 = CURL_HTTP_VERSION_1_0;
     const TRANSPORT_VERSION_1_1 = CURL_HTTP_VERSION_1_1;
     const TRANSPORT_VERSION_2 = CURL_HTTP_VERSION_2_0;
+
     /**
      * Http Transport Scheme
      *
@@ -92,11 +93,18 @@ class EWSClient extends \SoapClient
     const SERVICE_VERSION_2016_1010 = 'V2016_10_10';
 
     /**
-     * Transport Type
+     * Transport Mode
      *
      * @var string
      */
     protected string $_transport_mode = self::TRANSPORT_SECURE;
+
+     /**
+     * Transport Location
+     *
+     * @var string
+     */
+    protected ?string $_transport_location = null;
 
     /**
      * Transport Path
@@ -106,13 +114,21 @@ class EWSClient extends \SoapClient
     protected string $_transport_path = '/EWS/Exchange.asmx';
 
     /**
+     * Transport Authentication
+     *
+     * @var AuthenticationBasic|AuthenticationBearer
+     */
+    protected $_transport_authentication = null;
+
+    /**
      * Class Variables
      */
-    protected array $_http_header = [
+    protected array $_transport_header = [
         'Connection' => 'Connection: Keep-Alive',
         'Content-Type' => 'Content-Type: text/xml; charset=utf-8',
     ];
-    protected array $_http_options = [
+
+    protected array $_transport_options = [
         CURLOPT_USERAGENT => 'NextCloud EWS Client',
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
         CURLOPT_SSL_VERIFYPEER => true,
@@ -120,7 +136,6 @@ class EWSClient extends \SoapClient
         CURLOPT_HEADER => true,
         CURLOPT_POST => true,
     ];
-    protected string $_soap_description_file = DIRECTORY_SEPARATOR . 'Assets' . DIRECTORY_SEPARATOR . 'services.wsdl';
 
      /**
      * cURL resource used to make the request
@@ -128,119 +143,125 @@ class EWSClient extends \SoapClient
      * @var CurlHandle
      */
     protected $_client;
+
     /**
      * Retain Last Transport Request Header Flag
      *
      * @var bool
      */
-    protected $_TransportRequestHeaderFlag = false;
+    protected bool $_TransportRequestHeaderFlag = false;
+
     /**
      * Retain Last Transport Request Body Flag
      *
      * @var bool
      */
-    protected $_TransportRequestBodyFlag = false;
+    protected bool $_TransportRequestBodyFlag = false;
+
     /**
      * Last Transport Request Header Data
      *
      * @var string
      */
-    protected $_TransportRequestHeaderData = '';
+    protected string $_TransportRequestHeaderData = '';
+
     /**
      * Last Transport Request Body Data
      *
      * @var string
      */
-    protected $_TransportRequestBodyData = '';
+    protected string $_TransportRequestBodyData = '';
+
     /**
      * Retain Last Transport Response Header Flag
      *
      * @var bool
      */
-    protected $_TransportRepsonseHeaderFlag = false;
+    protected bool $_TransportRepsonseHeaderFlag = false;
+
     /**
      * Retain Last Transport Response Body Flag
      *
      * @var bool
      */
-    protected $_TransportRepsonseBodyFlag = false;
+    protected bool $_TransportRepsonseBodyFlag = false;
+
     /**
      * Last Transport Response Header Data
      *
      * @var string
      */
-    protected $_TransportRepsonseHeaderData = '';
+    protected string $_TransportRepsonseHeaderData = '';
+
     /**
      * Last Transport Response Header Data
      *
      * @var string
      */
-    protected $_TransportRepsonseBodyData = '';
-     /**
-     * Location of the Exchange server.
-     *
-     * @var string
-     */
-    protected $server;
+    protected string $_TransportRepsonseBodyData = '';
+
     /**
-     * Username to use when connecting to the Exchange server.
+     * Exchange Web Services WSDL description file
      *
-     * @var AuthenticationBasic|AuthenticationBearer
+     * @var string 
      */
-    protected $authentication;
+    protected string $_service_description_file = DIRECTORY_SEPARATOR . 'Assets' . DIRECTORY_SEPARATOR . 'services.wsdl';
+
     /**
      * Exchange Web Services version that we are going to connect with
      *
      * @var string 
      */
-    protected $version;
+    protected string $_service_version  = self::SERVICE_VERSION_2010_SP2;
+
     /**
      * Timezone to be used for all requests.
      *
      * @var string
      */
-    protected $timezone;
+    protected ?string $_client_timezone = null;
+
     /**
      * Exchange impersonation
      *
      * @var \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType
      */
-    protected $impersonation;
+    protected $_client_impersonation = null;
     
     /**
      * Constructor for the ExchangeWebServices class
      *
-     * @param string $server        EWS Service Provider (FQDN, IPv4, IPv6)
-     * @param string $username      EWS Account Id
-     * @param string $password      EWS Account Password
-     * @param string $version       EWS Protocol Version
+     * @param string $location          EWS Service Location (FQDN, IPv4, IPv6)
+     * @param string $authentication    EWS Authentication
+     * @param string $version           EWS Service Version
+     * @param string $timezone          EWS Client Time Zone
+     * @param string $impersonate       EWS Client Impersonation
      */
     public function __construct(
-        $server = null,
+        $location = null,
         $authentication = null,
         $version = self::SERVICE_VERSION_2010_SP2,
         $timezone = null,
-        $impersonation = null
+        $impersonate = null
     ) {
         // Set the object properties.
-        $this->server = $server;
-        $this->authentication = $authentication;
-        $this->version = $version;
-        $this->timezone = $timezone;
-        $this->impersonation = $impersonation;
-
-        // construct service headers
-        $this->constructSoapHeaders();
+        $this->_transport_location = $location;
+        $this->_transport_authentication = $authentication;
+        $this->_service_version = $version;
+        $this->_client_timezone = $timezone;
+        $this->_client_impersonation = $impersonation;
         // construct service location
-        $this->constructLocation();
+        $this->_constructTransportLocation();
         // construct service authentication
-        $this->constructAuthentication();
+        $this->_constructTransportAuthentication();
+        // construct service headers
+        $this->_constructServiceHeader();
         // initilize soap client
         $so = [
             'features' => SOAP_SINGLE_ELEMENT_ARRAYS,
             'classmap' => ClassMap::MAP
         ];
-        $sdf = dirname(__FILE__) . $this->_soap_description_file;
+        $sdf = dirname(__FILE__) . $this->_service_description_file;
         // validator (called with processResponse()) needs an XML entity loader
 		$this->callWithXmlEntityLoader(function () use ($sdf, $so): void {
 			parent::__construct($sdf, $so);
@@ -262,15 +283,26 @@ class EWSClient extends \SoapClient
 		return $result;
 	}
 
-    public function __doRequest($request, $location, $action, $version, $one_way = 0): null|string {
+    /**
+     * Executes commands agains the service host. Soap Function Overload.
+     *
+     * @param string $request           Command contents (XML format)
+     * @param string $location          Service location URL (https://domain/path/service)
+     * @param string $action            Command action/name
+     * @param string $version           Messaging Version (SOAP Version)
+     * @param string $unidirectional    Command does not return response
+     * 
+     * @return string|null              
+     */
+    public function __doRequest($request, $location, $action, $version, $unidirectional = 0): null|string {
 
         // evaluate if http client is initilized and location is the same
         if (!isset($this->_client) || curl_getinfo($this->_client, CURLINFO_EFFECTIVE_URL) != $location) {
             $this->_client = curl_init($location);
-            curl_setopt_array($this->_client, $this->_http_options);
+            curl_setopt_array($this->_client, $this->_transport_options);
         }
         // set request header
-        $header = array_merge(array_values($this->_http_header), array (
+        $header = array_merge(array_values($this->_transport_header), array (
             'SOAPAction: "' . $action . '"',
         ));
         curl_setopt($this->_client, CURLOPT_HTTPHEADER, $header);
@@ -319,32 +351,66 @@ class EWSClient extends \SoapClient
         return substr($response, $header_size);
     }
 
-    protected function constructSoapHeaders(): void {
+    /**
+     * Constructs and sets full transport location URL
+     */
+    protected function _constructTransportLocation(): void {
+
+        // set service location
+        self::__setLocation($this->_transport_mode . $this->_transport_location . $this->_transport_path);
+
+    }
+
+    /**
+     * Constructs and sets transport authentication
+     */
+    protected function _constructTransportAuthentication(): void {
+
+        // set service basiic authentication
+        if ($this->_transport_authentication instanceof AuthenticationBasic) {
+            $this->_transport_options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM;
+            $this->_transport_options[CURLOPT_USERPWD] = $this->_transport_authentication->Id . ':' . utf8_decode($this->_transport_authentication->Secret);
+        }
+        // set service bearer authentication
+        elseif ($this->_transport_authentication instanceof AuthenticationBearer) {
+            unset($this->_transport_options[CURLOPT_HTTPAUTH]);
+            $this->_transport_header['Authorization'] = 'Authorization: Bearer ' . $this->_transport_authentication->Token;
+        }
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+
+    }
+
+    /**
+     * Constructs and sets service header
+     */
+    protected function _constructServiceHeader(): void {
+
         // construct place holder
         $headers = [];
         // Set the schema version.
         $headers[] = new \SoapHeader(
             'http://schemas.microsoft.com/exchange/services/2006/types',
-            'RequestServerVersion Version="' . $this->version . '"'
+            'RequestServerVersion Version="' . $this->_service_version . '"'
         );
         // set client time zone
-        if (!empty($this->timezone)) {
+        if (!empty($this->_client_timezone)) {
             $headers[] = new \SoapHeader(
                 'http://schemas.microsoft.com/exchange/services/2006/types',
                 'TimeZoneContext',
                 array(
                     'TimeZoneDefinition' => array(
-                        'Id' => $this->timezone,
+                        'Id' => $this->_client_timezone,
                     )
                 )
             );
         }
         // set client impersonation
-        if (!empty($this->impersonation)) {
+        if (!empty($this->_client_impersonation)) {
             $headers[] = new \SoapHeader(
                 'http://schemas.microsoft.com/exchange/services/2006/types',
                 'ExchangeImpersonation',
-                $this->impersonation
+                $this->_client_impersonation
             );
         }
         // set headers
@@ -352,38 +418,21 @@ class EWSClient extends \SoapClient
 
     }
 
-    protected function constructLocation(): void {
-        // set service location
-        self::__setLocation($this->_transport_mode . $this->server . $this->_transport_path);
-
-    }
-
-    protected function constructAuthentication(): void {
-
-        // set service basiic authentication
-        if ($this->authentication instanceof AuthenticationBasic) {
-            $this->_http_options[CURLOPT_HTTPAUTH] = CURLAUTH_BASIC | CURLAUTH_DIGEST | CURLAUTH_NTLM;
-            $this->_http_options[CURLOPT_USERPWD] = $this->authentication->Id . ':' . utf8_decode($this->authentication->Secret);
-        }
-        // set service bearer authentication
-        elseif ($this->authentication instanceof AuthenticationBearer) {
-            unset($this->_http_options[CURLOPT_HTTPAUTH]);
-            $this->_http_header['Authorization'] = 'Authorization: Bearer ' . $this->authentication->Token;
-        }
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-
-    }
-
+    /**
+     * configures service transport version (HTTP/1, HTTP/1.1, HTTP/2)
+     */
     public function configureTransportVersion(int $value): void {
         
         // store parameter
-        $this->_http_options[CURLOPT_HTTP_VERSION] = $value;
+        $this->_transport_options[CURLOPT_HTTP_VERSION] = $value;
         // destroy existing client will need to be initilized again
         $this->_client = null;
 
     }
     
+    /**
+     * configures service transport mode (http://, https://)
+     */
     public function configureTransportMode(string $value): void {
 
         // store parameter
@@ -391,10 +440,15 @@ class EWSClient extends \SoapClient
         // destroy existing client will need to be initilized again
         $this->_client = null;
         // reconstruct service location
-        $this->constructLocation();
+        $this->_constructTransportLocation();
 
     }
 
+    /**
+     * configures service location path (/path/to/service.asmx)
+     * 
+     * @param string $value             full path string
+     */
     public function configureTransportPath(string $value): void {
 
         // store parameter
@@ -402,93 +456,177 @@ class EWSClient extends \SoapClient
         // destroy existing client will need to be initilized again
         $this->_client = null;
         // reconstruct service location
-        $this->constructLocation();
+        $this->_constructTransportLocation();
 
     }
 
+    /**
+     * configures client agent string (Mozilla/5.0 (X11; Linux x86_64))
+     * 
+     * @param string $value             full agent string
+     */
     public function configureTransportAgent(string $value): void {
 
         // store parameter
-        $this->_http_options[CURLOPT_USERAGENT] = $value;
+        $this->_transport_options[CURLOPT_USERAGENT] = $value;
         // destroy existing client will need to be initilized again
         $this->_client = null;
 
     }
 
+    /**
+     * configures or overrides additional transport options
+     * 
+     * @param array $options            key/value array of options
+     */
     public function configureTransportOptions(array $options): void {
 
         // store parameter
-        $this->_http_options = array_replace($this->_http_options, $options);
+        $this->_transport_options = array_replace($this->_transport_options, $options);
         // destroy existing client will need to be initilized again
         $this->_client = null;
 
     }
 
+    /**
+     * configures secure transport verification (SSL Verification)
+     * 
+     * @param bool $value           ture or false flag
+     */
     public function configureTransportVerification(bool $value): void {
 
         // store parameter
-        $this->_http_options[CURLOPT_SSL_VERIFYPEER] = $value;
+        $this->_transport_options[CURLOPT_SSL_VERIFYPEER] = $value;
         // destroy existing client will need to be initilized again
         $this->_client = null;
 
     }
 
-    public function retainTransportRequestHeader(bool $value) {
+    /**
+     * Enables or disables retention of raw request headers sent
+     * 
+     * @param bool $value           ture or false flag
+     */
+    public function retainTransportRequestHeader(bool $value): void {
         $this->_TransportRequestHeaderFlag = $value;
     }
 
-    public function retainTransportRequestBody(bool $value) {
+    /**
+     * Enables or disables retention of raw request body sent
+     * 
+     * @param bool $value           ture or false flag
+     */
+    public function retainTransportRequestBody(bool $value): void {
         $this->_TransportRequestBodyFlag = $value;
     }
 
-    public function retainTransportResponseHeader(bool $value) {
+    /**
+     * Enables or disables retention of raw response headers recieved
+     * 
+     * @param bool $value           ture or false flag
+     */
+    public function retainTransportResponseHeader(bool $value): void {
         $this->_TransportRepsonseHeaderFlag = $value;
     }
 
-    public function retainTransportResponseBody(bool $value) {
+    /**
+     * Enables or disables retention of raw response body recieved
+     * 
+     * @param bool $value           ture or false flag
+     */
+    public function retainTransportResponseBody(bool $value): void {
         $this->_TransportRepsonseBodyFlag = $value;
     }
 
-    public function discloseTransportRequestHeader() {
+    /**
+     * returns last retained raw request header sent
+     * 
+     * @return string
+     */
+    public function discloseTransportRequestHeader(): string {
         return $this->_TransportRequestHeaderData;
     }
 
-    public function discloseTransportRequestBody() {
+    /**
+     * returns last retained raw request body sent
+     * 
+     * @return string
+     */
+    public function discloseTransportRequestBody(): string {
         return $this->_TransportRequestBodyData;
     }
 
-    public function discloseTransportResponseHeader() {
+    /**
+     * returns last retained raw response header recieved
+     * 
+     * @return string
+     */
+    public function discloseTransportResponseHeader(): string {
         return $this->_TransportRepsonseHeaderData;
     }
 
-    public function discloseTransportResponseBody() {
+    /**
+     * returns last retained raw response body recieved
+     * 
+     * @return string
+     */
+    public function discloseTransportResponseBody(): string {
         return $this->_TransportRepsonseBodyData;
     }
+
     /**
-     * Gets the server parameter
+     * Gets the service location
      *
      * @return string
      */
-    public function getServer(): string {
+    public function getLocation(): string {
         
         // return version information
-        return $this->server;
+        return $this->_transport_location;
 
     }
 
     /**
-     * Sets the server parameter to be used for all requests
+     * Sets the service location parameter to be used for all requests
      *
-     * @param string $server
+     * @param string $value
      */
-    public function setServer(string $value): void {
+    public function setLocation(string $value): void {
 
         // store server
-        $this->server = $value;
+        $this->_transport_location = $value;
         // destroy existing client will need to be initilized again
         $this->_client = null;
         // reconstruct service location
-        $this->constructLocation();
+        $this->_constructTransportLocation();
+
+    }
+
+    /**
+     * Gets the service authentication parameters object
+     *
+     * @return AuthenticationBasic|AuthenticationBeare
+     */
+    public function getAuthentication(): AuthenticationBasic|AuthenticationBearer {
+        
+        // return authentication information
+        return $this->_transport_authentication;
+
+    }
+
+    /**
+     * Sets the service authentication parameters to be used for all requests
+     *
+     * @param AuthenticationBasic|AuthenticationBearer $value
+     */
+    public function setAuthentication(AuthenticationBasic|AuthenticationBearer $value): void {
+        
+        // store parameter
+        $this->_transport_authentication = $value;
+        // destroy existing client will need to be initilized again
+        $this->_client = null;
+        // construct service authentication
+        $this->_constructTransportAuthentication();
 
     }
 
@@ -500,7 +638,7 @@ class EWSClient extends \SoapClient
     public function getVersion(): string {
         
         // return version information
-        return $this->version;
+        return $this->_service_version;
 
     }
 
@@ -512,9 +650,9 @@ class EWSClient extends \SoapClient
     public function setVersion(string $value): void {
 
         // store version
-        $this->version = $value;
+        $this->_service_version = $value;
         // We need to re-build the SOAP headers.
-        $this->constructSoapHeaders();
+        $this->_constructServiceHeader();
 
     }
 
@@ -526,7 +664,7 @@ class EWSClient extends \SoapClient
     public function getTimezone(): string {
         
         // return timezone information
-        return $this->timezone;
+        return $this->_client_timezone;
 
     }
 
@@ -538,9 +676,9 @@ class EWSClient extends \SoapClient
     public function setTimezone(string $value): void {
 
         // store timezone
-        $this->timezone = $value;
+        $this->_client_timezone = $value;
         // We need to re-build the SOAP headers.
-        $this-constructSoapHeaders();
+        $this-_constructServiceHeader();
 
     }
 
@@ -552,7 +690,7 @@ class EWSClient extends \SoapClient
     public function getImpersonation(): mixed {
         
         // return impersonation information
-        return $this->impersonation;
+        return $this->_client_impersonation;
 
     }
 
@@ -564,40 +702,10 @@ class EWSClient extends \SoapClient
     public function setImpersonation($value): void {
 
         // store impersonation
-        $this->impersonation = $value;
+        $this->_client_impersonation = $value;
         // SOAP headers need to be rebuilt
-        $this->constructSoapHeaders();
+        $this->_constructServiceHeader();
 
     }
-
-     /**
-     * Gets the authentication parameters object
-     *
-     * @return AuthenticationBasic|AuthenticationBeare
-     */
-    public function getAuthentication(): AuthenticationBasic|AuthenticationBearer {
-        
-        // return authentication information
-        return $this->authentication;
-
-    }
-
-     /**
-     * Sets the authentication parameters to be used for all requests
-     *
-     * @param AuthenticationBasic|AuthenticationBearer $value
-     */
-    public function setAuthentication(AuthenticationBasic|AuthenticationBearer $value): void {
-        
-        // store parameter
-        $this->authentication = $value;
-        // destroy existing client will need to be initilized again
-        $this->_client = null;
-        // construct service authentication
-        $this->constructAuthentication();
-
-    }
-
-
 
 }
