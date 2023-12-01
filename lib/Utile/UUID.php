@@ -178,8 +178,16 @@ class UUID {
      * @return bool
      */ 
     public static function is_valid($uuid) {
-      return preg_match('/^\{?[0-9a-f]{8}\-?[0-9a-f]{4}\-?[0-9a-f]{4}\-?'.
-                        '[0-9a-f]{4}\-?[0-9a-f]{12}\}?$/i', $uuid) === 1;
+
+      if (preg_match('/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i', $uuid) > 0){
+        return true;
+      }
+      elseif (preg_match('/[0-9a-fA-F]{32}$/i', $uuid) > 0) {
+        return true;
+      }
+
+      return false;
+
     }
 
 }
