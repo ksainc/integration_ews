@@ -31,6 +31,8 @@ class Validator {
     private const _ip4 = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
     private const _ip6 = "/^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/"; 
     private const _username_ad = '/^[a-zA-Z][a-zA-Z0-9\-\_\.]{0,63}\\\\[a-zA-Z][a-zA-Z0-9\-\_\.]{0,48}$/';
+    private const _uuid_long = '/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/';
+    private const _uuid_short = '/[0-9a-fA-F]{32}$/i';
 
     /**
      * validate fully quntified domain name
@@ -154,6 +156,36 @@ class Validator {
     static function username_ad(string $username): bool {
 
         return (!empty($username) && preg_match(self::_username_ad, $username) > 0);
+
+    }
+
+    /**
+     * validate long uuid (with dashes)
+     * 
+     * @since Release 1.0.15
+     *  
+	 * @param string $uuid         uuid to validate
+	 * 
+	 * @return bool
+	 */
+    static function uuid_long(string $uuid): bool {
+
+        return (!empty($uuid) && preg_match(self::_uuid_long, $uuid) > 0);
+
+    }
+
+    /**
+     * validate short uuid (without dashes)
+     * 
+     * @since Release 1.0.15
+     * 
+	 * @param string $uuid         uuid to validate
+	 * 
+	 * @return bool
+	 */
+    static function uuid_short(string $uuid): bool {
+
+        return (!empty($uuid) && preg_match(self::_uuid_short, $uuid) > 0);
 
     }
 
