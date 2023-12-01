@@ -597,21 +597,28 @@ class CoreService {
 	 */
 	public function fetchLocalCollections(string $uid): array {
 
-		// assign local data store
-		$this->LocalContactsService->DataStore = $this->LocalContactsStore;
-		$this->LocalEventsService->DataStore = $this->LocalEventsStore;
-		$this->LocalTasksService->DataStore = $this->LocalTasksStore;
-
+		// retrieve Configuration
+		$Configuration = $this->ConfigurationService->retrieveUser($uid);
+		$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve local collections
 		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
+			// configure contacts service
+			$this->LocalContactsService->configure($Configuration, $this->LocalContactsStore);
+			// retrieve personal collections
 			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid);;
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
+			// configure contacts service
+			$this->LocalEventsService->configure($Configuration, $this->LocalEventsStore);
+			// retrieve personal collections
 			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid);
 		}
 		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
+			// configure contacts service
+			$this->LocalTasksService->configure($Configuration, $this->LocalTasksStore);
+			// retrieve personal collections
 			$response['TaskCollections'] = $this->LocalTasksService->listCollections($uid);
 		}
 		// return response
@@ -632,28 +639,31 @@ class CoreService {
 		
 		// create remote store client
 		$RemoteStore = $this->createClient($uid);
+		// retrieve Configuration
+		$Configuration = $this->ConfigurationService->retrieveUser($uid);
+		$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
 		// construct response object
 		$response = ['ContactCollections' => [], 'EventCollections' => [], 'TaskCollections' => []];
 		// retrieve remote collections
 		if ($this->ConfigurationService->isContactsAppAvailable($uid)) {
-			// assign remote data store
-			$this->RemoteContactsService->DataStore = $RemoteStore;
+			// configure contacts service
+			$this->RemoteContactsService->configure($Configuration, $RemoteStore);
 			// retrieve remote personal collections
 			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('U', 'Personal - '));
 			// retrieve remote public collections
 			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
-			// assign remote data store
-			$this->RemoteEventsService->DataStore = $RemoteStore;
+			// configure events service
+			$this->RemoteEventsService->configure($Configuration, $RemoteStore);
 			// retrieve remote personal collections
 			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('U', 'Personal - '));
 			// retrieve remote public collections
 			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
 		}
 		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
-			// assign remote data store
-			$this->RemoteTasksService->DataStore = $RemoteStore;
+			// configure tasks service
+			$this->RemoteTasksService->configure($Configuration, $RemoteStore);
 			// retrieve remote personal collections
 			$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('U', 'Personal - '));
 			// retrieve remote public collections
@@ -929,32 +939,6 @@ class CoreService {
 			->setSubject($subject, $params);
 		// submit notification
 		$this->notificationManager->notify($notification);
-	}
-
-	public function performTest(string $uid, string $action): void {
-
-		try {
-			// retrieve Configuration
-			$Configuration = $this->ConfigurationService->retrieveUser($uid);
-			$Configuration = $this->ConfigurationService->toUserConfigurationObject($Configuration);
-			// create remote store client
-			$RemoteStore = $this->createClient($uid);
-			// Test Contacts
-			$this->ContactsService->RemoteStore = $RemoteStore;
-			$result = $this->ContactsService->performTest($action, $Configuration);
-			// Test Events
-			$this->EventsService->RemoteStore = $RemoteStore;
-			$result = $this->EventsService->performTest($action, $Configuration);
-			// Test Tasks
-			//$this->TasksService->RemoteStore = $RemoteStore;
-			//$result = $this->TasksService->performTest($action, $Configuration);
-			// destroy remote store client
-			$this->destroyClient($RemoteStore);
-		} catch (Exception $e) {
-			$result = [
-					'error' => 'Unknown Test failure:' . $e,
-			];
-		}
 	}
 	
 }

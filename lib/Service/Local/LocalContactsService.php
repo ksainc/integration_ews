@@ -44,6 +44,10 @@ class LocalContactsService {
 	 */
 	private $logger;
     /**
+	 * @var Object
+	 */
+	private $Configuration;
+    /**
 	 * @var CardDavBackend
 	 */
 	public ?CardDavBackend $DataStore = null;
@@ -57,6 +61,15 @@ class LocalContactsService {
         $this->ContactsUtile = $ContactsUtile;
 	}
 
+    public function configure($configuration, CardDavBackend $DataStore) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign local data store
+		$this->DataStore = $DataStore;
+		
+	}
+    
 	/**
      * retrieve list of all collections in local storage
      * 

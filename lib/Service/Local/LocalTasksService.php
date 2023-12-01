@@ -47,25 +47,29 @@ class LocalTasksService {
 	 */
 	private $logger;
     /**
-	 * @var DateTimeZone
+	 * @var Object
 	 */
-	public ?DateTimeZone $SystemTimeZone = null;
+	private $Configuration;
     /**
 	 * @var DateTimeZone
 	 */
-	public ?DateTimeZone $UserTimeZone = null;
+	private ?DateTimeZone $SystemTimeZone = null;
+    /**
+	 * @var DateTimeZone
+	 */
+	private ?DateTimeZone $UserTimeZone = null;
     /**
 	 * @var String
 	 */
-	public string $UserAttachmentPath = '';
+	private string $UserAttachmentPath = '';
     /**
 	 * @var CalDavBackend
 	 */
-	public ?CalDavBackend $DataStore = null;
+	private ?CalDavBackend $DataStore = null;
     /**
 	 * @var LazyUserFolder
 	 */
-	public ?LazyUserFolder $FileStore = null;
+	private ?LazyUserFolder $FileStore = null;
     /**
 	 * @var TasksUtile
 	 */
@@ -74,6 +78,22 @@ class LocalTasksService {
 	public function __construct (string $appName, LoggerInterface $logger, TasksUtile $TasksUtile) {
 		$this->logger = $logger;
         $this->TasksUtile = $TasksUtile;
+	}
+
+    public function configure($configuration, CalDavBackend $DataStore, LazyUserFolder $FileStore = null) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign local data store
+		$this->DataStore = $DataStore;
+        // assign local file store
+		$this->FileStore = $FileStore;
+		// assign timezones
+		$this->SystemTimeZone = $configuration->SystemTimeZone;
+		$this->UserTimeZone = $configuration->UserTimeZone;
+		// assign default folder
+		$this->UserAttachmentPath = $configuration->TasksAttachmentPath;
+		
 	}
 
 	/**

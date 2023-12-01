@@ -48,17 +48,21 @@ class RemoteEventsService {
 	 */
 	private $RemoteCommonService;
 	/**
+	 * @var EWSClient
+	 */
+	private ?EWSClient $DataStore = null;
+	/**
+	 * @var Object
+	 */
+	private $Configuration;
+	/**
 	 * @var DateTimeZone
 	 */
-	public ?DateTimeZone $SystemTimeZone = null;
+	private ?DateTimeZone $SystemTimeZone = null;
     /**
 	 * @var DateTimeZone
 	 */
-	public ?DateTimeZone $UserTimeZone = null;
-	/**
-	 * @var EWSClient
-	 */
-	public ?EWSClient $DataStore = null;
+	private ?DateTimeZone $UserTimeZone = null;
 	/**
 	 * @var Object
 	 */
@@ -68,13 +72,23 @@ class RemoteEventsService {
 	 */
 	private ?object $DefaultItemProperties = null;
 	
-
-
 	public function __construct (string $appName,
 								LoggerInterface $logger,
 								RemoteCommonService $RemoteCommonService) {
 		$this->logger = $logger;
 		$this->RemoteCommonService = $RemoteCommonService;
+	}
+
+	public function configure($configuration, EWSClient $DataStore) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign remote data store
+		$this->DataStore = $DataStore;
+		// assign timezones
+		$this->SystemTimeZone = $configuration->SystemTimeZone;
+		$this->UserTimeZone = $configuration->UserTimeZone;
+		
 	}
 
 	/**

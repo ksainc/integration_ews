@@ -88,10 +88,23 @@ class TasksService {
 								IRootFolder $LocalFileStore) {
 		$this->logger = $logger;
 		$this->CorrelationsService = $CorrelationsService;
-		$this->LocalTasksService = $LocalTasksService;
 		$this->RemoteTasksService = $RemoteTasksService;
+		$this->LocalTasksService = $LocalTasksService;
 		$this->LocalStore = $LocalStore;
 		$this->LocalFileStore = $LocalFileStore;
+	}
+
+	public function configure($configuration, EWSClient $RemoteStore) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign remote data store
+		$this->RemoteStore = $RemoteStore;
+		// configure remote service
+		$this->RemoteTasksService->configure($configuration, $RemoteStore);
+		// configure local service
+		$this->LocalTasksService->configure($configuration, $this->LocalStore, $this->LocalFileStore->getUserFolder($configuration->UserId));
+		
 	}
 
 	/**
@@ -101,22 +114,10 @@ class TasksService {
 	 *
 	 * @return HarmonizationStatisticsObject
 	 */
-	public function performHarmonization($correlation, $configuration) : object {
-		$this->Configuration = $configuration;
-		// assign data stores
-		$this->LocalTasksService->DataStore = $this->LocalStore;
-		$this->LocalTasksService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
-		$this->RemoteTasksService->DataStore = $this->RemoteStore;
-		// assign timezones
-		$this->LocalTasksService->SystemTimeZone = $this->Configuration->SystemTimeZone;
-		$this->RemoteTasksService->SystemTimeZone = $this->Configuration->SystemTimeZone;
-		$this->LocalTasksService->UserTimeZone = $this->Configuration->UserTimeZone;
-		$this->RemoteTasksService->UserTimeZone = $this->Configuration->UserTimeZone;
-		// assign default folder
-		$this->LocalTasksService->UserAttachmentPath = $this->Configuration->TasksAttachmentPath;
+	public function performHarmonization($correlation) : object {
+		
 		// construct statistics object
 		$statistics = new HarmonizationStatisticsObject();
-		
 		// construct UUID's place holder
 		$this->RemoteUUIDs = null;
 		// set local and remote collection id's
@@ -661,93 +662,6 @@ class TasksService {
 			return 'NA';
 		}
 
-	}
-
-	/**
-	 * Creates and Deletes Test Data
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $action	action to perform (C - create / D - delete)
-	 *
-	 * @return void
-	 */
-	public function performTest($action, $configuration) : void {
-		// assign data stores
-		$this->LocalTasksService->DataStore = $this->LocalStore;
-		$this->LocalTasksService->FileStore = $this->LocalFileStore->getUserFolder($configuration->UserId);
-		$this->RemoteTasksService->DataStore = $this->RemoteStore;
-		// assign timezones
-		$this->LocalTasksService->SystemTimeZone = $configuration->SystemTimeZone;
-		$this->RemoteTasksService->SystemTimeZone = $configuration->SystemTimeZone;
-		$this->LocalTasksService->UserTimeZone = $configuration->UserTimeZone;
-		$this->RemoteTasksService->UserTimeZone = $configuration->UserTimeZone;
-		// assign default folder
-		$this->LocalTasksService->UserAttachmentPath = $configuration->TasksAttachmentPath;
-
-		/*
-		*	Test Basic Collection Functions
-		*/
-		// retrieve local event collections
-		$lc = $this->LocalTasksService->listCollections($configuration->UserId);
-		foreach ($lc as $entry) {
-			if ($entry['name'] == 'EWS Tasks') {
-				$lcid = $entry['id'];
-				break;
-			}
-		}
-		// retrieve remote event collections
-		$rc = $this->RemoteTasksService->listCollections();
-		foreach ($rc as $entry) {
-			if ($entry['name'] == 'NC Tasks') {
-				$rcid = $entry['id'];
-				break;
-			}
-		}
-
-		// if action delete, delete the collections stop
-		if ($action == 'D') {
-			if (isset($lcid)) {
-				$this->LocalTasksService->deleteCollection($lcid, true);
-			}
-			if (isset($rcid)) {
-				$this->RemoteTasksService->deleteCollection($rcid);
-			}
-			return;
-		}
-
-		// create local collection
-		if (!isset($lcid)) {
-			$lco = $this->LocalTasksService->createCollection($configuration->UserId, 'ews-test', 'EWS Tasks', true);
-			$lcid = $lco->Id;
-		}
-		// create remote collection
-		if (!isset($rcid)) {
-			$rco = $this->RemoteTasksService->createCollection('msgfolderroot', 'NC Tasks', true);
-			$rcid = $rco->Id;
-		}
-		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($configuration->UserId, $lcid, $rcid);
-		// create correlation if none was found
-		if (!isset($ci)) {
-			$ci = new \OCA\EWS\Db\Correlation();
-			$ci->settype(CorrelationsService::TaskCollection); // Correlation Type
-			$ci->setuid($configuration->UserId); // User ID
-			$ci->setloid($lcid); // Local ID
-			$ci->setroid($rcid); // Remote ID
-			$this->CorrelationsService->create($ci);
-		}
-		// retrieve local collection properties
-		$lco = $this->LocalTasksService->fetchCollection($lcid);
-		// retrieve remote collection properties
-		$rco = $this->RemoteTasksService->fetchCollection($rcid);
-		// retrieve local collection changes
-		$lcc = $this->LocalTasksService->fetchCollectionChanges($lcid, '');
-		// retrieve remote collection changes
-		$rcc = $this->RemoteTasksService->fetchCollectionChanges($rcid, '');
-
-		
-		
 	}
 	
 }

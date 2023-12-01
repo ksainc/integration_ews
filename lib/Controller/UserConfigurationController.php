@@ -175,28 +175,6 @@ class UserConfigurationController extends Controller {
 	}
 
 	/**
-	 * handels test click event
-	 * 
-	 * @NoAdminRequired
-	 * 
-	 * @param string $action	test action to perform
-	 *
-	 * @return DataResponse
-	 */
-	public function Test($action): DataResponse {
-
-		// evaluate if user id is present
-		if ($this->userId === null) {
-			return new DataResponse([], Http::STATUS_BAD_REQUEST);
-		}
-		// execute command
-		$this->CoreService->performTest($this->userId, $action);
-		// return response
-		return new DataResponse('success');
-
-	}
-
-	/**
 	 * handles remote collections fetch requests
 	 * 
 	 * @NoAdminRequired

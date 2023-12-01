@@ -77,14 +77,27 @@ class ContactsService {
 	public function __construct (string $appName,
 								LoggerInterface $logger,
 								CorrelationsService $CorrelationsService,
-								LocalContactsService $LocalContactsService,
 								RemoteContactsService $RemoteContactsService,
+								LocalContactsService $LocalContactsService,
 								CardDavBackend $LocalStore) {
 		$this->logger = $logger;
 		$this->CorrelationsService = $CorrelationsService;
-		$this->LocalContactsService = $LocalContactsService;
 		$this->RemoteContactsService = $RemoteContactsService;
+		$this->LocalContactsService = $LocalContactsService;
 		$this->LocalStore = $LocalStore;
+	}
+	
+	public function configure($configuration, EWSClient $RemoteStore) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign remote data store
+		$this->RemoteStore = $RemoteStore;
+		// configure remote service
+		$this->RemoteContactsService->configure($configuration, $RemoteStore);
+		// configure local service
+		$this->LocalContactsService->configure($configuration, $this->LocalStore);
+		
 	}
 
 	/**
@@ -94,11 +107,8 @@ class ContactsService {
 	 *
 	 * @return HarmonizationStatisticsObject
 	 */
-	public function performHarmonization($correlation, $configuration) : object {
-		$this->Configuration = $configuration;
-		// assign data stores
-		$this->LocalContactsService->DataStore = $this->LocalStore;
-		$this->RemoteContactsService->DataStore = $this->RemoteStore;
+	public function performHarmonization($correlation) : object {
+		
 		// construct statistics object
 		$statistics = new HarmonizationStatisticsObject();
 		// construct UUID's place holder
@@ -878,199 +888,4 @@ class ContactsService {
 
 	}
 
-	/**
-	 * Creates and Deletes Test Data
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $action	action to perform (C - create / D - delete)
-	 *
-	 * @return void
-	 */
-	public function performTest($action, $configuration) : void {
-		// assign data stores
-		$this->LocalContactsService->DataStore = $this->LocalStore;
-		$this->RemoteContactsService->DataStore = $this->RemoteStore;
-
-		/*
-		*	Test Basic Collection Functions
-		*/
-		// retrieve local contact collections
-		$lc = $this->LocalContactsService->listCollections($configuration->UserId);
-		foreach ($lc as $entry) {
-			if ($entry['name'] == 'EWS Contacts') {
-				$lcid = $entry['id'];
-				break;
-			}
-		}
-		// retrieve remote contact collections
-		$rc = $this->RemoteContactsService->listCollections();
-		foreach ($rc as $entry) {
-			if ($entry['name'] == 'NC Contacts') {
-				$rcid = $entry['id'];
-				break;
-			}
-		}
-
-		// if action delete, delete the collections stop
-		if ($action == 'D') {
-			if (isset($lcid)) {
-				$this->LocalContactsService->deleteCollection($lcid);
-			}
-			if (isset($rcid)) {
-				$this->RemoteContactsService->deleteCollection($rcid);
-			}
-			return;
-		}
-
-		// create local collection
-		if (!isset($lcid)) {
-			$lco = $this->LocalContactsService->createCollection($configuration->UserId, 'ews-test', 'EWS Contacts', true);
-			$lcid = $lco->Id;
-		}
-		
-		// create remote collection
-		if (!isset($rcid)) {
-			$rco = $this->RemoteContactsService->createCollection('msgfolderroot', 'NC Contacts', true);
-			$rcid = $rco->Id;
-		}
-
-		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($configuration->UserId, $lcid, $rcid);
-		// create correlation if none was found
-		if (!isset($ci)) {
-			$ci = new \OCA\EWS\Db\Correlation();
-			$ci->settype('CC'); // Correlation Type
-			$ci->setuid($configuration->UserId); // User ID
-			$ci->setloid($lcid); // Local ID
-			$ci->setroid($rcid); // Remote ID
-			$this->CorrelationsService->create($ci);
-		}
-
-		// retrieve local collection properties
-		$lco = $this->LocalContactsService->fetchCollection($lcid);
-		// retrieve remote collection properties
-		$rco = $this->RemoteContactsService->fetchCollection($rcid);
-
-		// retrieve local collection changes
-		$lcc = $this->LocalContactsService->fetchCollectionChanges($lcid, '');
-		// retrieve remote collection changes
-		$rcc = $this->RemoteContactsService->fetchCollectionChanges($rcid, '');
-
-		$co = new ContactObject();
-		$co->Name->Last = "Simpson";
-		$co->Name->First = 'Homer';
-        $co->Name->Other = 'J';
-        $co->Name->Prefix = 'Mr';
-        $co->Name->Suffix = 'Dooh';
-		$co->Aliases = 'Pieman';
-		$co->Gender = 'M';
-		$co->BirthDay = new \Datetime('May 12, 1956');
-		$co->AnniversaryDay = new \Datetime('April 19, 1987');
-		$co->addAddress(
-			'HOME',
-			'742 Evergreen Terrace',
-			'Springfield',
-			'Oregon',
-			'97477',
-			'United States'
-		);
-		$co->addAddress(
-			'WORK',
-			'1 Atomic Lane',
-			'Springfield',
-			'Oregon',
-			'97408',
-			'United States'
-		);
-		$co->addPhone(
-			'HOME',
-			null,
-			'(939) 555-0113'
-		);
-		$co->addPhone(
-			'WORK',
-			null,
-			'(939) 555-7334'
-		);
-		$co->addEmail(
-			'HOME',
-			'homer@simpsons.fake'
-		);
-		$co->addEmail(
-			'WORK',
-			'hsimpson@springfieldpower.fake'
-		);
-
-		$co->Occupation->Organization = 'Springfield Power Company';
-		$co->Occupation->Title = 'Chief Safety Officer';
-		$co->Occupation->Role = 'Safety Inspector';
-		$co->addTag('Simpson Family');
-
-		// generate new uuid for local
-		$co->UUID = \OCA\EWS\Utile\UUID::v4();
-		$co->Label = 'NC Homer J. Simpson';
-		
-		// create local contact
-		$lo = $this->LocalContactsService->createCollectionItem($lcid, $co);
-		// retrieve local contact
-		$lo = $this->LocalContactsService->fetchCollectionItem($lcid, $lo->ID);
-		// update local contact
-		$lo = $this->LocalContactsService->updateCollectionItem($lcid, $lo->ID, $co);
-
-		// generate new uuid for local
-		$co->UUID = \OCA\EWS\Utile\UUID::v4();
-		$co->Label = 'EWS Homer J. Simpson';
-		// create remote contact
-		$ro = $this->RemoteContactsService->createCollectionItem($rcid, $co);
-		// retrieve remote contact
-		$ro = $this->RemoteContactsService->fetchCollectionItem($ro->ID);
-		// update remote contact
-		// delete all previous attachment(s) in remote store
-		// work around for missing update command in ews
-		$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
-		$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $co);
-
-		$co = new ContactObject();
-		$co->Name->Last = "Simpson";
-		$co->Name->First = 'Marjorie';
-        $co->Name->Other = 'Jacqueline "Marge"';
-        $co->Name->Prefix = 'Mrs';
-        $co->Name->Suffix = 'MD';
-		$co->Aliases = 'Queen';
-		$co->Gender = 'F';
-		$co->BirthDay = new \Datetime('March 19, 1958');
-		$co->AnniversaryDay = new \Datetime('April 19, 1987');
-		$co->addAddress(
-			'HOME',
-			'742 Evergreen Terrace',
-			'Springfield',
-			'Oregon',
-			'97477',
-			'United States'
-		);
-		$co->addPhone(
-			'HOME',
-			null,
-			'(939) 555-0113'
-		);
-		$co->addEmail(
-			'HOME',
-			'marge@simpsons.fake'
-		);
-		$co->addTag('Simpson Family');
-
-		// generate new uuid for local
-		$co->UUID = \OCA\EWS\Utile\UUID::v4();
-		$co->Label = 'NC Marge Simpson';
-		// create local contact
-		$lo = $this->LocalContactsService->createCollectionItem($lcid, $co);
-
-		// generate new uuid for local
-		$co->UUID = \OCA\EWS\Utile\UUID::v4();
-		$co->Label = 'EWS Marge Simpson';
-		// create remote contact
-		$ro = $this->RemoteContactsService->createCollectionItem($rcid, $co);
-
-	}
 }

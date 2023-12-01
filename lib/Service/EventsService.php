@@ -82,16 +82,29 @@ class EventsService {
 	public function __construct (string $appName,
 								LoggerInterface $logger,
 								CorrelationsService $CorrelationsService,
-								LocalEventsService $LocalEventsService,
 								RemoteEventsService $RemoteEventsService,
+								LocalEventsService $LocalEventsService,
 								CalDavBackend $LocalStore,
 								IRootFolder $LocalFileStore) {
 		$this->logger = $logger;
 		$this->CorrelationsService = $CorrelationsService;
-		$this->LocalEventsService = $LocalEventsService;
 		$this->RemoteEventsService = $RemoteEventsService;
+		$this->LocalEventsService = $LocalEventsService;
 		$this->LocalStore = $LocalStore;
 		$this->LocalFileStore = $LocalFileStore;
+	}
+
+	public function configure($configuration, EWSClient $RemoteStore) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign remote data store
+		$this->RemoteStore = $RemoteStore;
+		// configure remote service
+		$this->RemoteEventsService->configure($configuration, $RemoteStore);
+		// configure local service
+		$this->LocalEventsService->configure($configuration, $this->LocalStore, $this->LocalFileStore->getUserFolder($configuration->UserId));
+		
 	}
 
 	/**
@@ -101,22 +114,10 @@ class EventsService {
 	 *
 	 * @return HarmonizationStatisticsObject
 	 */
-	public function performHarmonization($correlation, $configuration) : object {
-		$this->Configuration = $configuration;
-		// assign data stores
-		$this->LocalEventsService->DataStore = $this->LocalStore;
-		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($this->Configuration->UserId);
-		$this->RemoteEventsService->DataStore = $this->RemoteStore;
-		// assign timezones
-		$this->LocalEventsService->SystemTimeZone = $this->Configuration->SystemTimeZone;
-		$this->RemoteEventsService->SystemTimeZone = $this->Configuration->SystemTimeZone;
-		$this->LocalEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
-		$this->RemoteEventsService->UserTimeZone = $this->Configuration->UserTimeZone;
-		// assign default folder
-		$this->LocalEventsService->UserAttachmentPath = $this->Configuration->EventsAttachmentPath;
+	public function performHarmonization($correlation) : object {
+		
 		// construct statistics object
 		$statistics = new HarmonizationStatisticsObject();
-		
 		// construct UUID's place holder
 		$this->RemoteUUIDs = null;
 		// set local and remote collection id's
@@ -898,256 +899,4 @@ class EventsService {
 
 	}
 
-	/**
-	 * Creates and Deletes Test Data
-	 * 
-	 * @since Release 1.0.0
-	 * 
-	 * @param string $action	action to perform (C - create / D - delete)
-	 *
-	 * @return void
-	 */
-	public function performTest($action, $configuration) : void {
-		// assign data stores
-		$this->LocalEventsService->DataStore = $this->LocalStore;
-		$this->LocalEventsService->FileStore = $this->LocalFileStore->getUserFolder($configuration->UserId);
-		$this->RemoteEventsService->DataStore = $this->RemoteStore;
-		// assign timezones
-		$this->LocalEventsService->SystemTimeZone = $configuration->SystemTimeZone;
-		$this->RemoteEventsService->SystemTimeZone = $configuration->SystemTimeZone;
-		$this->LocalEventsService->UserTimeZone = $configuration->UserTimeZone;
-		$this->RemoteEventsService->UserTimeZone = $configuration->UserTimeZone;
-		// assign default folder
-		$this->LocalEventsService->UserAttachmentPath = $configuration->EventsAttachmentPath;
-
-		/*
-		*	Test Basic Collection Functions
-		*/
-		// retrieve local event collections
-		$lc = $this->LocalEventsService->listCollections($configuration->UserId);
-		foreach ($lc as $entry) {
-			if ($entry['name'] == 'EWS Calendar') {
-				$lcid = $entry['id'];
-				break;
-			}
-		}
-		// retrieve remote event collections
-		$rc = $this->RemoteEventsService->listCollections();
-		foreach ($rc as $entry) {
-			if ($entry['name'] == 'NC Calendar') {
-				$rcid = $entry['id'];
-				break;
-			}
-		}
-
-		// if action delete, delete the collections stop
-		if ($action == 'D') {
-			if (isset($lcid)) {
-				$this->LocalEventsService->deleteCollection($lcid, true);
-			}
-			if (isset($rcid)) {
-				$this->RemoteEventsService->deleteCollection($rcid);
-			}
-			return;
-		}
-
-		// create local collection
-		if (!isset($lcid)) {
-			$lco = $this->LocalEventsService->createCollection($configuration->UserId, 'ews-test', 'EWS Calendar', true);
-			$lcid = $lco->Id;
-		}
-		// create remote collection
-		if (!isset($rcid)) {
-			$rco = $this->RemoteEventsService->createCollection('msgfolderroot', 'NC Calendar', true);
-			$rcid = $rco->Id;
-		}
-		// retrieve correlation for remote and local collections
-		$ci = $this->CorrelationsService->find($configuration->UserId, $lcid, $rcid);
-		// create correlation if none was found
-		if (!isset($ci)) {
-			$ci = new \OCA\EWS\Db\Correlation();
-			$ci->settype('EC'); // Correlation Type
-			$ci->setuid($configuration->UserId); // User ID
-			$ci->setloid($lcid); // Local ID
-			$ci->setroid($rcid); // Remote ID
-			$this->CorrelationsService->create($ci);
-		}
-		// retrieve local collection properties
-		$lco = $this->LocalEventsService->fetchCollection($lcid);
-		// retrieve remote collection properties
-		$rco = $this->RemoteEventsService->fetchCollection($rcid);
-		// retrieve local collection changes
-		$lcc = $this->LocalEventsService->fetchCollectionChanges($lcid, '');
-		// retrieve remote collection changes
-		$rcc = $this->RemoteEventsService->fetchCollectionChanges($rcid, '');
-
-		/*
-		*	Test Basic Collection Item Properties
-		*/
-		// construct event object with basic properties
-		$eo = new EventObject();
-		$eo->Origin = 'L';
-		$eo->Notes = 'Don\'t forget to bring a present';
-		$eo->StartsOn = (new DateTime('NOW')); 
-		$eo->StartsTZ = $configuration->UserTimeZone;
-		$eo->StartsOn->setTimezone($configuration->UserTimeZone);
-		$eo->StartsOn->modify('next saturday')->setTime(20, 0, 0, 0); // set event start next saturday at 10:00
-		$eo->EndsOn = (clone $eo->StartsOn)->modify('+2 hour'); // set event end on same day one hour later
-		$eo->EndsTZ = (clone $eo->StartsTZ);
-		$eo->Location = 'Moes Pub';
-		$eo->Availability = 'Busy';
-		$eo->Priority = '1';
-		$eo->Sensitivity = '1';
-		// generate new uuid for local
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'NC Simpson\'s Birthday Dinner';
-		// create local event
-		$lo = $this->LocalEventsService->createCollectionItem($lcid, $eo);
-		// retrieve local event
-		$lo = $this->LocalEventsService->fetchCollectionItem($lcid, $lo->ID);
-		// update local event
-		$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $eo);
-		// retrieve local event by uuid
-		$lo = $this->LocalEventsService->findCollectionItemByUUID($lcid, $eo->UUID);
-		// generate new uuid for remote
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'EWS Simpson\'s Birthday Dinner';
-		// create remote event
-		$ro = $this->RemoteEventsService->createCollectionItem($rcid, $eo);
-		// retrieve remote event
-		$ro = $this->RemoteEventsService->fetchCollectionItem($ro->ID);
-		// update remote event
-		$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
-		// update remote event uuid
-		$ro = $this->RemoteEventsService->updateCollectionItemUUID($rcid, $ro->ID, $ro->UUID);
-		// retrieve remote event by uuid
-		$ro = $this->RemoteEventsService->fetchCollectionItemByUUID($rcid, $eo->UUID);
-
-		/*
-		*	Test Collection Item Tags / Attendees / Notifications / Attachments
-		*/
-		$eo = new EventObject();
-		$eo->Origin = 'L';
-		$eo->Notes = 'Bart done it again';
-		$eo->StartsOn = (new DateTime('now', $configuration->UserTimeZone))->modify('next sunday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $configuration->UserTimeZone;
-		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
-		$eo->EndsTZ = (clone $eo->StartsTZ);
-		$eo->Availability = 'Busy';
-		$eo->Priority = '1';
-		$eo->Sensitivity = '1';
-		$eo->addTag('First Tag');
-		$eo->addTag('Second Tag');
-		$eo->addAttendee('homer@simpsons.fake', 'Homer Simpson', 'R', 'T');
-		$eo->addAttendee('marge@simpsons.fake', 'Marge Simpson', 'R', 'A');
-		$eo->addAttendee('bart@simpsons.fake', 'Bart Simpson', 'O', 'D');
-		$di = new \DateInterval('PT1H');
-		$di->invert = 1;
-		$eo->addNotification('D', 'R', $di);
-		$eo->addAttachment(
-			'D',
-			null,
-			'test.txt',
-			'text/plain',
-			'B',
-			null,
-			'This is a text string inside the test file.'
-		);
-		// generate new uuid for local
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'NC Simpson Meeting';
-		// create local event
-		$lo = $this->LocalEventsService->createCollectionItem($lcid, $eo);
-		// retrieve local event
-		$lo = $this->LocalEventsService->fetchCollectionItem($lcid, $lo->ID);
-		// update local event
-		$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $eo);
-		// generate new uuid for remote
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'EWS Simpson Meeting';
-		// create remote event
-		$ro = $this->RemoteEventsService->createCollectionItem($rcid, $eo);
-		// retrieve remote event
-		$ro = $this->RemoteEventsService->fetchCollectionItem($ro->ID);
-		// update remote event
-		// delete all previous attachment(s) in remote store
-		// work around for missing update command in ews
-		$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
-		$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
-		
-		/*
-		*	Test Collection Item Occurance Daily
-		*/
-		$eo = new EventObject();
-		$eo->Origin = 'L';
-		$eo->Notes = 'Every other day for 4 iterations';
-		$eo->StartsOn = (new DateTime('now', $configuration->UserTimeZone))->modify('next monday')->setTime(10, 0, 0, 0);
-		$eo->StartsTZ = $configuration->UserTimeZone;
-		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
-		$eo->EndsTZ = (clone $eo->StartsTZ);
-		$eo->Availability = 'Busy';
-		$eo->Priority = '1';
-		$eo->Sensitivity = '1';
-		$eo->Occurrence->Pattern = 'A'; // Absolute
-		$eo->Occurrence->Precision = 'D'; // Daily
-		$eo->Occurrence->Interval = 2; // Every Other Day
-		$eo->Occurrence->Iterations = 4; // Only 4 times
-		// generate new uuid for local
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'NC Daily Occurance';
-		// create local event
-		$lo = $this->LocalEventsService->createCollectionItem($lcid, $eo);
-		// retrieve local event
-		$lo = $this->LocalEventsService->fetchCollectionItem($lcid, $lo->ID);
-		// update local event
-		$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $eo);
-		// generate new uuid for remote
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'EWS Daily Occurance';
-		// create remote event
-		$ro = $this->RemoteEventsService->createCollectionItem($rcid, $eo);
-		// retrieve remote event
-		$ro = $this->RemoteEventsService->fetchCollectionItem($ro->ID);
-		// update remote event
-		$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
-
-		/*
-		*	Test Collection Item Occurance Weekly
-		*/
-		$eo = new EventObject();
-		$eo->Origin = 'L';
-		$eo->Notes = 'Every other week on Monday, Wednesday and Friday until 4 Weeks from start';
-		$eo->StartsOn = (new DateTime('now', $configuration->UserTimeZone))->modify('next monday')->setTime(12, 0, 0, 0);
-		$eo->StartsTZ = $configuration->UserTimeZone;
-		$eo->EndsOn = (clone $eo->StartsOn)->modify('+1 hour');
-		$eo->EndsTZ = (clone $eo->StartsTZ);
-		$eo->Availability = 'Busy';
-		$eo->Priority = '1';
-		$eo->Sensitivity = '1';
-		$eo->Occurrence->Pattern = 'A'; // Absolute
-		$eo->Occurrence->Precision = 'W'; // Daily
-		$eo->Occurrence->Interval = 2; // Every Other Week
-		$eo->Occurrence->Concludes = (clone $eo->StartsOn)->modify('+4 Weeks');
-		$eo->Occurrence->OnDayOfWeek = array(1, 3, 5);
-		// generate new uuid for local
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'NC Weekly Occurance';
-		// create local event
-		$lo = $this->LocalEventsService->createCollectionItem($lcid, $eo);
-		// retrieve local event
-		$lo = $this->LocalEventsService->fetchCollectionItem($lcid, $lo->ID);
-		// update local event
-		$lo = $this->LocalEventsService->updateCollectionItem($lcid, $lo->ID, $eo);
-		// generate new uuid for remote
-		$eo->UUID = \OCA\EWS\Utile\UUID::v4();
-		$eo->Label = 'EWS Weekly Occurance';
-		// create remote event
-		$ro = $this->RemoteEventsService->createCollectionItem($rcid, $eo);
-		// retrieve remote event
-		$ro = $this->RemoteEventsService->fetchCollectionItem($ro->ID);
-		// update remote event
-		$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $eo);
-
-	}
-	
 }

@@ -51,7 +51,11 @@ class RemoteContactsService {
 	/**
 	 * @var EWSClient
 	 */
-	public ?EWSClient $DataStore = null;
+	private ?EWSClient $DataStore = null;
+    /**
+	 * @var Object
+	 */
+	private $Configuration;
     /**
 	 * @var Object
 	 */
@@ -66,6 +70,15 @@ class RemoteContactsService {
 								RemoteCommonService $RemoteCommonService) {
 		$this->logger = $logger;
 		$this->RemoteCommonService = $RemoteCommonService;
+	}
+
+    public function configure($configuration, EWSClient $DataStore) : void {
+		
+		// assign configuration
+		$this->Configuration = $configuration;
+		// assign remote data store
+		$this->DataStore = $DataStore;
+		
 	}
 
 	/**

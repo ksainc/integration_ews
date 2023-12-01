@@ -420,20 +420,6 @@
 						</template>
 						{{ t('integration_ews', 'Sync') }}
 					</NcButton>
-					<span v-if="false">
-						<NcButton @click="onTestClick('C')">
-							<template #icon>
-								<LinkIcon />
-							</template>
-							{{ t('integration_ews', 'Create Test Data') }}
-						</NcButton>
-						<NcButton @click="onTestClick('D')">
-							<template #icon>
-								<LinkIcon />
-							</template>
-							{{ t('integration_ews', 'Delete Test Data') }}
-						</NcButton>
-					</span>
 				</div>
 			</div>
 		</div>
@@ -513,9 +499,6 @@ export default {
 	},
 
 	methods: {
-		test() {
-			showSuccess()
-		},
 		loadData() {
 			// get collections list if we are connected
 			if (this.state.account_connected === '1') {
@@ -620,25 +603,6 @@ export default {
 				.catch((error) => {
 					showError(
 						t('integration_ews', 'Synchronization Failed')
-						+ ': ' + error.response?.request?.responseText
-					)
-				})
-		},
-		onTestClick(action) {
-			const uri = generateUrl('/apps/integration_ews/test')
-			const data = {
-				params: {
-					action,
-				},
-			}
-			axios.get(uri, data)
-				.then((response) => {
-					showSuccess('Test Successful')
-					this.loadData()
-				})
-				.catch((error) => {
-					showError(
-						t('integration_ews', 'Test Failed')
 						+ ': ' + error.response?.request?.responseText
 					)
 				})

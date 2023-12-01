@@ -30,7 +30,6 @@ return [
 		['name' => 'UserConfiguration#ConnectMS365', 'url' => '/connect-ms365', 'verb' => 'GET'],
 		['name' => 'UserConfiguration#Disconnect', 'url' => '/disconnect', 'verb' => 'GET'],
 		['name' => 'UserConfiguration#Harmonize', 'url' => '/harmonize', 'verb' => 'GET'],
-		['name' => 'UserConfiguration#Test', 'url' => '/test', 'verb' => 'GET'],
 		['name' => 'UserConfiguration#fetchLocalCollections', 'url' => '/fetch-local-collections', 'verb' => 'GET'],
 		['name' => 'UserConfiguration#fetchRemoteCollections', 'url' => '/fetch-remote-collections', 'verb' => 'GET'],
 		['name' => 'UserConfiguration#fetchCorrelations', 'url' => '/fetch-correlations', 'verb' => 'GET'],
