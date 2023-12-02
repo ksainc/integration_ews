@@ -91,7 +91,7 @@ class EWSClientMock extends \SoapClient
      *
      * @var \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType
      */
-    protected $_client_impersonation = null;
+    protected $_client_impersonate = null;
     
     /**
      * Constructor for the ExchangeWebServices class
@@ -111,7 +111,7 @@ class EWSClientMock extends \SoapClient
         $this->_transport_location = $location;
         $this->_service_version = $version;
         $this->_client_timezone = $timezone;
-        $this->_client_impersonation = $impersonation;
+        $this->_client_impersonate = $impersonate;
         // construct service location
         $this->_constructTransportLocation();
         // construct service headers
@@ -210,12 +210,12 @@ class EWSClientMock extends \SoapClient
                 )
             );
         }
-        // set client impersonation
-        if (!empty($this->_client_impersonation)) {
+        // set client impersonate
+        if (!empty($this->_client_impersonate)) {
             $headers[] = new \SoapHeader(
                 'http://schemas.microsoft.com/exchange/services/2006/types',
                 'ExchangeImpersonation',
-                $this->_client_impersonation
+                $this->_client_impersonate
             );
         }
         // set headers
@@ -383,7 +383,7 @@ class EWSClientMock extends \SoapClient
     public function getImpersonation(): mixed {
         
         // return impersonation information
-        return $this->_client_impersonation;
+        return $this->_client_impersonate;
 
     }
 
@@ -395,7 +395,7 @@ class EWSClientMock extends \SoapClient
     public function setImpersonation($value): void {
 
         // store impersonation
-        $this->_client_impersonation = $value;
+        $this->_client_impersonate = $value;
         // SOAP headers need to be rebuilt
         $this->_constructServiceHeader();
 
