@@ -1741,6 +1741,7 @@ class TimeZoneEWS {
 			// EWS zone descriptions can have different spelling depending on the language
 			// So we use a propability match to find the correct zone (Best Way to do this for now)
 			$best = 0;
+			$percent = 0;
 			foreach (self::$ewszones as $entry) {
 				similar_text($name, $entry['Name'], $percent);
 				if ($percent > $best) {
