@@ -2,8 +2,10 @@
 //declare(strict_types=1);
 
 /**
+* @copyright Copyright (c) 2023 Sebastian Krupinski <krupinski01@gmail.com>
 * @copyright Copyright (c) 2016 James I. Armes http://jamesarmes.com/
-*
+* 
+* @author Sebastian Krupinski <krupinski01@gmail.com>
 * @author James I. Armes http://jamesarmes.com/
 *
 * @license AGPL-3.0-or-later
@@ -34,12 +36,22 @@ use OCA\EWS\Components\EWS\Type;
  */
 class TimeZoneType extends Type
 {
+
+    /*Constructor method with arguments*/
+    public function __construct($Name = null, $Offset = null, $Standard = null, $Daylight = null)
+    {
+        $this->TimeZoneName = $Name;
+        $this->BaseOffset = $Offset;
+        $this->Standard = $Standard;
+        $this->Daylight = $Daylight;
+    }
+
     /**
      * Represents the hourly offset from UTC for the current time zone.
      *
      * @since Exchange 2007
      *
-     * @var integer
+     * @var string
      */
     public $BaseOffset;
 
