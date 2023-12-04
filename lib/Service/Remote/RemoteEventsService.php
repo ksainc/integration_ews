@@ -267,7 +267,7 @@ class RemoteEventsService {
 		// construct identification object
         $io = new \OCA\EWS\Components\EWS\Type\ItemIdType($iid);
 		// execute command
-		$ro = $this->RemoteCommonService->fetchItem($this->DataStore, array($io), 'A', $this->constructDefaultItemProperties());
+		$ro = $this->RemoteCommonService->fetchItem($this->DataStore, array($io), 'D', $this->constructDefaultItemProperties());
         // validate response
 		if (isset($ro->CalendarItem)) {
 			// convert to event object
@@ -632,11 +632,11 @@ class RemoteEventsService {
 		// execute command
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
         // process response
-        if ($rs->ItemId) {
+        if ($rs->CalendarItem[0]) {
 			$eo = clone $so;
-			$eo->ID = $rs->ItemId->Id;
+			$eo->ID = $rs->CalendarItem[0]->ItemId->Id;
 			$eo->CID = $cid;
-			$eo->State = $rs->ItemId->ChangeKey;
+			$eo->State = $rs->CalendarItem[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($eo->Attachments) > 0) {
 				// create attachments in remote data store
@@ -657,11 +657,12 @@ class RemoteEventsService {
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
+	 * @param string $istate - Collection Item State
      * @param EventObject $so - Source Data
 	 * 
 	 * @return EventObject
 	 */
-	public function updateCollectionItem(string $cid, string $iid, EventObject $so): ?EventObject {
+	public function updateCollectionItem(string $cid, string $iid, string $istate, EventObject $so): ?EventObject {
 
         // request modifications array
         $rm = array();
@@ -1032,13 +1033,13 @@ class RemoteEventsService {
 			$rd[] = $this->deleteFieldUnindexed('calendar:Recurrence');
 		}
         // execute command
-        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, $rd);
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, null, $rm, $rd);
 		// process response
-        if ($rs->ItemId) {
+        if ($rs->CalendarItem[0]) {
 			$eo = clone $so;
-			$eo->ID = $rs->ItemId->Id;
+			$eo->ID = $rs->CalendarItem[0]->ItemId->Id;
 			$eo->CID = $cid;
-			$eo->State = $rs->ItemId->ChangeKey;
+			$eo->State = $rs->CalendarItem[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($eo->Attachments) > 0) {
 				// create attachments in remote data store
@@ -1059,21 +1060,22 @@ class RemoteEventsService {
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
+	 * @param string $istate - Collection Item State
      * @param string $cid - Collection Item UUID
 	 * 
 	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
 	 */
-	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid): ?object {
+	public function updateCollectionItemUUID(string $cid, string $iid, string $istate, string $uuid): ?object {
 		// request modifications array
         $rm = array();
         // construct update command object
         $rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', $uuid);
         $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $uuid);
         // execute request
-        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, null);
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, null, $rm, null);
         // return response
-        if ($rs->ItemId) {
-            return (object) array('ID' => $rs->ItemId->Id, 'UID' => $uuid, 'State' => $rs->ItemId->ChangeKey);
+        if ($rs->CalendarItem[0]) {
+            return (object) array('ID' => $rs->CalendarItem[0]->ItemId->Id, 'UID' => $uuid, 'State' => $rs->CalendarItem[0]->ItemId->ChangeKey);
         } else {
             return null;
         }
@@ -1236,7 +1238,7 @@ class RemoteEventsService {
 	 * 
 	 * @return object
 	 */
-	private function constructDefaultCollectionProperties(): object {
+	public function constructDefaultCollectionProperties(): object {
 
 		// construct properties array
 		if (!isset($this->DefaultCollectionProperties)) {
@@ -1262,7 +1264,7 @@ class RemoteEventsService {
 	 * 
 	 * @return object
 	 */
-	private function constructDefaultItemProperties(): object {
+	public function constructDefaultItemProperties(): object {
 
 		// construct properties array
 		if (!isset($this->DefaultItemProperties)) {
@@ -1750,7 +1752,7 @@ class RemoteEventsService {
         }
 		// UUID
 		if (!empty($data->UID)) {
-            $o->UUID = $data->UID;
+            $o->UUID = $this->fromUID($data->UID);
         }
         // Collection ID
         if (isset($data->ParentFolderId)) {
@@ -2004,7 +2006,7 @@ class RemoteEventsService {
 			foreach ($data->ExtendedProperty as $entry) {
 				switch ($entry->ExtendedFieldURI->PropertyName) {
 					case 'DAV:uid':
-						$o->UUID = $entry->Value;
+						//$o->UUID = $entry->Value;
 						break;
 				}
 				switch ($entry->ExtendedFieldURI->PropertyTag) {
@@ -2033,9 +2035,9 @@ class RemoteEventsService {
      */
 	public function fromTimeZone(string $name): ?DateTimeZone {
 		
-		// convert EWS time zone name to DateTimeZone object
+		// convert EWS time zone name to DateTimeZone object	
 		return \OCA\EWS\Utile\TimeZoneEWS::toDateTimeZone($name);
-		
+
 	}
 
 	/**
@@ -2055,6 +2057,80 @@ class RemoteEventsService {
 	}
 
 	/**
+     * Converts remote guid format to local uuid format
+     * 
+     * @since Release 1.0.15
+     * 
+     * @param string $value
+     * 
+     * @return string
+     */
+	public function fromUID(string $value): ?string {
+		
+		//https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-asemail/e7424ddc-dd10-431e-a0b7-5c794863370e
+		//https://docs.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxocal/1d3aac05-a7b9-45cc-a213-47f0a0a2c5c1
+
+		if (strlen($value) == 112 || (strlen($value) == 56 && mb_detect_encoding((string)$value, null, true) === false)) {
+			$value = (strlen($value) == 112) ? substr($value, 80, 32) : substr(bin2hex($value), 80, 32);
+			return (substr($value, 0, 8) . '-' . 
+					substr($value, 8, 4) . '-' .
+					substr($value, 12, 4) . '-' .
+					substr($value, 16, 4) . '-' .
+					substr($value, 20, 12));
+		}
+		elseif (strlen($value) == 91 && mb_detect_encoding((string)$value, null, true) === false) {
+			$value = substr($value, 53, 36);
+			return $value;
+		}
+		elseif (\OCA\EWS\Utile\Validator::uuid_long($value)) {
+			return $value;
+		}
+		elseif (\OCA\EWS\Utile\Validator::uuid_short($value)) {
+			return $value;
+		}
+		return null;
+
+	}
+
+	/**
+     * Converts local uuid format to remote guid format
+     * 
+     * @since Release 1.0.15
+     * 
+     * @param string $value
+     * 
+     * @return string 
+     */ 
+	public function toUID(string $value, string $type = 'SB'): ?string {
+
+		// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-asemail/e7424ddc-dd10-431e-a0b7-5c794863370e
+		// https://docs.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxocal/1d3aac05-a7b9-45cc-a213-47f0a0a2c5c1
+
+		// Blob Id + Instance Date (YYYY-MM-DD) + Creation Stamp (YYYY-MM-DD-HH-MM-SS) + Padding
+		$prefix = '040000008200E00074C5B7101A82E008' . '00000000' . '0000000000000000' . '0000000000000000';
+
+		if ($type == 'SH') {
+			// Prefix + Size + Data
+			return $prefix . '10000000' . strtoupper(str_replace('-', '', $value));
+		}
+		elseif ($type == 'SB') {
+			// Prefix + Size + Data
+			return hex2bin($prefix . '10000000' . strtoupper(str_replace('-', '', $value)));
+		}
+		elseif ($type == 'LH') {
+			// Prefix + Size + Data
+			return $prefix . '33000000' . bin2hex('vCal-Uid') . '01000000' . bin2hex('{' . strtoupper($value) . '}') . '00';
+		}
+		elseif ($type == 'LB') {
+			// Prefix + Size + Data
+			return hex2bin($prefix . '33000000') . 'vCal-Uid' . hex2bin('01000000') . '{' . strtoupper($value) . '}' . hex2bin('00');
+		}
+
+		return null;
+
+	}
+
+	/**
      * convert remote days of the week to event object days of the week
 	 * 
      * @since Release 1.0.0
@@ -2064,7 +2140,7 @@ class RemoteEventsService {
 	 * 
 	 * @return array event object days of the week values(s)
 	 */
-	private function fromDaysOfWeek(string $days, bool $group = false ): array {
+	public function fromDaysOfWeek(string $days, bool $group = false ): array {
 
 		// days conversion reference
 		$_tm = array(
@@ -2113,7 +2189,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote days of the week values(s)
 	 */
-	private function toDaysOfWeek(array $days, bool $group = false): string {
+	public function toDaysOfWeek(array $days, bool $group = false): string {
 		
 		// days conversion reference
 		$_tm = array(
@@ -2164,7 +2240,7 @@ class RemoteEventsService {
 	 * 
 	 * @return array event object days of the month values(s)
 	 */
-	private function fromDaysOfMonth(string $days): array {
+	public function fromDaysOfMonth(string $days): array {
 
 		// convert days to array
 		$days = explode(' ', $days);
@@ -2182,7 +2258,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote days of the month values(s)
 	 */
-	private function toDaysOfMonth(array $days): string {
+	public function toDaysOfMonth(array $days): string {
 
         // convert days to string
         $days = implode(' ', $days);
@@ -2200,7 +2276,7 @@ class RemoteEventsService {
 	 * 
 	 * @return array event object week of the month values(s)
 	 */
-	private function fromWeekOfMonth(string $weeks): array {
+	public function fromWeekOfMonth(string $weeks): array {
 
 		// weeks conversion reference
 		$_tm = array(
@@ -2232,7 +2308,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote week of the month values(s)
 	 */
-	private function toWeekOfMonth(array $weeks): string {
+	public function toWeekOfMonth(array $weeks): string {
 
 		// weeks conversion reference
 		$_tm = array(
@@ -2265,7 +2341,7 @@ class RemoteEventsService {
 	 * 
 	 * @return array event object month of the year values(s)
 	 */
-	private function fromMonthOfYear(string $months): array {
+	public function fromMonthOfYear(string $months): array {
 
 		// months conversion reference
 		$_tm = array(
@@ -2304,7 +2380,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote month of the year values(s)
 	 */
-	private function toMonthOfYear(array $months): string {
+	public function toMonthOfYear(array $months): string {
 
 		// months conversion reference
 		$_tm = array(
@@ -2343,7 +2419,7 @@ class RemoteEventsService {
 	 * 
 	 * @return int event object sensitivity value
 	 */
-	private function fromSensitivity(?string $level): int {
+	public function fromSensitivity(?string $level): int {
 		
 		// sensitivity conversion reference
 		$levels = array(
@@ -2372,7 +2448,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote sensitivity value
 	 */
-	private function toSensitivity(?int $level): string {
+	public function toSensitivity(?int $level): string {
 		
 		// sensitivity conversion reference
 		$levels = array(
@@ -2401,7 +2477,7 @@ class RemoteEventsService {
 	 * 
 	 * @return int event object priority value
 	 */
-	private function fromImportance(?string $level): int {
+	public function fromImportance(?string $level): int {
 		
 		// EWS: 0 = low, 1 = normal (default), 2 = high
 		// VEVENT: 0 = undefined, 1-3 = high, 4-6 = normal, 7-9 = low
@@ -2428,7 +2504,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote importance value
 	 */
-	private function toImportance(?int $level): string {
+	public function toImportance(?int $level): string {
 
 		// EWS: 0 = low, 1 = normal (default), 2 = high
 		// VEVENT: 0 = undefined, 1-3 = high, 4-6 = normal, 7-9 = low
@@ -2455,7 +2531,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string event object attendee response value
 	 */
-	private function fromAttendeeResponse(?string $response): string {
+	public function fromAttendeeResponse(?string $response): string {
 		
 		// response conversion reference
 		$responses = array(
@@ -2486,7 +2562,7 @@ class RemoteEventsService {
 	 * 
 	 * @return string remote attendee response value
 	 */
-	private function toAttendeeResponse(?string $response): string {
+	public function toAttendeeResponse(?string $response): string {
 		
 		// response conversion reference
 		$responses = array(

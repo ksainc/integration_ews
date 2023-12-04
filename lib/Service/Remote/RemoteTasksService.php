@@ -561,11 +561,11 @@ class RemoteTasksService {
 		// execute command
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
         // process response
-        if ($rs->ItemId) {
+        if ($rs->Task[0]->ItemId) {
 			$to = clone $so;
-			$to->ID = $rs->ItemId->Id;
+			$to->ID = $rs->Task[0]->ItemId->Id;
 			$to->CID = $cid;
-			$to->State = $rs->ItemId->ChangeKey;
+			$to->State = $rs->Task[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($to->Attachments) > 0) {
 				// create attachments in remote data store
@@ -855,11 +855,11 @@ class RemoteTasksService {
         // execute command
         $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, $rd);
 		// process response
-        if ($rs->ItemId) {
+        if ($rs->Task[0]) {
 			$to = clone $so;
-			$to->ID = $rs->ItemId->Id;
+			$to->ID = $rs->Task[0]->ItemId->Id;
 			$to->CID = $cid;
-			$to->State = $rs->ItemId->ChangeKey;
+			$to->State = $rs->Task[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($to->Attachments) > 0) {
 				// create attachments in remote data store
@@ -892,8 +892,8 @@ class RemoteTasksService {
         // execute request
         $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, null);
         // return response
-        if ($rs->ItemId) {
-            return (object) array('ID' => $rs->ItemId->Id, 'UID' => $uuid, 'State' => $rs->ItemId->ChangeKey);
+        if ($rs->Task[0]) {
+            return (object) array('ID' => $rs->Task[0]->ItemId->Id, 'UID' => $uuid, 'State' => $rs->Task[0]->ItemId->ChangeKey);
         } else {
             return null;
         }

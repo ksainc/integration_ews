@@ -487,11 +487,11 @@ class RemoteContactsService {
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
 
         // process response
-        if ($rs->ItemId) {
+        if ($rs->Contact[0]) {
 			$co = clone $so;
-			$co->ID = $rs->ItemId->Id;
+			$co->ID = $rs->Contact[0]->ItemId->Id;
             $co->CID = $cid;
-			$co->State = $rs->ItemId->ChangeKey;
+			$co->State = $rs->Contact[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($co->Attachments) > 0) {
 				// create attachments in remote data store
@@ -512,11 +512,12 @@ class RemoteContactsService {
      * 
      * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
+     * @param string $iid - Collection Item State
      * @param ContactObject $so - Source Data
 	 * 
 	 * @return ContactObject
 	 */
-	public function updateCollectionItem(string $cid, string $iid, ContactObject $so): ?ContactObject {
+	public function updateCollectionItem(string $cid, string $iid, string $istate, ContactObject $so): ?ContactObject {
 
         // request modifications array
         $rm = array();
@@ -941,13 +942,13 @@ class RemoteContactsService {
             $rd[] = $this->deleteFieldExtendedByName('PublicStrings', 'DAV:uid', 'String');
         }
         // execute command
-        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, $rd);
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, null, $rm, $rd);
         // process response
-        if ($rs->ItemId) {
+        if ($rs->Contact[0]) {
 			$co = clone $so;
-			$co->ID = $rs->ItemId->Id;
+			$co->ID = $rs->Contact[0]->ItemId->Id;
             $co->CID = $cid;
-			$co->State = $rs->ItemId->ChangeKey;
+			$co->State = $rs->Contact[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($so->Attachments) > 0) {
 				// create attachments in remote data store
@@ -968,20 +969,21 @@ class RemoteContactsService {
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
+     * @param string $iid - Collection Item State
      * @param string $cid - Collection Item UUID
 	 * 
 	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
 	 */
-	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid): ?object {
+	public function updateCollectionItemUUID(string $cid, string $iid, string $istate, string $uuid): ?object {
 		// request modifications array
         $rm = array();
         // construct update command object
         $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $uuid);
         // execute request
-        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, null);
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, null, $rm, null);
         // return response
-        if ($rs->ItemId) {
-            return (object) array('ID' => $rs->ItemId->Id, 'UID' => $uuid, 'State' => $rs->ItemId->ChangeKey);
+        if ($rs->Contact[0]) {
+            return (object) array('ID' => $rs->Contact[0]->ItemId->Id, 'UID' => $uuid, 'State' => $rs->Contact[0]->ItemId->ChangeKey);
         } else {
             return null;
         }
@@ -1156,7 +1158,7 @@ class RemoteContactsService {
 	 * 
 	 * @return object
 	 */
-    private function constructDefaultCollectionProperties(): object {
+    public function constructDefaultCollectionProperties(): object {
 
 		// construct properties array
 		if (!isset($this->DefaultCollectionProperties)) {
@@ -1182,7 +1184,7 @@ class RemoteContactsService {
 	 * 
 	 * @return object
 	 */
-    private function constructDefaultItemProperties(): object {
+    public function constructDefaultItemProperties(): object {
 
 		// construct properties array
 		if (!isset($this->DefaultItemProperties)) {
@@ -1851,7 +1853,7 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null contact object email type
 	 */
-    private function fromEmailType(string $type): ?string {
+    public function fromEmailType(string $type): ?string {
 
         // type conversion reference
         $_tm = array(
@@ -1879,7 +1881,7 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null remote email type
 	 */
-    private function toEmailType(string $type): string {
+    public function toEmailType(string $type): string {
 
         // type conversion reference
         $_tm = array(
@@ -1907,7 +1909,7 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null contact object telephone type
 	 */
-    private function fromTelType(string $type): ?string {
+    public function fromTelType(string $type): ?string {
         switch ($type) {
             case 'BusinessPhone':
                 return 'WORK,VOICE,1';
@@ -1978,7 +1980,7 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null remote telephone type
 	 */
-    private function toTelType(string $type): ?string {
+    public function toTelType(string $type): ?string {
         $parts = explode(",", $type);
         $part2 = false;
         $part3 = false;
@@ -2068,7 +2070,7 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null contact object address type
 	 */
-    private function fromAddressType(string $type): ?string {
+    public function fromAddressType(string $type): ?string {
 
         // type conversion reference
         $_tm = array(
@@ -2096,7 +2098,7 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null remote address type
 	 */
-    private function toAddressType(string $type): string {
+    public function toAddressType(string $type): string {
 
         // type conversion reference
         $_tm = array(

@@ -848,18 +848,12 @@ class RemoteCommonService {
 		$response = $response->ResponseMessages->CreateItemResponseMessage;
 		$data = null;
 		foreach ($response as $response_data) {
-			// make sure the request succeeded.
-			if ($response_data->ResponseClass != ResponseClassType::SUCCESS) {
-				$code = $response_data->ResponseCode;
-				$message = $response_data->MessageText;
-				continue;
-			} else {
-				foreach ($response_data->Items as $items) {
-					if (count($items) > 0) {
-						$data = $items[0];
-						break;
-					}
-				}
+			// evaluate if proper response was returned
+			if (isset($response_data->Items)) {
+				$data = $response_data->Items;
+			}
+			else {
+				throw new Exception('Server Error: ' . $response_data->ResponseCode . ' ' . $response_data->MessageText);
 			}
 		}
 		// return object or null
@@ -875,13 +869,14 @@ class RemoteCommonService {
 	 * @param EWSClient $DataStore - Storage Interface
 	 * @param string $fid - Folder ID
 	 * @param string $iid - Item ID
+	 * @param string $istate - Item State
 	 * @param string $a - Item Append Commands
 	 * @param string $u - Item Update Commands
 	 * @param string $d - Item Delete Commands
 	 * 
 	 * @return object Items Array on success / Null on failure
 	 */
-	public function updateItem(EWSClient $DataStore, string $fid, string $iid, array $additions = null, array $modifications = null, array $deletions = null): ?object {
+	public function updateItem(EWSClient $DataStore, string $fid, string $iid, string $istate = null, array $additions = null, array $modifications = null, array $deletions = null): ?object {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\UpdateItemType();
@@ -892,7 +887,7 @@ class RemoteCommonService {
 		$request->SavedItemFolderId->FolderId = new \OCA\EWS\Components\EWS\Type\FolderIdType($fid);
 		// define target object and changes
 		$request->ItemChanges[] = new \OCA\EWS\Components\EWS\Type\ItemChangeType(
-			new \OCA\EWS\Components\EWS\Type\ItemIdType($iid),
+			new \OCA\EWS\Components\EWS\Type\ItemIdType($iid, $istate),
 			new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfItemChangeDescriptionsType($additions, $modifications, $deletions)
 		);
 		// execute request
@@ -901,18 +896,12 @@ class RemoteCommonService {
 		$response = $response->ResponseMessages->UpdateItemResponseMessage;
 		$data = null;
 		foreach ($response as $response_data) {
-			// check response for failure
-			if ($response_data->ResponseClass != ResponseClassType::SUCCESS) {
-				$code = $response_data->ResponseCode;
-				$message = $response_data->MessageText;
-				continue;
-			} else {
-				foreach ($response_data->Items as $items) {
-					if (count($items) > 0) {
-						$data = $items[0];
-						break;
-					}
-				}
+			// evaluate if proper response was returned
+			if (isset($response_data->Items)) {
+				$data = $response_data->Items;
+			}
+			else {
+				throw new Exception('Server Error: ' . $response_data->ResponseCode . ' ' . $response_data->MessageText);
 			}
 		}
 		// return object or null

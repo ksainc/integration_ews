@@ -77,12 +77,10 @@ class ContactsService {
 	public function __construct (string $appName,
 								LoggerInterface $logger,
 								CorrelationsService $CorrelationsService,
-								RemoteContactsService $RemoteContactsService,
 								LocalContactsService $LocalContactsService,
 								CardDavBackend $LocalStore) {
 		$this->logger = $logger;
 		$this->CorrelationsService = $CorrelationsService;
-		$this->RemoteContactsService = $RemoteContactsService;
 		$this->LocalContactsService = $LocalContactsService;
 		$this->LocalStore = $LocalStore;
 	}
@@ -93,6 +91,17 @@ class ContactsService {
 		$this->Configuration = $configuration;
 		// assign remote data store
 		$this->RemoteStore = $RemoteStore;
+		// construct remote service
+		switch ($RemoteStore->getVersion()) {
+			case $RemoteStore::SERVICE_VERSION_2007:
+			case $RemoteStore::SERVICE_VERSION_2007_SP1:
+			case $RemoteStore::SERVICE_VERSION_2009:
+				$this->RemoteContactsService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteContactsService2007::class);
+				break;
+			default:
+				$this->RemoteContactsService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteContactsService::class);
+				break;
+		}
 		// configure remote service
 		$this->RemoteContactsService->configure($configuration, $RemoteStore);
 		// configure local service
@@ -345,7 +354,7 @@ class ContactsService {
 				// work around for missing update command in ews
 				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
-				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 				// assign status
 				$status = 'RU'; // Rocal Update
 			}
@@ -465,7 +474,7 @@ class ContactsService {
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Remote Update
 				}
@@ -494,7 +503,7 @@ class ContactsService {
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Rocal Update
 				}
@@ -518,7 +527,7 @@ class ContactsService {
 				// work around for missing update command in ews
 				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
-				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 				// assign status
 				$status = 'RU'; // Remote Update
 			}
@@ -657,7 +666,7 @@ class ContactsService {
 				// work around for missing update command in ews
 				$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
-				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+				$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 				// assign status
 				$status = 'RU'; // Remote Update
 			}
@@ -667,7 +676,7 @@ class ContactsService {
 			$lo = $this->LocalContactsService->createCollectionItem($lcid, $ro);
 			// update remote object uuid if was missing
 			if (empty($ro->UID)) {
-				$rs = $this->RemoteContactsService->updateCollectionItemUUID($rcid, $ro->ID, $lo->UID);
+				$rs = $this->RemoteContactsService->updateCollectionItemUUID($rcid, $ro->ID, $ro->State, $lo->UID);
 				if ($rs) { $ro->State = $rs->State; }
 			}
 			// assign status
@@ -772,7 +781,7 @@ class ContactsService {
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Remote Update
 				}
@@ -801,7 +810,7 @@ class ContactsService {
 					// work around for missing update command in ews
 					$this->RemoteContactsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteContactsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Remote Update
 				}
@@ -822,7 +831,7 @@ class ContactsService {
 			$lo = $this->LocalContactsService->createCollectionItem($lcid, $ro);
 			// update remote object uuid if was missing
 			if (empty($ro->UID)) {
-				$rs = $this->RemoteContactsService->updateCollectionItemUUID($rcid, $ro->ID, $lo->UID);
+				$rs = $this->RemoteContactsService->updateCollectionItemUUID($rcid, $ro->ID, $ro->State, $lo->UID);
 				if ($rs) { $ro->State = $rs->State; }
 			}
 			// assign status

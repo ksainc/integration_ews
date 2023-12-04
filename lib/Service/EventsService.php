@@ -82,13 +82,11 @@ class EventsService {
 	public function __construct (string $appName,
 								LoggerInterface $logger,
 								CorrelationsService $CorrelationsService,
-								RemoteEventsService $RemoteEventsService,
 								LocalEventsService $LocalEventsService,
 								CalDavBackend $LocalStore,
 								IRootFolder $LocalFileStore) {
 		$this->logger = $logger;
 		$this->CorrelationsService = $CorrelationsService;
-		$this->RemoteEventsService = $RemoteEventsService;
 		$this->LocalEventsService = $LocalEventsService;
 		$this->LocalStore = $LocalStore;
 		$this->LocalFileStore = $LocalFileStore;
@@ -100,6 +98,17 @@ class EventsService {
 		$this->Configuration = $configuration;
 		// assign remote data store
 		$this->RemoteStore = $RemoteStore;
+		// construct remote service
+		switch ($RemoteStore->getVersion()) {
+			case $RemoteStore::SERVICE_VERSION_2007:
+			case $RemoteStore::SERVICE_VERSION_2007_SP1:
+			case $RemoteStore::SERVICE_VERSION_2009:
+				$this->RemoteEventsService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteEventsService2007::class);
+				break;
+			default:
+				$this->RemoteEventsService = \OC::$server->get(\OCA\EWS\Service\Remote\RemoteEventsService::class);
+				break;
+		}
 		// configure remote service
 		$this->RemoteEventsService->configure($configuration, $RemoteStore);
 		// configure local service
@@ -360,7 +369,7 @@ class EventsService {
 				// work around for missing update command in ews
 				$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
-				$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+				$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 				// assign status
 				$status = 'RU'; // Rocal Update
 			}
@@ -477,7 +486,7 @@ class EventsService {
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Remote Update
 				}
@@ -506,7 +515,7 @@ class EventsService {
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Rocal Update
 				}
@@ -530,7 +539,7 @@ class EventsService {
 				// work around for missing update command in ews
 				$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
-				$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+				$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 				// assign status
 				$status = 'RU'; // Remote Update
 			}
@@ -669,7 +678,7 @@ class EventsService {
 				// work around for missing update command in ews
 				$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 				// update remote object
-				$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+				$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 				// assign status
 				$status = 'RU'; // Remote Update
 			}
@@ -679,7 +688,7 @@ class EventsService {
 			$lo = $this->LocalEventsService->createCollectionItem($lcid, $ro);
 			// update remote object uuid if was missing
 			if (empty($ro->UUID)) {
-				$rs = $this->RemoteEventsService->updateCollectionItemUUID($rcid, $ro->ID, $lo->UUID);
+				$rs = $this->RemoteEventsService->updateCollectionItemUUID($rcid, $ro->ID, $ro->State, $lo->UUID);
 				if ($rs) { $ro->State = $rs->State; }
 			}
 			// assign status
@@ -784,7 +793,7 @@ class EventsService {
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Remote Update
 				}
@@ -813,7 +822,7 @@ class EventsService {
 					// work around for missing update command in ews
 					$this->RemoteEventsService->deleteCollectionItemAttachment(array_column($ro->Attachments, 'Id'));
 					// update remote object
-					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $lo);
+					$ro = $this->RemoteEventsService->updateCollectionItem($rcid, $ro->ID, $ro->State, $lo);
 					// assign status
 					$status = 'RU'; // Remote Update
 				}
@@ -834,7 +843,7 @@ class EventsService {
 			$lo = $this->LocalEventsService->createCollectionItem($lcid, $ro);
 			// update remote object uuid if was missing
 			if (empty($ro->UUID)) {
-				$rs = $this->RemoteEventsService->updateCollectionItemUUID($rcid, $ro->ID, $lo->UUID);
+				$rs = $this->RemoteEventsService->updateCollectionItemUUID($rcid, $ro->ID, $ro->State, $lo->UUID);
 				if ($rs) { $ro->State = $rs->State; }
 			}
 			// assign status
