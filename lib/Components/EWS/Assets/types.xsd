@@ -4663,8 +4663,8 @@
     </xs:complexType>
 
     <xs:complexType name="TimeZoneType">
-        <xs:sequence minOccurs="0" >
-            <xs:element name="BaseOffset" type="xs:duration" />
+        <xs:sequence minOccurs="0">
+            <xs:element name="BaseOffset" type="xs:duration" minOccurs="0" />
             <xs:sequence minOccurs="0">
                 <xs:element name="Standard" type="t:TimeChangeType"/>
                 <xs:element name="Daylight" type="t:TimeChangeType"/>
