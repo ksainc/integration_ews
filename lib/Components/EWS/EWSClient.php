@@ -249,7 +249,7 @@ class EWSClient extends \SoapClient
         $this->_transport_authentication = $authentication;
         $this->_service_version = $version;
         $this->_client_timezone = $timezone;
-        $this->_client_impersonation = $impersonation;
+        $this->_client_impersonation = $impersonate;
         // construct service location
         $this->_constructTransportLocation();
         // construct service authentication
@@ -697,7 +697,7 @@ class EWSClient extends \SoapClient
     /**
      * Sets the impersonation parameters to be used for all requests
      *
-     * @param \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType $impersonation
+     * @param \OCA\EWS\Components\EWS\Type\ExchangeImpersonationType $value
      */
     public function setImpersonation($value): void {
 
