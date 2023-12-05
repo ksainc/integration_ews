@@ -101,6 +101,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:DeletedOccurrences');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:AppointmentState');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Resources');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:IsAllDayEvent');
 
 			$this->DefaultItemProperties = $p;
 		}
@@ -153,8 +154,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			//$ro->Duration = $this->constructDuration($so->StartsOn, $so->EndsOn);
 		}
 		// All Day Event
-		if(($so->EndsTZ == $so->StartsTZ) &&
-		   (fmod(($so->EndsOn->getTimestamp() - $so->StartsOn->getTimestamp()), 86400) == 0)) {
+		if(!empty($so->Span) && $so->Span == 'F') {
 			$ro->IsAllDayEvent = true;
 		}
 		else {
@@ -531,8 +531,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			unset($dt);
         }
 		// All Day Event
-		if(($so->EndsTZ == $so->StartsTZ) &&
-		   (fmod(($so->EndsOn->getTimestamp() - $so->StartsOn->getTimestamp()), 86400) == 0) ) {
+		if(!empty($so->Span) && $so->Span == 'F') {
 			$rm[] = $this->updateFieldUnindexed('calendar:IsAllDayEvent', 'IsAllDayEvent', true);
 		}
 		else {

@@ -633,6 +633,10 @@ class LocalEventsService {
             }
             $eo->EndsOn = new DateTime($vo->DTEND->getValue(), $eo->EndsTZ);
         }
+        // Day Span
+        if (isset($vo->DTSTART)) {
+            $eo->Span = (str_contains($vo->DTSTART->getValue(), 'T')) ? 'P' : 'F';
+        }
         // Label
         if (isset($vo->SUMMARY)) {
             $eo->Label = trim($vo->SUMMARY->getValue());
@@ -866,9 +870,10 @@ class LocalEventsService {
         // Starts Date/Time
         // Starts Time Zone
         if (isset($eo->StartsOn)) {
+            // add property to object
             $vo->add('DTSTART');
-
-            if (isset($eo->StartsTZ)) {
+            // evaluate which time zone to use
+            if ($eo->StartsTZ instanceof \DateTimeZone) {
                 $tz = $eo->StartsTZ->getName();  
             }
             elseif ($this->UserTimeZone instanceof \DateTimeZone) {
@@ -877,20 +882,28 @@ class LocalEventsService {
             else {
                 $tz = $this->SystemTimeZone->getName();
             }
-
+            // clone propery and apply time zone
             $dt = clone $eo->StartsOn;
             $dt->setTimezone(new DateTimeZone($tz));
-            $vo->DTSTART->setValue($dt->format('Ymd\THis'));
+            // evaluate day span of event and set proper value
+            if ($eo->Span == 'F') {
+                $vo->DTSTART->setValue($dt->format('Ymd'));
+            }
+            else {
+                $vo->DTSTART->setValue($dt->format('Ymd\THis'));
+            }
+            // add parameter to property
             $vo->DTSTART->add('TZID', $tz);
-            unset($dt);
-            unset($tz);
+            // destroy temporary variables
+            unset($dt, $tz);
         }
         // Ends Date/Time
         // Ends Time Zone
         if (isset($eo->EndsOn)) {
+            // add property to object
             $vo->add('DTEND');
-
-            if (isset($eo->EndsTZ)) {
+            // evaluate which time zone to use
+            if ($eo->EndsTZ instanceof \DateTimeZone) {
                 $tz = $eo->EndsTZ->getName();  
             }
             elseif ($this->UserTimeZone instanceof \DateTimeZone) {
@@ -899,13 +912,20 @@ class LocalEventsService {
             else {
                 $tz = $this->SystemTimeZone->getName();
             }
-
+            // clone propery and apply time zone
             $dt = clone $eo->EndsOn;
             $dt->setTimezone(new DateTimeZone($tz));
-            $vo->DTEND->setValue($dt->format('Ymd\THis'));
+            // evaluate day span of event and set proper value
+            if ($eo->Span == 'F') {
+                $vo->DTEND->setValue($dt->format('Ymd'));
+            }
+            else {
+                $vo->DTEND->setValue($dt->format('Ymd\THis'));
+            }
+            // add parameter to property
             $vo->DTEND->add('TZID', $tz);
-            unset($dt);
-            unset($tz);
+            // destroy temporary variables
+            unset($dt, $tz);
         }
         // Time Zone
         if ($eo->TimeZone) {

@@ -45,6 +45,7 @@ class EventObject {
     private ?DateTimeZone $StartsTZ = null;         // Event Start Time Zone
     private ?DateTime $EndsOn = null;               // Event End Date/Time
     private ?DateTimeZone $EndsTZ = null;           // Event End Time Zone
+    private ?string $Span = 'P';                    // Event Day Span (P - Particial / F - Full)
     private ?DateTimeZone $TimeZone = null;         // Event Time Zone
     private ?string $Label = null;                  // Event Title/Summary
     private ?string $Notes = null;                  // Event Notes

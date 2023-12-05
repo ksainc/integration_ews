@@ -398,8 +398,7 @@ class RemoteEventsService {
 			unset($dt);
 		}
 		// All Day Event
-		if(($so->EndsTZ == $so->StartsTZ) &&
-		   (fmod(($so->EndsOn->getTimestamp() - $so->StartsOn->getTimestamp()), 86400) == 0)) {
+		if(!empty($so->Span) && $so->Span == 'F') {
 			$ro->IsAllDayEvent = true;
 		}
 		else {
@@ -762,8 +761,7 @@ class RemoteEventsService {
 			unset($dt);
         }
 		// All Day Event
-		if(($so->EndsTZ == $so->StartsTZ) &&
-		   (fmod(($so->EndsOn->getTimestamp() - $so->StartsOn->getTimestamp()), 86400) == 0) ) {
+		if(!empty($so->Span) && $so->Span == 'F') {
 			$rm[] = $this->updateFieldUnindexed('calendar:IsAllDayEvent', 'IsAllDayEvent', true);
 		}
 		else {
@@ -1296,6 +1294,7 @@ class RemoteEventsService {
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:ModifiedOccurrences');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:DeletedOccurrences');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
+			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:IsAllDayEvent');
 
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:UniqueBody');
 			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:AppointmentState');
@@ -1788,17 +1787,21 @@ class RemoteEventsService {
 		// Start Date/Time
 		if (!empty($data->Start)) {
 			$o->StartsOn = new DateTime($data->Start);
-			if (isset($o->StartsTZ)) { $o->StartsOn->setTimezone($o->StartsTZ); }
+			//if (isset($o->StartsTZ)) { $o->StartsOn->setTimezone($o->StartsTZ); }
 		}
 		// End Date/Time
         if (!empty($data->End)) {
             $o->EndsOn = new DateTime($data->End);
-			if (isset($o->EndsTZ)) { $o->EndsOn->setTimezone($o->EndsTZ); }
+			//if (isset($o->EndsTZ)) { $o->EndsOn->setTimezone($o->EndsTZ); }
         }
 		// All Day Event
 		if(isset($data->IsAllDayEvent) && $data->IsAllDayEvent == true) {
-			$o->StartsOn->setTime(0,0,0,0);
-			$o->EndsOn->setTime(0,0,0,0);
+			$o->Span = 'F'; // Full
+			//$o->StartsOn->setTime(0,0,0,0);
+			//$o->EndsOn->setTime(0,0,0,0);
+		}
+		else {
+			$o->Span = 'P'; // Partial
 		}
 		// Label
         if (!empty($data->Subject)) {
