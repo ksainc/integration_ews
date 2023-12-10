@@ -308,7 +308,6 @@ class RemoteEventsService2007 extends RemoteEventsService {
 					$ro->Recurrence->WeeklyRecurrence->Interval = '1';
 				}
 				$ro->Recurrence->WeeklyRecurrence->DaysOfWeek = $this->toDaysOfWeek($so->Occurrence->OnDayOfWeek);
-				$ro->Recurrence->WeeklyRecurrence->FirstDayOfWeek = 'Monday';
 			}
 			// Occurrence Monthly
 			elseif ($so->Occurrence->Precision == 'M') {
@@ -658,7 +657,6 @@ class RemoteEventsService2007 extends RemoteEventsService {
 					$f->WeeklyRecurrence->Interval = '1';
 				}
 				$f->WeeklyRecurrence->DaysOfWeek = $this->toDaysOfWeek($so->Occurrence->OnDayOfWeek);
-				$f->WeeklyRecurrence->FirstDayOfWeek = 'Monday';
 			}
 			// Monthly Event
 			elseif ($so->Occurrence->Precision == 'M') {
