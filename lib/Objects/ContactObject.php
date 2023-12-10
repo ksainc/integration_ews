@@ -98,11 +98,11 @@ class ContactObject {
         $this->Journalling = true;
     }
 
-    public function addEmail(string $type, string $address) {
+    public function addEmail(string $type, ?string $address) {
         $this->Email[] = new ContactEmailObject($type, $address);
     }
 
-    public function addPhone(string $type, ?string $subtype, string $number) {
+    public function addPhone(string $type, ?string $subtype, ?string $number) {
         $this->Phone[] = new ContactPhoneObject($type, $subtype, $number);
     }
 
@@ -110,7 +110,7 @@ class ContactObject {
         $this->Address[] = new ContactAddressObject($type, $street, $locality, $region, $code, $country);
     }
 
-    public function addIMPP(string $type, string $address) {
+    public function addIMPP(string $type, ?string $address) {
         $this->IMPP[] = new ContactIMPPObject($type, $address);
     }
 

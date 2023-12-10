@@ -335,32 +335,32 @@ class LocalContactsService {
 		$co = new ContactObject();
         // UUID
         if (isset($vo->UID)) {
-            $co->UID = trim($vo->UID->getValue());
+            $co->UID = $this->sanitizeString($vo->UID->getValue());
         }
         // Label
         if (isset($vo->FN)) {
-            $co->Label = trim($vo->FN->getValue());
+            $co->Label = $this->sanitizeString($vo->FN->getValue());
         }
 		// Name
         if (isset($vo->N)) {
-            $p = $vo->N->getParts();
-            $co->Name->Last = trim($p[0]);
-            $co->Name->First = trim($p[1]);
-            $co->Name->Other = trim($p[2]);
-            $co->Name->Prefix = trim($p[3]);
-            $co->Name->Suffix = trim($p[4]);
-            $co->Name->PhoneticLast = trim($p[6]);
-            $co->Name->PhoneticFirst = trim($p[7]);
-            $co->Name->Aliases = trim($p[5]);
-            unset($p);
+            // 
+            [$last, $first, $other, $prefix, $suffix] = $vo->N->getParts();
+            // assign properties
+            $co->Name->Last = $this->sanitizeString($last);
+            $co->Name->First = $this->sanitizeString($first);
+            $co->Name->Other = $this->sanitizeString($other);
+            $co->Name->Prefix = $this->sanitizeString($prefix);
+            $co->Name->Suffix = $this->sanitizeString($suffix);
+            // destroy temporary variables
+            unset($last, $first, $other, $prefix, $suffix);
         }
         // Aliases
         if (isset($vo->NICKNAME)) {
             if (empty($co->Name->Aliases)) {
-                $co->Name->Aliases .= trim($vo->NICKNAME->getValue());
+                $co->Name->Aliases .= $this->sanitizeString($vo->NICKNAME->getValue());
             }
             else {
-                $co->Name->Aliases .= ' ' . trim($vo->NICKNAME->getValue());
+                $co->Name->Aliases .= ' ' . $this->sanitizeString($vo->NICKNAME->getValue());
             }
         }
         // Photo
@@ -391,7 +391,7 @@ class LocalContactsService {
         }
         // Gender
         if (isset($vo->GENDER)) {
-            $co->Gender = trim($vo->GENDER->getValue());
+            $co->Gender = $this->sanitizeString($vo->GENDER->getValue());
         }
         // Birth Day
         if (isset($vo->BDAY)) {
@@ -404,34 +404,37 @@ class LocalContactsService {
         // Address(es)
         if (isset($vo->ADR)) {
             foreach($vo->ADR as $entry) {
-                $p = $entry->getParts();
+                $type  = $entry->parameters()['TYPE']->getValue();
+                [$pob, $unit, $street, $locality, $region, $code, $country] = $entry->getParts();
                 $co->addAddress(
-                    strtoupper($entry->parameters()['TYPE']->getValue()),
-                    trim($p[2]),
-                    trim($p[3]),
-                    trim($p[4]),
-                    trim($p[5]),
-                    trim($p[6])
+                    strtoupper($type),
+                    $this->sanitizeString($street),
+                    $this->sanitizeString($locality),
+                    $this->sanitizeString($region),
+                    $this->sanitizeString($code),
+                    $this->sanitizeString($country)
                 );
-                unset($p);
             }
+            unset($type, $pob, $unit, $street, $locality, $region, $code, $country);
         }
         // Phone(s)
         if (isset($vo->TEL)) {
             foreach($vo->TEL as $entry) {
+                [$primary, $secondary] = explode(',', trim($entry->parameters()['TYPE']->getValue()));
                 $co->addPhone(
-                    strtoupper(trim($entry->parameters()['TYPE']->getValue())),
-                    null, 
-                    trim($entry->getValue())
+                    $primary,
+                    $secondary, 
+                    $this->sanitizeString($entry->getValue())
                 );
             }
+            unset($primary, $secondary);
         }
         // Email(s)
         if (isset($vo->EMAIL)) {
             foreach($vo->EMAIL as $entry) {
                 $co->addEmail(
                     strtoupper(trim($entry->parameters()['TYPE']->getValue())), 
-                    trim($entry->getValue())
+                    $this->sanitizeString($entry->getValue())
                 );
             }
         }
@@ -440,37 +443,37 @@ class LocalContactsService {
             foreach($vo->IMPP as $entry) {
                 $co->addIMPP(
                     strtoupper(trim($entry->parameters()['TYPE']->getValue())), 
-                    trim($entry->getValue())
+                    $this->sanitizeString($entry->getValue())
                 );
             }
         }
         // Time Zone
         if (isset($vo->TZ)) {
-            $co->TimeZone = trim($vo->TZ->getValue());
+            $co->TimeZone = $this->sanitizeString($vo->TZ->getValue());
         }
         // Geolocation
         if (isset($vo->GEO)) {
-            $co->Geolocation = trim($vo->GEO->getValue());
+            $co->Geolocation = $this->sanitizeString($vo->GEO->getValue());
         }
         // Manager
 		if (isset($vo->{'X-MANAGERSNAME'})) {
-			$co->Manager = trim($vo->{'X-MANAGERSNAME'}->getValue());
+			$co->Manager = $this->sanitizeString($vo->{'X-MANAGERSNAME'}->getValue());
 		}
         // Assistant
 		if (isset($vo->{'X-ASSISTANTNAME'})) {
-			$co->Assistant = trim($vo->{'X-ASSISTANTNAME'}->getValue());
+			$co->Assistant = $this->sanitizeString($vo->{'X-ASSISTANTNAME'}->getValue());
 		}
         // Occupation Organization
         if (isset($vo->ORG)) {
-			$co->Occupation->Organization = trim($vo->ORG->getValue());
+			$co->Occupation->Organization = $this->sanitizeString($vo->ORG->getValue());
 		}
 		// Occupation Title
         if (isset($vo->TITLE)) { 
-			$co->Occupation->Title = trim($vo->TITLE->getValue()); 
+			$co->Occupation->Title = $this->sanitizeString($vo->TITLE->getValue()); 
 		}
 		// Occupation Role
 		if (isset($vo->ROLE)) {
-			$co->Occupation->Role = trim($vo->ROLE->getValue());
+			$co->Occupation->Role = $this->sanitizeString($vo->ROLE->getValue());
 		}
 		// Occupation Logo
 		if (isset($vo->LOGO)) {
@@ -488,23 +491,23 @@ class LocalContactsService {
         if (isset($vo->CATEGORIES)) {
             foreach($vo->CATEGORIES->getParts() as $entry) {
                 $co->addTag(
-                    trim($entry)
+                    $this->sanitizeString($entry)
                 );
             }
         }
         // Notes
         if (isset($vo->NOTE)) {
             if (!empty(trim($vo->NOTE->getValue()))) {
-                $co->Notes = trim($vo->NOTE->getValue());
+                $co->Notes = $this->sanitizeString($vo->NOTE->getValue());
             }
         }
         // Sound
         if (isset($vo->SOUND)) {
-            $co->Sound = trim($vo->SOUND->getValue());
+            $co->Sound = $this->sanitizeString($vo->SOUND->getValue());
         }
         // URL / Website
         if (isset($vo->URL)) {
-            $co->URI = trim($vo->URL->getValue());
+            $co->URI = $this->sanitizeString($vo->URL->getValue());
         }
 
         // return contact object
@@ -542,10 +545,7 @@ class LocalContactsService {
                     $co->Name->First,
                     $co->Name->Other,
                     $co->Name->Prefix,
-                    $co->Name->Suffix,
-                    $co->Name->PhoneticLast,
-                    $co->Name->PhoneticFirst,
-                    $co->Name->Aliases
+                    $co->Name->Suffix
             ));
         }
         // Photo
@@ -586,14 +586,14 @@ class LocalContactsService {
         if (isset($co->BirthDay)) {
             $vo->add(
                 'BDAY',
-                $co->BirthDay->format('Y-m-d\TH:i:s\Z')
+                $co->BirthDay->format('Y-m-d\TH:i:s')
             );
         }
         // Anniversary Day
         if (isset($co->AnniversaryDay)) {
             $vo->add(
                 'ANNIVERSARY',
-                $co->AnniversaryDay->format('Y-m-d\TH:i:s\Z')
+                $co->AnniversaryDay->format('Y-m-d\TH:i:s')
             );
         }
         // Address(es)
@@ -622,8 +622,8 @@ class LocalContactsService {
                     'TEL', 
                     $entry->Number,
                     array (
-                        'TYPE'=>$entry->Type
-                    )
+                        'TYPE'=> (isset($entry->SubType)) ? $entry->Type . ',' . $entry->SubType : $entry->Type
+                    ) 
                 );
             }
         }
@@ -748,6 +748,15 @@ class LocalContactsService {
         // return vcard object
         return $vo;
 
+    }
+
+    public function sanitizeString($value): string|null {
+
+        // remove white space
+        $value = trim($value);
+        // return value or null
+        return $value === '' ? null : $value;
+        
     }
     
 }

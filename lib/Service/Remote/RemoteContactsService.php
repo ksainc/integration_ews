@@ -361,7 +361,7 @@ class RemoteContactsService {
         }
         // Birth Day
         if (!empty($so->BirthDay)) {
-            $ro->Birthday = $so->BirthDay->format('Y-m-d\TH:i:s\Z');
+            $ro->Birthday = $so->BirthDay->format('Y-m-d\TH:i:s');
         }
         // Gender
         if (!empty($so->Gender)) {
@@ -373,7 +373,7 @@ class RemoteContactsService {
         }
         // Anniversary Day
         if (!empty($so->AnniversaryDay)) {
-            $ro->WeddingAnniversary = $so->AnniversaryDay->format('Y-m-d\TH:i:s\Z');
+            $ro->WeddingAnniversary = $so->AnniversaryDay->format('Y-m-d\TH:i:s');
         }
         // Address(es)
         if (count($so->Address) > 0) {
@@ -399,14 +399,41 @@ class RemoteContactsService {
         }
         // Phone(s)
         if (count($so->Phone) > 0) {
+            $types = [
+                'BusinessPhone' => ['Max' => 2, 'Count' => 1],
+                'BusinessFax' => ['Max' => 1, 'Count' => 1],
+                'HomePhone' => ['Max' => 2, 'Count' => 1],
+                'HomeFax' => ['Max' => 1, 'Count' => 1],
+                'OtherTelephone' => ['Max' => 1, 'Count' => 1],
+                'OtherFax' => ['Max' => 1, 'Count' => 1],
+                'MobilePhone' => ['Max' => 1, 'Count' => 1],
+                'CarPhone' => ['Max' => 1, 'Count' => 1],
+                'Pager' => ['Max' => 1, 'Count' => 1],
+                'Isdn' => ['Max' => 1, 'Count' => 1],
+                'AssistantPhone' => ['Max' => 1, 'Count' => 1],
+                'Callback' => ['Max' => 1, 'Count' => 1],
+                'CompanyMainPhone' => ['Max' => 1, 'Count' => 1],
+                'PrimaryPhone' => ['Max' => 1, 'Count' => 1],
+                'RadioPhone' => ['Max' => 1, 'Count' => 1],
+                'Telex' => ['Max' => 1, 'Count' => 1],
+                'TtyTddPhone' => ['Max' => 1, 'Count' => 1]
+            ];
             foreach ($so->Phone as $entry) {
-                $type = $this->toTelType($entry->Type);
-                if ($type && !empty($entry->Number)) {
-                    if (!isset($ro->PhoneNumbers->Entry)) { $ro->PhoneNumbers = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(); } 
+                // convert primary and secondary type to single type
+                $type = $this->toPhoneType($entry->Type, $entry->SubType);
+                // evaluate if type was converted
+                $tc = (isset($types[$type])) ? $types[$type] : null;
+                // if type is available and if number exists
+                if (isset($tc) && ($tc['Count'] <= $tc['Max']) && !empty($entry->Number)) {
+                    // evaluate if numbers array exists, and create it if needed
+                    if (!isset($ro->PhoneNumbers->Entry)) { $ro->PhoneNumbers = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(); }
+                    // add number to numbers array
                     $ro->PhoneNumbers->Entry[] = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryEntryType(
-                        $type, 
+                        ($tc['Count'] > 1) ? $type . $tc['Count'] : $type, // add count to type if available count is greater then one
                         $entry->Number
                     );
+                    // decrease available type count by one
+                    $types[$type]['Count'] += 1;
                 }
             }
         }
@@ -593,7 +620,7 @@ class RemoteContactsService {
         }
         // Birth Day
         if (!empty($so->BirthDay)) {
-            $rm[] = $this->updateFieldUnindexed('contacts:Birthday', 'Birthday', $so->BirthDay->format('Y-m-d\TH:i:s\Z'));
+            $rm[] = $this->updateFieldUnindexed('contacts:Birthday', 'Birthday', $so->BirthDay->format('Y-m-d\TH:i:s'));
         }
         else {
             $rd[] = $this->deleteFieldUnindexed('contacts:Birthday');
@@ -614,7 +641,7 @@ class RemoteContactsService {
         }
         // Anniversary Day
         if (!empty($so->AnniversaryDay)) {
-            $rm[] = $this->updateFieldUnindexed('contacts:WeddingAnniversary', 'WeddingAnniversary', $so->AnniversaryDay->format('Y-m-d\TH:i:s\Z'));
+            $rm[] = $this->updateFieldUnindexed('contacts:WeddingAnniversary', 'WeddingAnniversary', $so->AnniversaryDay->format('Y-m-d\TH:i:s'));
         }
         else {
             $rd[] = $this->deleteFieldUnindexed('contacts:WeddingAnniversary');
@@ -777,48 +804,57 @@ class RemoteContactsService {
             }
         }
         // Phone(s)
-        $types = array(
-            'BusinessPhone' => true,
-            'BusinessPhone2' => true,
-            'BusinessFax' => true,
-            'HomePhone' => true,
-            'HomePhone2' => true,
-            'HomeFax' => true,
-            'CarPhone' => true,
-            'Isdn' => true,
-            'MobilePhone' => true,
-            'Pager' => true,
-            'OtherTelephone' => true,
-            'OtherFax' => true,
-        );
+        $types = [
+            'BusinessPhone' => ['Max' => 2, 'Count' => 1],
+            'BusinessFax' => ['Max' => 1, 'Count' => 1],
+            'HomePhone' => ['Max' => 2, 'Count' => 1],
+            'HomeFax' => ['Max' => 1, 'Count' => 1],
+            'OtherTelephone' => ['Max' => 1, 'Count' => 1],
+            'OtherFax' => ['Max' => 1, 'Count' => 1],
+            'MobilePhone' => ['Max' => 1, 'Count' => 1],
+            'CarPhone' => ['Max' => 1, 'Count' => 1],
+            'Pager' => ['Max' => 1, 'Count' => 1],
+            'Isdn' => ['Max' => 1, 'Count' => 1],
+            'AssistantPhone' => ['Max' => 1, 'Count' => 1],
+            'Callback' => ['Max' => 1, 'Count' => 1],
+            'CompanyMainPhone' => ['Max' => 1, 'Count' => 1],
+            'PrimaryPhone' => ['Max' => 1, 'Count' => 1],
+            'RadioPhone' => ['Max' => 1, 'Count' => 1],
+            'Telex' => ['Max' => 1, 'Count' => 1],
+            'TtyTddPhone' => ['Max' => 1, 'Count' => 1]
+        ];
         // update phone
         if (count($so->Phone) > 0) {
             foreach ($so->Phone as $entry) {
-                // convert email type
-                $type = $this->toTelType($entry->Type);
+                // convert primary and secondary type to single type
+                $type = $this->toPhoneType($entry->Type, $entry->SubType);
+                // evaluate if type was converted
+                $tc = (isset($types[$type])) ? $types[$type] : null;
                 // process if index not used already
-                if (isset($types[$type]) && $types[$type] == true && !empty($entry->Number)) {
+                if (isset($tc) && ($tc['Count'] <= $tc['Max']) && !empty($entry->Number)) {
                     $rm[] = $this->updateFieldIndexed(
                         'contacts:PhoneNumber',
-                        $type,
+                        ($tc['Count'] > 1) ? $type . $tc['Count'] : $type,
                         'PhoneNumbers',
                         new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(),
                         new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryEntryType(
-                            $type, 
+                            ($tc['Count'] > 1) ? $type . $tc['Count'] : $type, 
                             $entry->Number
                         )
                     );
-                    $types[$type] = false;
+                    // decrease available type count by one
+                    $types[$type]['Count'] += 1;
                 }
             }
         }
         // delete phone
-        foreach ($types as $type => $status) {
-            if ($status) {
+        foreach ($types as $type => $tc) {
+            while ($tc['Count'] <= $tc['Max']) {
                 $rd[] = $this->deleteFieldIndexed(
                     'contacts:PhoneNumber',
-                    $type
+                    ($tc['Count'] > 1) ? $type . $tc['Count'] : $type
                 );
+                $tc['Count'] += 1;
             }
         }
         // Email(s)
@@ -1158,23 +1194,27 @@ class RemoteContactsService {
 	 * 
 	 * @return object
 	 */
-    public function constructDefaultCollectionProperties(): object {
+	public function constructDefaultCollectionProperties(): object {
 
-		// construct properties array
+		// evaluate if default collection properties collection exisits
 		if (!isset($this->DefaultCollectionProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
-
-
-			$this->DefaultCollectionProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+				'folder:FolderId',
+				'folder:FolderClass',
+				'folder:ParentFolderId',
+				'folder:DisplayName',
+				'folder:TotalCount',
+			];
+			// construct property collection
+			$this->DefaultCollectionProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultCollectionProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultCollectionProperties;
-
+		
 	}
 
     /**
@@ -1185,67 +1225,44 @@ class RemoteContactsService {
 	 * @return object
 	 */
     public function constructDefaultItemProperties(): object {
-
-		// construct properties array
+    
+        // evaluate if default item properties collection exisits
 		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompleteName');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhoneticLastName');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhoneticFirstName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Birthday');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:SpouseName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:WeddingAnniversary');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhysicalAddresses');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:PhoneNumbers');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:EmailAddresses');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:ImAddresses');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompanyName');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Manager');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:AssistantName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Department');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:JobTitle');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Profession');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:HasPicture');
-            // Name Prefix
-            /*
-            $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                null,
-                null,
-                null,
-                null,
-                '0x3A45',
-                'String'
-            );
-            // Yomi/Phonetic Last Name
-            $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                null,
-                null,
-                null,
-                null,
-                '0x802D',
-                'String'
-            );
-            // Yomi/Phonetic Last Name
-            $p->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-                null,
-                null,
-                null,
-                null,
-                '0x802C',
-                'String'
-            );
-            */
-			$this->DefaultItemProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+                'item:ItemId',
+                'item:ParentFolderId',
+                'item:DateTimeCreated',
+                'item:DateTimeSent',
+                'item:LastModifiedTime',
+                'item:Categories',
+                'item:Body',
+                'item:Attachments',
+                'contacts:DisplayName',
+                'contacts:CompleteName',
+                'contacts:PhoneticLastName',
+                'contacts:PhoneticFirstName',
+                'contacts:Birthday',
+                'contacts:SpouseName',
+                'contacts:WeddingAnniversary',
+                'contacts:PhysicalAddresses',
+                'contacts:PhoneNumbers',
+                'contacts:EmailAddresses',
+                'contacts:ImAddresses',
+                'contacts:CompanyName',
+                'contacts:Manager',
+                'contacts:AssistantName',
+                'contacts:Department',
+                'contacts:JobTitle',
+                'contacts:Profession',
+                'contacts:OfficeLocation',
+                'contacts:HasPicture',
+			];
+			// construct property collection
+			$this->DefaultItemProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultItemProperties;
@@ -1622,75 +1639,75 @@ class RemoteContactsService {
      * 
      * @since Release 1.0.0
      * 
-	 * @param ContactItemType $data - item as vcard object
+	 * @param ContactItemType $so - item as vcard object
 	 * 
 	 * @return ContactObject item as contact object
 	 */
-	public function toContactObject(ContactItemType $data): ContactObject {
+	public function toContactObject(ContactItemType $so): ContactObject {
 
 		// create object
-		$o = new ContactObject();
+		$co = new ContactObject();
         // Origin
-		$o->Origin = 'R';
+		$co->Origin = 'R';
         // ID + State
-        if (isset($data->ItemId)) {
-            $o->ID = $data->ItemId->Id;
-            $o->State = $data->ItemId->ChangeKey;
+        if (isset($so->ItemId)) {
+            $co->ID = $so->ItemId->Id;
+            $co->State = $so->ItemId->ChangeKey;
         }
         // Collection ID
-        if (isset($data->ParentFolderId)) {
-            $o->CID = $data->ParentFolderId->Id;
+        if (isset($so->ParentFolderId)) {
+            $co->CID = $so->ParentFolderId->Id;
         }
         // Creation Date
-        if (!empty($data->DateTimeCreated)) {
-            $o->CreatedOn = new DateTime($data->DateTimeCreated);
+        if (!empty($so->DateTimeCreated)) {
+            $co->CreatedOn = new DateTime($so->DateTimeCreated);
         }
         // Modification Date
-        if (!empty($data->DateTimeSent)) {
-            $o->ModifiedOn = new DateTime($data->DateTimeSent);
+        if (!empty($so->DateTimeSent)) {
+            $co->ModifiedOn = new DateTime($so->DateTimeSent);
         }
-        if (!empty($data->LastModifiedTime)) {
-            $o->ModifiedOn = new DateTime($data->LastModifiedTime);
+        if (!empty($so->LastModifiedTime)) {
+            $co->ModifiedOn = new DateTime($so->LastModifiedTime);
         }
         // Label
-        if (!empty($data->DisplayName)) {
-            $o->Label = $data->DisplayName;
+        if (!empty($so->DisplayName)) {
+            $co->Label = $so->DisplayName;
         }
 		// Name
-        if (isset($data->CompleteName)) {
-            $o->Name->Last = $data->CompleteName->LastName;
-            $o->Name->First = $data->CompleteName->FirstName;
-            $o->Name->Other = $data->CompleteName->MiddleName;
-            $o->Name->Prefix = $data->CompleteName->Title;
-            $o->Name->Suffix = $data->CompleteName->Suffix;
-            $o->Name->PhoneticLast = $data->CompleteName->YomiLastName;
-            $o->Name->PhoneticFirst = $data->CompleteName->YomiLastName;
-            $o->Name->Aliases = $data->CompleteName->Nickname;
+        if (isset($so->CompleteName)) {
+            $co->Name->Last = $so->CompleteName->LastName;
+            $co->Name->First = $so->CompleteName->FirstName;
+            $co->Name->Other = $so->CompleteName->MiddleName;
+            $co->Name->Prefix = $so->CompleteName->Title;
+            $co->Name->Suffix = $so->CompleteName->Suffix;
+            $co->Name->PhoneticLast = $so->CompleteName->YomiLastName;
+            $co->Name->PhoneticFirst = $so->CompleteName->YomiLastName;
+            $co->Name->Aliases = $so->CompleteName->Nickname;
         }
         // Phonetic Last Name
-        if (!empty($data->PhoneticLastName)) {
-            $o->Name->PhoneticLast =  new DateTime($data->PhoneticLastName);
+        if (!empty($so->PhoneticLastName)) {
+            $co->Name->PhoneticLast =  new DateTime($so->PhoneticLastName);
         }
         // Phonetic First Name
-        if (!empty($data->PhoneticFirstName)) {
-            $o->Name->PhoneticFirst =  new DateTime($data->PhoneticFirstName);
+        if (!empty($so->PhoneticFirstName)) {
+            $co->Name->PhoneticFirst =  new DateTime($so->PhoneticFirstName);
         }
         // Birth Day
-        if (!empty($data->Birthday)) {
-            $o->BirthDay =  new DateTime($data->Birthday);
+        if (!empty($so->Birthday)) {
+            $co->BirthDay =  new DateTime($so->Birthday);
         }
         // Partner
-        if (!empty($data->SpouseName)) {
-            $o->Partner = $data->SpouseName;
+        if (!empty($so->SpouseName)) {
+            $co->Partner = $so->SpouseName;
         }
         // Anniversary Day
-        if (!empty($data->WeddingAnniversary)) {
-            $o->AnniversaryDay =  new DateTime($data->WeddingAnniversary);
+        if (!empty($so->WeddingAnniversary)) {
+            $co->AnniversaryDay =  new DateTime($so->WeddingAnniversary);
         }
         // Address(es)
-        if (isset($data->PhysicalAddresses)) {
-            foreach($data->PhysicalAddresses->Entry as $entry) {
-                $o->addAddress(
+        if (isset($so->PhysicalAddresses)) {
+            foreach($so->PhysicalAddresses->Entry as $entry) {
+                $co->addAddress(
                     $entry->Key,
                     $entry->Street,
                     $entry->City,
@@ -1701,93 +1718,93 @@ class RemoteContactsService {
             }
         }
         // Phone(s)
-        if (isset($data->PhoneNumbers)) {
-            foreach($data->PhoneNumbers->Entry as $entry) {
-                $t = $this->fromTelType($entry->Key); 
-                if ($t) {
-                    $o->addPhone(
-                        $t,
-                        null,
+        if (isset($so->PhoneNumbers)) {
+            foreach($so->PhoneNumbers->Entry as $entry) {
+                [$primary, $secondary] = $this->fromPhoneType($entry->Key); 
+                if (isset($primary)) {
+                    $co->addPhone(
+                        $primary,
+                        $secondary,
                         $entry->_
                     );
                 }
             }
         }
         // Email(s)
-        if (isset($data->EmailAddresses)) {
-            foreach($data->EmailAddresses->Entry as $entry) {
-                $t = $this->fromEmailType($entry->Key);
-                if ($t) {
-                    $o->addEmail(
-                        $t, 
+        if (isset($so->EmailAddresses)) {
+            foreach($so->EmailAddresses->Entry as $entry) {
+                $type = $this->fromEmailType($entry->Key);
+                if (isset($type)) {
+                    $co->addEmail(
+                        $type, 
                         $entry->_
                     );
                 }
             }
         }
         // IMPP(s)
-        if (isset($data->ImAddresses)) {
-            foreach($data->ImAddresses->Entry as $entry) {
-                $o->addIMPP(
+        if (isset($so->ImAddresses)) {
+            foreach($so->ImAddresses->Entry as $entry) {
+                $co->addIMPP(
                     $entry->Key, 
                     $entry->_
                 );
             }
         }
         // Manager Name
-        if (!empty($data->Manager)) {
-            $o->Name->Manager =  $data->Manager;
+        if (!empty($so->Manager)) {
+            $co->Name->Manager =  $so->Manager;
         }
         // Assistant Name
-        if (!empty($data->AssistantName)) {
-            $o->Name->Assistant =  $data->AssistantName;
+        if (!empty($so->AssistantName)) {
+            $co->Name->Assistant =  $so->AssistantName;
         }
         // Occupation Organization
-        if (!empty($data->CompanyName)) {
-            $o->Occupation->Organization = $data->CompanyName;
+        if (!empty($so->CompanyName)) {
+            $co->Occupation->Organization = $so->CompanyName;
         }
         // Occupation Department
-        if (!empty($data->Department)) {
-            $o->Occupation->Department = $data->Department;
+        if (!empty($so->Department)) {
+            $co->Occupation->Department = $so->Department;
         }
         // Occupation Title
-        if (!empty($data->JobTitle)) {
-            $o->Occupation->Title = $data->JobTitle;
+        if (!empty($so->JobTitle)) {
+            $co->Occupation->Title = $so->JobTitle;
         }
         // Occupation Role
-        if (!empty($data->Profession)) {
-            $o->Occupation->Role = $data->Profession;
+        if (!empty($so->Profession)) {
+            $co->Occupation->Role = $so->Profession;
         }
         // Occupation Location
-        if (!empty($data->OfficeLocation)) {
-            $o->Occupation->Location = $data->OfficeLocation;
+        if (!empty($so->OfficeLocation)) {
+            $co->Occupation->Location = $so->OfficeLocation;
         }
         // Relation
-        //if ($data->RELATED) {
-        //    $this->Relation = new ContactRelationObject($data->RELATED->parameters()['TYPE']->getValue(), $data->RELATED->getValue());
+        //if ($so->RELATED) {
+        //    $this->Relation = new ContactRelationObject($so->RELATED->parameters()['TYPE']->getValue(), $so->RELATED->getValue());
         //}
         // Tag(s)
-        if (isset($data->Categories)) {
-            foreach($data->Categories->String as $entry) {
-                $o->addTag($entry);
+        if (isset($so->Categories)) {
+            foreach($so->Categories->String as $entry) {
+                $co->addTag($entry);
             }
         }
         // Notes
-        if (!empty($data->Body)) {
-            $o->Notes = $data->Body->_;
+        if (!empty($so->Body)) {
+            $co->Notes = $so->Body->_;
         }
         // Sound
-        //if ($data->SOUND) {
-        //    $this->Sound = $data->SOUND->getValue();
+        //if ($so->SOUND) {
+        //    $this->Sound = $so->SOUND->getValue();
         //}
         // URL / Website
-        if (isset($o->URL)) {
-            $this->URI = $data->URL->getValue();
+        if (isset($co->URL)) {
+            $this->URI = $so->URL->getValue();
         }
 
         // Attachment(s)
-        if (isset($data->Attachments)) {
-            foreach($data->Attachments->FileAttachment as $entry) {
+        if (isset($so->Attachments)) {
+            foreach($so->Attachments->FileAttachment as $entry) {
                 // evaluate mime type
                 if ($entry->ContentType == 'application/octet-stream') {
                     $type = \OCA\EWS\Utile\MIME::fromFileName($entry->Name);
@@ -1797,13 +1814,13 @@ class RemoteContactsService {
                 // evaluate attachemnt type
                 if ($entry->IsContactPhoto || str_contains($entry->Name, 'ContactPicture')) {
                     $flag = 'CP';
-                    $o->Photo->Type = 'data';
-                    $o->Photo->Data = $entry->AttachmentId->Id;
+                    $co->Photo->Type = 'data';
+                    $co->Photo->Data = $entry->AttachmentId->Id;
                 }
                 else {
                     $flag = null;
                 }
-                $o->addAttachment(
+                $co->addAttachment(
 					$entry->AttachmentId->Id, 
 					$entry->Name,
 					$type,
@@ -1816,19 +1833,19 @@ class RemoteContactsService {
         }
 
         // UID / Dates
-        if (isset($data->ExtendedProperty)) {
-            foreach ($data->ExtendedProperty as $entry) {
+        if (isset($so->ExtendedProperty)) {
+            foreach ($so->ExtendedProperty as $entry) {
                 switch ($entry->ExtendedFieldURI->PropertyName) {
                     case 'DAV:uid': // UUID
-                        $o->UID = $entry->Value;
+                        $co->UID = $entry->Value;
                         break;
                 }
                 switch ($entry->ExtendedFieldURI->PropertyTag) {
                     case '0x3007': // Created Date/Time
-                        $o->CreatedOn = new DateTime($entry->Value);
+                        $co->CreatedOn = new DateTime($entry->Value);
                         break;
                     case '0x3008': // Modified Date/Time
-                        $o->ModifiedOn = new DateTime($entry->Value);
+                        $co->ModifiedOn = new DateTime($entry->Value);
                         break;
                     case '0x3A45': // Yomi / Name Prefix
                         break;
@@ -1840,7 +1857,7 @@ class RemoteContactsService {
             }
         }
 
-		return $o;
+		return $co;
 
     }
 
@@ -1909,66 +1926,39 @@ class RemoteContactsService {
 	 * 
 	 * @return string|null contact object telephone type
 	 */
-    public function fromTelType(string $type): ?string {
-        switch ($type) {
-            case 'BusinessPhone':
-                return 'WORK,VOICE,1';
-                break;
-            case 'BusinessPhone2':
-                return 'WORK,VOICE,2';
-                break;
-            case 'BusinessFax':
-                return 'WORK,FAX,1';
-                break;
-            case 'HomePhone':
-                return 'HOME,VOICE,1';
-                break;
-            case 'HomePhone2':
-                return 'HOME,VOICE,2';
-                break;
-            case 'HomeFax':
-                return 'HOME,FAX,1';
-                break;
-            case 'AssistantPhone':
-                return null;
-                break;
-            case 'Callback':
-                return null;
-                break;
-            case 'CarPhone':
-                return 'CAR';
-                break;
-            case 'CompanyMainPhone':
-                return null;
-                break;
-            case 'Isdn':
-                return 'ISDN';
-                break;
-            case 'MobilePhone':
-                return 'CELL';
-                break;
-            case 'OtherFax':
-                return 'OTHER,FAX,1';
-                break;
-            case 'OtherTelephone':
-                return 'OTHER,VOICE,1';
-                break;
-            case 'Pager':
-                return 'PAGER';
-                break;
-            case 'PrimaryPhone':
-                return null;
-                break;
-            case 'RadioPhone':
-                return null;
-                break;
-            case 'Telex':
-                return null;
-                break;
-            case 'TtyTddPhone':
-                return null;
-                break;
-        }
+    public function fromPhoneType(string $type): ?array {
+        
+        $_tm = [
+            'BusinessPhone' => ['WORK','VOICE'],
+            'BusinessPhone2' => ['WORK','VOICE'],
+            'BusinessFax' => ['WORK','FAX'],
+            'HomePhone' => ['HOME','VOICE'],
+            'HomePhone2' => ['HOME','VOICE'],
+            'HomeFax' => ['HOME','FAX'],
+            'OtherTelephone' => ['OTHER','VOICE'],
+            'OtherFax' => ['OTHER','FAX'],
+            'MobilePhone' => ['CELL', null],
+            'CarPhone' => ['CAR', null],
+            'Pager' => ['PAGER', null],
+            'Isdn' => ['ISDN', null],
+            'AssistantPhone' => [null, null],
+            'Callback' => [null, null],
+            'CompanyMainPhone' => [null, null],
+            'PrimaryPhone' => [null, null],
+            'RadioPhone' => [null, null],
+            'Telex' => [null, null],
+            'TtyTddPhone' => [null, null]
+        ];
+
+        // evaluate if type value exists
+		if (isset($_tm[$type])) {
+			// return converted type value
+			return $_tm[$type];
+		} else {
+            // return default type value
+			return [null, null];
+		}
+
     }
 
     /**
@@ -1976,89 +1966,48 @@ class RemoteContactsService {
      * 
      * @since Release 1.0.0
      * 
-	 * @param sting $type - contact object telephone type
+	 * @param sting $primary - contact object telephone type
 	 * 
 	 * @return string|null remote telephone type
 	 */
-    public function toTelType(string $type): ?string {
-        $parts = explode(",", $type);
-        $part2 = false;
-        $part3 = false;
-
-        switch ($parts[0]) {
-            case 'WORK':
-                $type = "Business";
-                $part2 = true;
-                $part3 = true;
-                break;
-            case 'HOME':
-                $type = "Home";
-                $part2 = true;
-                $part3 = true;
-                break;
-            case 'OTHER':
-                $type = "Other";
-                $part2 = true;
-                $part3 = true;
-                break;
-            case 'CELL':
-                $type = "MobilePhone";
-                $part2 = false;
-                $part3 = false;
-                break;
-            case 'CAR':
-                $type = "CarPhone";
-                $part2 = false;
-                $part3 = false;
-                break;
-            case 'PAGER':
-                $type = "Pager";
-                $part2 = false;
-                $part3 = false;
-                break;
-            case 'ISDN':
-                $type = "Isdn";
-                $part2 = false;
-                $part3 = false;
-                break;
-            default:
-                $type = null;
-                $part2 = false;
-                $part3 = false;
-                break;
+    public function toPhoneType(string $primary, $secondary): ?string {
+        
+        if ($primary == 'WORK' && $secondary == 'VOICE') {
+            return 'BusinessPhone';
+        }
+        elseif ($primary == 'WORK' && $secondary == 'FAX') {
+            return 'BusinessFax';
+        }
+        elseif ($primary == 'HOME' && $secondary == 'VOICE') {
+            return 'HomePhone';
+        }
+        elseif ($primary == 'HOME' && $secondary == 'FAX') {
+            return 'HomeFax';
+        }
+        elseif ($primary == 'OTHER' && $secondary == 'VOICE') {
+            return 'OtherTelephone';
+        }
+        elseif ($primary == 'OTHER' && $secondary == 'FAX') {
+            return 'OtherFax';
+        }
+        elseif ($primary == 'CELL') {
+            return 'MobilePhone';
+        }
+        elseif ($primary == 'CAR') {
+            return 'CarPhone';
+        }
+        elseif ($primary == 'PAGER') {
+            return 'Pager';
+        }
+        elseif ($primary == 'ISDN') {
+            return 'Isdn';
         }
 
-        if ($part2) {
-            switch ($parts[1]) {
-                case 'VOICE':
-                    $type .= "Phone";
-                    break;
-                case 'FAX':
-                    $type .= "Fax";
-                    break;
-                default:
-                    $part3 = false;
-                    $type = null;
-                    break;
-            }
-        }
+        // Following types are currently not convertable
+        //'AssistantPhone' 'Callback' 'CompanyMainPhone' 'PrimaryPhone' 'RadioPhone' 'Telex' 'TtyTddPhone'
 
-        if ($part3 && isset($parts[2])) {
-            switch ($parts[2]) {
-                case '0':
-                case '1':
-                    $type .= '';
-                    break;
-                case '2':
-                    $type .= '2';
-                    break;
-                default:
-                    $type = null;
-                    break;
-            }
-        }
-
-        return $type;
+        return null;
+        
     }
 
     /**

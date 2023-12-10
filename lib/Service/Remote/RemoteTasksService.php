@@ -1056,23 +1056,27 @@ class RemoteTasksService {
 	 * 
 	 * @return object
 	 */
-	private function constructDefaultCollectionProperties(): object {
+	public function constructDefaultCollectionProperties(): object {
 
-		// construct properties array
+		// evaluate if default collection properties collection exisits
 		if (!isset($this->DefaultCollectionProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
-
-
-			$this->DefaultCollectionProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+				'folder:FolderId',
+				'folder:FolderClass',
+				'folder:ParentFolderId',
+				'folder:DisplayName',
+				'folder:TotalCount',
+			];
+			// construct property collection
+			$this->DefaultCollectionProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultCollectionProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultCollectionProperties;
-
+		
 	}
 
 	/**
@@ -1084,34 +1088,39 @@ class RemoteTasksService {
 	 */
 	private function constructDefaultItemProperties(): object {
 
-		// construct properties array
+		// evaluate if default item properties collection exisits
 		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Subject');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Sensitivity');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Importance');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderDueBy');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderIsSet');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderMinutesBeforeStart');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:StartDate');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:DueDate');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:CompleteDate');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:Status');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:StatusDescription');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:PercentComplete');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:ActualWork');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:TotalWork');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('task:Recurrence');
-
-			$this->DefaultItemProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+				'item:ItemId',
+				'item:ParentFolderId',
+				'item:DateTimeCreated',
+				'item:DateTimeSent',
+				'item:LastModifiedTime',
+				'item:Subject',
+				'item:Body',
+				'item:Sensitivity',
+				'item:Importance',
+				'item:Categories',
+				'item:ReminderDueBy',
+				'item:ReminderIsSet',
+				'item:ReminderMinutesBeforeStart',
+				'item:Attachments',
+				'task:StartDate',
+				'task:DueDate',
+				'task:CompleteDate',
+				'task:Status',
+				'task:StatusDescription',
+				'task:PercentComplete',
+				'task:ActualWork',
+				'task:TotalWork',
+				'task:Recurrence',
+			];
+			// construct property collection
+			$this->DefaultItemProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultItemProperties;

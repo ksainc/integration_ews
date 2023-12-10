@@ -474,28 +474,18 @@ class RemoteEventsService {
 		// Notifications
 		if (count($so->Notifications) > 0) {
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
-				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
+				$t = ceil((($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp()) / 60));
 				$ro->ReminderIsSet = true;
 				$ro->ReminderMinutesBeforeStart = $t;
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
-				if ($so->Notifications[0]->When->invert == 0) {
-					$t = ($so->Notifications[0]->When->y * -525600) +
-						($so->Notifications[0]->When->m * -43800) +
-						($so->Notifications[0]->When->d * -1440) +
-						($so->Notifications[0]->When->h * -60) +
-						($so->Notifications[0]->When->i * -1);
-				} else {
-					$t = ($so->Notifications[0]->When->y * 525600) +
-						($so->Notifications[0]->When->m * 43800) +
-						($so->Notifications[0]->When->d * 1440) +
-						($so->Notifications[0]->When->h * 60) +
-						($so->Notifications[0]->When->i);
-				}
+				$w = clone $so->Notifications[0]->When;
+				$w->invert = 0;
+				$t = ceil((new DateTime('@0'))->add($w)->getTimestamp() / 60);
 				$ro->ReminderIsSet = true;
 				$ro->ReminderMinutesBeforeStart = $t;
-				unset($t);
+				unset($w, $t);
 			}
 		}
 		// Occurrence
@@ -866,28 +856,18 @@ class RemoteEventsService {
 		// Notification(s)
 		if (count($so->Notifications) > 0) {
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
-				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
+				$t = ceil((($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp()) / 60));
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
 				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
-				if ($so->Notifications[0]->When->invert == 0) {
-					$t = ($so->Notifications[0]->When->y * -525600) +
-						($so->Notifications[0]->When->m * -43800) +
-						($so->Notifications[0]->When->d * -1440) +
-						($so->Notifications[0]->When->h * -60) +
-						($so->Notifications[0]->When->i * -1);
-				} else {
-					$t = ($so->Notifications[0]->When->y * 525600) +
-						($so->Notifications[0]->When->m * 43800) +
-						($so->Notifications[0]->When->d * 1440) +
-						($so->Notifications[0]->When->h * 60) +
-						($so->Notifications[0]->When->i);
-				}
+				$w = clone $so->Notifications[0]->When;
+				$w->invert = 0;
+				$t = ceil((new DateTime('@0'))->add($w)->getTimestamp() / 60);
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
 				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
-				unset($t);
+				unset($w, $t);
 			}
 		}
 		else {
@@ -1238,21 +1218,25 @@ class RemoteEventsService {
 	 */
 	public function constructDefaultCollectionProperties(): object {
 
-		// construct properties array
+		// evaluate if default collection properties collection exisits
 		if (!isset($this->DefaultCollectionProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:FolderClass');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:DisplayName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('folder:TotalCount');
-
-
-			$this->DefaultCollectionProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+				'folder:FolderId',
+				'folder:FolderClass',
+				'folder:ParentFolderId',
+				'folder:DisplayName',
+				'folder:TotalCount',
+			];
+			// construct property collection
+			$this->DefaultCollectionProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultCollectionProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultCollectionProperties;
-
+		
 	}
 
 	/**
@@ -1264,43 +1248,48 @@ class RemoteEventsService {
 	 */
 	public function constructDefaultItemProperties(): object {
 
-		// construct properties array
+		// evaluate if default item properties collection exisits
 		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:TimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Start');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:StartTimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:End');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:EndTimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Subject');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Location');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:LegacyFreeBusyStatus');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Importance');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Sensitivity');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Organizer');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:RequiredAttendees');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:OptionalAttendees');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderIsSet');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderMinutesBeforeStart');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Recurrence');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:ModifiedOccurrences');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:DeletedOccurrences');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:IsAllDayEvent');
+			// unindexed property names collection
+			$_properties = [
+				'item:ItemId',
+				'calendar:UID',
+				'item:ParentFolderId',
+				'item:DateTimeCreated',
+				'item:DateTimeSent',
+				'item:LastModifiedTime',
+				'calendar:TimeZone',
+				'calendar:Start',
+				'calendar:StartTimeZone',
+				'calendar:End',
+				'calendar:EndTimeZone',
+				'item:Subject',
+				'item:Body',
+				'calendar:Location',
+				'calendar:LegacyFreeBusyStatus',
+				'item:Importance',
+				'item:Sensitivity',
+				'item:Categories',
+				'calendar:Organizer',
+				'calendar:RequiredAttendees',
+				'calendar:OptionalAttendees',
+				'item:ReminderIsSet',
+				'item:ReminderMinutesBeforeStart',
+				'calendar:Recurrence',
+				'calendar:ModifiedOccurrences',
+				'calendar:DeletedOccurrences',
+				'item:Attachments',
+				'calendar:IsAllDayEvent',
 
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:UniqueBody');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:AppointmentState');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Resources');
-
-			$this->DefaultItemProperties = $p;
+				'item:UniqueBody',
+				'calendar:AppointmentState',
+				'calendar:Resources',
+			];
+			// construct property collection
+			$this->DefaultItemProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultItemProperties;

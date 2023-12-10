@@ -71,39 +71,44 @@ class RemoteEventsService2007 extends RemoteEventsService {
 	 */
 	public function constructDefaultItemProperties(): object {
 
-		// construct properties array
+		// evaluate if default item properties collection exisits
 		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Subject');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Importance');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Sensitivity');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderIsSet');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ReminderMinutesBeforeStart');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:TimeZone');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Start');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:End');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Location');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:LegacyFreeBusyStatus');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Organizer');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:RequiredAttendees');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:OptionalAttendees');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Recurrence');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:ModifiedOccurrences');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:DeletedOccurrences');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:AppointmentState');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:Resources');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:IsAllDayEvent');
-
-			$this->DefaultItemProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+				'item:ItemId',
+				'item:ParentFolderId',
+				'item:DateTimeCreated',
+				'item:DateTimeSent',
+				'item:LastModifiedTime',
+				'item:Subject',
+				'item:Body',
+				'item:Importance',
+				'item:Sensitivity',
+				'item:Categories',
+				'item:ReminderIsSet',
+				'item:ReminderMinutesBeforeStart',
+				'item:Attachments',
+				'calendar:UID',
+				'calendar:TimeZone',
+				'calendar:Start',
+				'calendar:End',
+				'calendar:Location',
+				'calendar:LegacyFreeBusyStatus',
+				'calendar:Organizer',
+				'calendar:RequiredAttendees',
+				'calendar:OptionalAttendees',
+				'calendar:Recurrence',
+				'calendar:ModifiedOccurrences',
+				'calendar:DeletedOccurrences',
+				'calendar:AppointmentState',
+				'calendar:Resources',
+				'calendar:IsAllDayEvent',
+			];
+			// construct property collection
+			$this->DefaultItemProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
 		}
 
 		return $this->DefaultItemProperties;
@@ -149,10 +154,6 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			// construct end time attribute
 			$ro->End = $dt->format('Y-m-d\\TH:i:s\Z');
 		}
-		// Duration
-		if(!empty($so->StartsOn) && !empty($so->EndsOn)) {
-			//$ro->Duration = $this->constructDuration($so->StartsOn, $so->EndsOn);
-		}
 		// All Day Event
 		if(!empty($so->Span) && $so->Span == 'F') {
 			$ro->IsAllDayEvent = true;
@@ -160,11 +161,11 @@ class RemoteEventsService2007 extends RemoteEventsService {
 		else {
 			$ro->IsAllDayEvent = false;
 		}
-		// TimeZone / MeetingTimeZone
+		// evaluate if global time zone present 
 		if ($so->TimeZone instanceof \DateTimeZone) {
-			// convert time zone
 			$tz = $so->TimeZone;
 		}
+		// evaluate if start time zone is present
 		elseif ($so->StartsTZ instanceof \DateTimeZone) {
 			$tz = $so->StartsTZ;
 		}
@@ -244,28 +245,18 @@ class RemoteEventsService2007 extends RemoteEventsService {
 		// Notifications
 		if (count($so->Notifications) > 0) {
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
-				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
+				$t = ceil((($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp()) / 60));
 				$ro->ReminderIsSet = true;
 				$ro->ReminderMinutesBeforeStart = $t;
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
-				if ($so->Notifications[0]->When->invert == 0) {
-					$t = ($so->Notifications[0]->When->y * -525600) +
-						($so->Notifications[0]->When->m * -43800) +
-						($so->Notifications[0]->When->d * -1440) +
-						($so->Notifications[0]->When->h * -60) +
-						($so->Notifications[0]->When->i * -1);
-				} else {
-					$t = ($so->Notifications[0]->When->y * 525600) +
-						($so->Notifications[0]->When->m * 43800) +
-						($so->Notifications[0]->When->d * 1440) +
-						($so->Notifications[0]->When->h * 60) +
-						($so->Notifications[0]->When->i);
-				}
+				$w = clone $so->Notifications[0]->When;
+				$w->invert = 0;
+				$t = ceil((new DateTime('@0'))->add($w)->getTimestamp() / 60);
 				$ro->ReminderIsSet = true;
 				$ro->ReminderMinutesBeforeStart = $t;
-				unset($t);
+				unset($w, $t);
 			}
 		}
 		// Occurrence
@@ -446,12 +437,6 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			$rd[] = $this->deleteFieldUnindexed('calendar:UID');
             $rd[] = $this->deleteFieldExtendedByName('PublicStrings', 'DAV:uid', 'String');
         }
-		// Time Zone
-		if ($so->TimeZone instanceof \DateTimeZone) {
-			$tz = $this->toTimeZone($so->TimeZone);
-			$rm[] = $this->updateFieldUnindexed('calendar:TimeZone', 'TimeZone', $tz);
-			unset($tz);
-		}
         // Starts On
         if (!empty($so->StartsOn)) {
 			// clone start date
@@ -460,35 +445,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			$dt->setTimezone(new DateTimeZone('UTC'));
 			// construct start time attribute
 			$rm[] = $this->updateFieldUnindexed('calendar:Start', 'Start', $dt->format('Y-m-d\\TH:i:s\Z'));
-			// evaluate if event starts time zone is present
-			if ($so->StartsTZ instanceof \DateTimeZone) {
-				$tz = $so->StartsTZ;
-			}
-			// evaluate if user default time zone is present
-			elseif ($this->UserTimeZone instanceof \DateTimeZone) {
-				$tz = $this->UserTimeZone;
-			}
-			// use system default time zone if no other option was present
-			else {
-				$tz = $this->SystemTimeZone;
-			}
-			// convert time zone
-			$tz = $this->toTimeZone($tz);
-			// construct time zone attribute
-			if (!empty($tz)) {
-				$rm[] = $this->updateFieldUnindexed(
-					'calendar:StartTimeZone',
-					'StartTimeZone',
-					$this->constructTimeZone($tz)
-				);
-			} else {
-				$rm[] = $this->updateFieldUnindexed(
-					'calendar:StartTimeZone',
-					'StartTimeZone',
-					$this->constructTimeZone('UTC')
-				);
-			}
-			unset($tz);
+			// destroy temporary variables
 			unset($dt);
         }
 		// Ends On
@@ -499,35 +456,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			$dt->setTimezone(new DateTimeZone('UTC'));
 			// construct end time property
 			$rm[] = $this->updateFieldUnindexed('calendar:End', 'End', $dt->format('Y-m-d\\TH:i:s\Z'));
-			// evaluate if event ends time zone is present
-			if ($so->EndsTZ instanceof \DateTimeZone) {
-				$tz = $so->EndsTZ;
-			}
-			// evaluate if user default time zone is present
-			elseif ($this->UserTimeZone instanceof \DateTimeZone) {
-				$tz = $this->UserTimeZone;
-			}
-			// use system default time zone if no other option was present
-			else {
-				$tz = $this->SystemTimeZone;
-			}
-			// construct start time zone
-			$tz = $this->toTimeZone($tz);
-			// construct time zone attribute
-			if (!empty($tz)) {
-				$rm[] = $this->updateFieldUnindexed(
-					'calendar:EndTimeZone',
-					'EndTimeZone',
-					$this->constructTimeZone($tz)
-				);
-			} else {
-				$rm[] = $this->updateFieldUnindexed(
-					'calendar:EndTimeZone',
-					'EndTimeZone',
-					$this->constructTimeZone('UTC')
-				);
-			}
-			unset($tz);
+			// destroy temporary variables
 			unset($dt);
         }
 		// All Day Event
@@ -557,6 +486,33 @@ class RemoteEventsService2007 extends RemoteEventsService {
         else {
             $rd[] = $this->deleteFieldUnindexed('item:Body');
         }
+		// TimeZone / MeetingTimeZone
+		// evaluate if global time zone present 
+		if ($so->TimeZone instanceof \DateTimeZone) {
+			$tz = $so->TimeZone;
+		}
+		// evaluate if start time zone is present
+		elseif ($so->StartsTZ instanceof \DateTimeZone) {
+			$tz = $so->StartsTZ;
+		}
+		// evaluate if user default time zone is present
+		elseif ($this->UserTimeZone instanceof \DateTimeZone) {
+			$tz = $this->UserTimeZone;
+		}
+		// use system default time zone if no other option was present
+		else {
+			$tz = $this->SystemTimeZone;
+		}
+		if (isset($tz)) {
+			// convert time zone name
+			$tz = $this->toTimeZone($tz);
+			// construct time zone
+			$rm[] = $this->updateFieldUnindexed(
+				'calendar:MeetingTimeZone',
+				'MeetingTimeZone',
+				$this->constructTimeZone($tz)
+			);
+		}
 		// Location
 		if (!empty($so->Location)) {
 			$rm[] = $this->updateFieldUnindexed('calendar:Location', 'Location', $so->Location);
@@ -636,28 +592,18 @@ class RemoteEventsService2007 extends RemoteEventsService {
 		// Notification(s)
 		if (count($so->Notifications) > 0) {
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
-				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
+				$t = ceil((($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp()) / 60));
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
 				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
-				if ($so->Notifications[0]->When->invert == 0) {
-					$t = ($so->Notifications[0]->When->y * -525600) +
-						($so->Notifications[0]->When->m * -43800) +
-						($so->Notifications[0]->When->d * -1440) +
-						($so->Notifications[0]->When->h * -60) +
-						($so->Notifications[0]->When->i * -1);
-				} else {
-					$t = ($so->Notifications[0]->When->y * 525600) +
-						($so->Notifications[0]->When->m * 43800) +
-						($so->Notifications[0]->When->d * 1440) +
-						($so->Notifications[0]->When->h * 60) +
-						($so->Notifications[0]->When->i);
-				}
+				$w = clone $so->Notifications[0]->When;
+				$w->invert = 0;
+				$t = ceil((new DateTime('@0'))->add($w)->getTimestamp() / 60);
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
 				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
-				unset($t);
+				unset($w, $t);
 			}
 		}
 		else {

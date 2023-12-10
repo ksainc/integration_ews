@@ -68,82 +68,94 @@ class RemoteContactsService2007 extends RemoteContactsService {
 	 */
     public function constructDefaultItemProperties(): object {
 
-		// construct properties array
+        // evaluate if default item properties collection exisits
 		if (!isset($this->DefaultItemProperties)) {
-			$p = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ItemId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:ParentFolderId');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeCreated');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:DateTimeSent');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:LastModifiedTime');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Categories');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Body');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Attachments');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('item:Sensitivity');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:AssistantName');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Birthday');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:BusinessHomePage');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Companies');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompanyName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:CompleteName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Department');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:DisplayName');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:FileAs');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:FileAsMapping');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:GivenName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Children');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Initials');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:JobTitle');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Manager');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:MiddleName');
-			$p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Nickname');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:OfficeLocation');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Profession');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:SpouseName');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:Surname');
-            $p->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('contacts:WeddingAnniversary');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:EmailAddress', 'EmailAddress1');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:EmailAddress', 'EmailAddress2');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:EmailAddress', 'EmailAddress3');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:ImAddress', 'ImAddress1');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:ImAddress', 'ImAddress2');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:ImAddress', 'ImAddress3');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:Street', 'Home');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:City', 'Home');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:State', 'Home');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:CountryOrRegion', 'Home');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:PostalCode', 'Home');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:Street', 'Business');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:City', 'Business');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:State', 'Business');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:CountryOrRegion', 'Business');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:PostalCode', 'Business');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:Street', 'Other');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:City', 'Other');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:State', 'Other');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:CountryOrRegion', 'Other');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhysicalAddress:PostalCode', 'Other');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'AssistantPhone');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'BusinessFax');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'BusinessPhone');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'BusinessPhone2');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'Callback');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'CarPhone');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'CompanyMainPhone');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'HomeFax');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'HomePhone');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'HomePhone2');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'Isdn');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'MobilePhone');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'OtherFax');
-            $p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'OtherTelephone');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'Pager');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'PrimaryPhone');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'RadioPhone');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'Telex');
-            //$p->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType('contacts:PhoneNumber', 'TtyTddPhone');
-
-			$this->DefaultItemProperties = $p;
+			// unindexed property names collection
+			$_properties = [
+                'item:ItemId',
+                'item:ParentFolderId',
+                'item:DateTimeCreated',
+                'item:DateTimeSent',
+                'item:LastModifiedTime',
+                'item:Categories',
+                'item:Body',
+                'item:Attachments',
+                'item:Sensitivity',
+                'contacts:AssistantName',
+                'contacts:Birthday',
+                'contacts:BusinessHomePage',
+                'contacts:Companies',
+                'contacts:CompanyName',
+                'contacts:CompleteName',
+                'contacts:Department',
+                'contacts:DisplayName',
+                'contacts:FileAs',
+                'contacts:FileAsMapping',
+                'contacts:GivenName',
+                'contacts:Children',
+                'contacts:Initials',
+                'contacts:JobTitle',
+                'contacts:Manager',
+                'contacts:MiddleName',
+                'contacts:Nickname',
+                'contacts:OfficeLocation',
+                'contacts:Profession',
+                'contacts:SpouseName',
+                'contacts:Surname',
+                'contacts:WeddingAnniversary',
+			];
+			// construct property collection
+			$this->DefaultItemProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+			foreach ($_properties as $entry) {
+				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
+			}
+            
+            // indexed property names collection
+			$_properties = [
+                'contacts:EmailAddress', 'EmailAddress1',
+                'contacts:EmailAddress', 'EmailAddress2',
+                'contacts:EmailAddress', 'EmailAddress3',
+                'contacts:ImAddress', 'ImAddress1',
+                'contacts:ImAddress', 'ImAddress2',
+                'contacts:ImAddress', 'ImAddress3',
+                'contacts:PhysicalAddress:Street', 'Home',
+                'contacts:PhysicalAddress:City', 'Home',
+                'contacts:PhysicalAddress:State', 'Home',
+                'contacts:PhysicalAddress:CountryOrRegion', 'Home',
+                'contacts:PhysicalAddress:PostalCode', 'Home',
+                'contacts:PhysicalAddress:Street', 'Business',
+                'contacts:PhysicalAddress:City', 'Business',
+                'contacts:PhysicalAddress:State', 'Business',
+                'contacts:PhysicalAddress:CountryOrRegion', 'Business',
+                'contacts:PhysicalAddress:PostalCode', 'Business',
+                'contacts:PhysicalAddress:Street', 'Other',
+                'contacts:PhysicalAddress:City', 'Other',
+                'contacts:PhysicalAddress:State', 'Other',
+                'contacts:PhysicalAddress:CountryOrRegion', 'Other',
+                'contacts:PhysicalAddress:PostalCode', 'Other',
+                'contacts:PhoneNumber', 'AssistantPhone',
+                'contacts:PhoneNumber', 'BusinessFax',
+                'contacts:PhoneNumber', 'BusinessPhone',
+                'contacts:PhoneNumber', 'BusinessPhone2',
+                //'contacts:PhoneNumber', 'Callback',
+                'contacts:PhoneNumber', 'CarPhone',
+                //'contacts:PhoneNumber', 'CompanyMainPhone',
+                'contacts:PhoneNumber', 'HomeFax',
+                'contacts:PhoneNumber', 'HomePhone',
+                'contacts:PhoneNumber', 'HomePhone2',
+                //'contacts:PhoneNumber', 'Isdn',
+                'contacts:PhoneNumber', 'MobilePhone',
+                'contacts:PhoneNumber', 'OtherFax',
+                'contacts:PhoneNumber', 'OtherTelephone',
+                //'contacts:PhoneNumber', 'Pager',
+                //'contacts:PhoneNumber', 'PrimaryPhone',
+                //'contacts:PhoneNumber', 'RadioPhone',
+                //'contacts:PhoneNumber', 'Telex',
+                //'contacts:PhoneNumber', 'TtyTddPhone',
+			];
+			foreach ($_properties as $entry) {
+				$this->DefaultItemProperties->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($entry[0], $entry[1]);
+			}
 		}
 
 		return $this->DefaultItemProperties;
@@ -197,7 +209,7 @@ class RemoteContactsService2007 extends RemoteContactsService {
         }
         // Birth Day
         if (!empty($so->BirthDay)) {
-            $ro->Birthday = $so->BirthDay->format('Y-m-d\TH:i:s\Z');
+            $ro->Birthday = $so->BirthDay->format('Y-m-d\TH:i:s');
         }
         // Gender
         if (!empty($so->Gender)) {
@@ -209,7 +221,7 @@ class RemoteContactsService2007 extends RemoteContactsService {
         }
         // Anniversary Day
         if (!empty($so->AnniversaryDay)) {
-            $ro->WeddingAnniversary = $so->AnniversaryDay->format('Y-m-d\TH:i:s\Z');
+            $ro->WeddingAnniversary = $so->AnniversaryDay->format('Y-m-d\TH:i:s');
         }
         // Address(es)
         if (count($so->Address) > 0) {
@@ -235,14 +247,41 @@ class RemoteContactsService2007 extends RemoteContactsService {
         }
         // Phone(s)
         if (count($so->Phone) > 0) {
+            $types = [
+                'BusinessPhone' => ['Max' => 2, 'Count' => 1],
+                'BusinessFax' => ['Max' => 1, 'Count' => 1],
+                'HomePhone' => ['Max' => 2, 'Count' => 1],
+                'HomeFax' => ['Max' => 1, 'Count' => 1],
+                'OtherTelephone' => ['Max' => 1, 'Count' => 1],
+                'OtherFax' => ['Max' => 1, 'Count' => 1],
+                'MobilePhone' => ['Max' => 1, 'Count' => 1],
+                'CarPhone' => ['Max' => 1, 'Count' => 1],
+                'Pager' => ['Max' => 1, 'Count' => 1],
+                'Isdn' => ['Max' => 1, 'Count' => 1],
+                'AssistantPhone' => ['Max' => 1, 'Count' => 1],
+                'Callback' => ['Max' => 1, 'Count' => 1],
+                'CompanyMainPhone' => ['Max' => 1, 'Count' => 1],
+                'PrimaryPhone' => ['Max' => 1, 'Count' => 1],
+                'RadioPhone' => ['Max' => 1, 'Count' => 1],
+                'Telex' => ['Max' => 1, 'Count' => 1],
+                'TtyTddPhone' => ['Max' => 1, 'Count' => 1]
+            ];
             foreach ($so->Phone as $entry) {
-                $type = $this->toTelType($entry->Type);
-                if ($type && !empty($entry->Number)) {
-                    if (!isset($ro->PhoneNumbers->Entry)) { $ro->PhoneNumbers = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(); } 
+                // convert primary and secondary type to single type
+                $type = $this->toPhoneType($entry->Type, $entry->SubType);
+                // evaluate if type was converted
+                $tc = (isset($types[$type])) ? $types[$type] : null;
+                // if type is available and if number exists
+                if (isset($tc) && ($tc['Count'] <= $tc['Max']) && !empty($entry->Number)) {
+                    // evaluate if numbers array exists, and create it if needed
+                    if (!isset($ro->PhoneNumbers->Entry)) { $ro->PhoneNumbers = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(); }
+                    // add number to numbers array
                     $ro->PhoneNumbers->Entry[] = new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryEntryType(
-                        $type, 
+                        ($tc['Count'] > 1) ? $type . $tc['Count'] : $type, // add count to type if available count is greater then one
                         $entry->Number
                     );
+                    // decrease available type count by one
+                    $types[$type]['Count'] += 1;
                 }
             }
         }
@@ -323,11 +362,11 @@ class RemoteContactsService2007 extends RemoteContactsService {
         $rs = $this->RemoteCommonService->createItem($this->DataStore, $cid, $ro);
 
         // process response
-        if ($rs->CalendarItem[0]) {
+        if ($rs->Contact[0]) {
 			$co = clone $so;
-			$co->ID = $rs->CalendarItem[0]->ItemId->Id;
+			$co->ID = $rs->Contact[0]->ItemId->Id;
             $co->CID = $cid;
-			$co->State = $rs->CalendarItem[0]->ItemId->ChangeKey;
+			$co->State = $rs->Contact[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($co->Attachments) > 0) {
 				// create attachments in remote data store
@@ -413,7 +452,7 @@ class RemoteContactsService2007 extends RemoteContactsService {
         }
         // Birth Day
         if (!empty($so->BirthDay)) {
-            $rm[] = $this->updateFieldUnindexed('contacts:Birthday', 'Birthday', $so->BirthDay->format('Y-m-d\TH:i:s\Z'));
+            $rm[] = $this->updateFieldUnindexed('contacts:Birthday', 'Birthday', $so->BirthDay->format('Y-m-d\TH:i:s'));
         }
         else {
             $rd[] = $this->deleteFieldUnindexed('contacts:Birthday');
@@ -434,7 +473,7 @@ class RemoteContactsService2007 extends RemoteContactsService {
         }
         // Anniversary Day
         if (!empty($so->AnniversaryDay)) {
-            $rm[] = $this->updateFieldUnindexed('contacts:WeddingAnniversary', 'WeddingAnniversary', $so->AnniversaryDay->format('Y-m-d\TH:i:s\Z'));
+            $rm[] = $this->updateFieldUnindexed('contacts:WeddingAnniversary', 'WeddingAnniversary', $so->AnniversaryDay->format('Y-m-d\TH:i:s'));
         }
         else {
             $rd[] = $this->deleteFieldUnindexed('contacts:WeddingAnniversary');
@@ -597,48 +636,57 @@ class RemoteContactsService2007 extends RemoteContactsService {
             }
         }
         // Phone(s)
-        $types = array(
-            'BusinessPhone' => true,
-            'BusinessPhone2' => true,
-            'BusinessFax' => true,
-            'HomePhone' => true,
-            'HomePhone2' => true,
-            'HomeFax' => true,
-            'CarPhone' => true,
-            'Isdn' => true,
-            'MobilePhone' => true,
-            'Pager' => true,
-            'OtherTelephone' => true,
-            'OtherFax' => true,
-        );
+        $types = [
+            'BusinessPhone' => ['Max' => 2, 'Count' => 1],
+            'BusinessFax' => ['Max' => 1, 'Count' => 1],
+            'HomePhone' => ['Max' => 2, 'Count' => 1],
+            'HomeFax' => ['Max' => 1, 'Count' => 1],
+            'OtherTelephone' => ['Max' => 1, 'Count' => 1],
+            'OtherFax' => ['Max' => 1, 'Count' => 1],
+            'MobilePhone' => ['Max' => 1, 'Count' => 1],
+            'CarPhone' => ['Max' => 1, 'Count' => 1],
+            'Pager' => ['Max' => 1, 'Count' => 1],
+            'Isdn' => ['Max' => 1, 'Count' => 1],
+            'AssistantPhone' => ['Max' => 1, 'Count' => 1],
+            'Callback' => ['Max' => 1, 'Count' => 1],
+            'CompanyMainPhone' => ['Max' => 1, 'Count' => 1],
+            'PrimaryPhone' => ['Max' => 1, 'Count' => 1],
+            'RadioPhone' => ['Max' => 1, 'Count' => 1],
+            'Telex' => ['Max' => 1, 'Count' => 1],
+            'TtyTddPhone' => ['Max' => 1, 'Count' => 1]
+        ];
         // update phone
         if (count($so->Phone) > 0) {
             foreach ($so->Phone as $entry) {
-                // convert email type
-                $type = $this->toTelType($entry->Type);
+                // convert primary and secondary type to single type
+                $type = $this->toPhoneType($entry->Type, $entry->SubType);
+                // evaluate if type was converted
+                $tc = (isset($types[$type])) ? $types[$type] : null;
                 // process if index not used already
-                if (isset($types[$type]) && $types[$type] == true && !empty($entry->Number)) {
+                if (isset($tc) && ($tc['Count'] <= $tc['Max']) && !empty($entry->Number)) {
                     $rm[] = $this->updateFieldIndexed(
                         'contacts:PhoneNumber',
-                        $type,
+                        ($tc['Count'] > 1) ? $type . $tc['Count'] : $type,
                         'PhoneNumbers',
                         new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryType(),
                         new \OCA\EWS\Components\EWS\Type\PhoneNumberDictionaryEntryType(
-                            $type, 
+                            ($tc['Count'] > 1) ? $type . $tc['Count'] : $type, 
                             $entry->Number
                         )
                     );
-                    $types[$type] = false;
+                    // decrease available type count by one
+                    $types[$type]['Count'] += 1;
                 }
             }
         }
         // delete phone
-        foreach ($types as $type => $status) {
-            if ($status) {
+        foreach ($types as $type => $tc) {
+            while ($tc['Count'] <= $tc['Max']) {
                 $rd[] = $this->deleteFieldIndexed(
                     'contacts:PhoneNumber',
-                    $type
+                    ($tc['Count'] > 1) ? $type . $tc['Count'] : $type
                 );
+                $tc['Count'] += 1;
             }
         }
         // Email(s)
@@ -764,11 +812,11 @@ class RemoteContactsService2007 extends RemoteContactsService {
         // execute command
         $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, $istate, null, $rm, $rd);
         // process response
-        if ($rs->CalendarItem[0]) {
+        if ($rs->Contact[0]) {
 			$co = clone $so;
-			$co->ID = $rs->CalendarItem[0]->ItemId->Id;
+			$co->ID = $rs->Contact[0]->ItemId->Id;
             $co->CID = $cid;
-			$co->State = $rs->CalendarItem[0]->ItemId->ChangeKey;
+			$co->State = $rs->Contact[0]->ItemId->ChangeKey;
 			// deposit attachment(s)
 			if (count($so->Attachments) > 0) {
 				// create attachments in remote data store
