@@ -739,9 +739,6 @@ class RemoteEventsService2007 extends RemoteEventsService {
 				}
 				$rm[] = $this->updateFieldUnindexed('calendar:DeletedOccurrences', 'DeletedOccurrences', $f);
 			}
-			else {
-				$rd[] = $this->deleteFieldUnindexed('calendar:DeletedOccurrences');
-			}
 		}
 		else {
 			$rd[] = $this->deleteFieldUnindexed('calendar:Recurrence');
