@@ -623,13 +623,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			if (!empty($so->Occurrence->Concludes)) {
 				$f->EndDateRecurrence = new \OCA\EWS\Components\EWS\Type\EndDateRecurrenceRangeType();
 				$f->EndDateRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
-				if ($so->Origin == 'L') {
-					// subtract 1 day to adjust in how the end date is calculated in NC and EWS
-					$f->EndDateRecurrence->EndDate = date_modify(clone $so->Occurrence->Concludes, '-1 day')->format('Y-m-d');
-				}
-				else {
-					$f->EndDateRecurrence->EndDate = $so->Occurrence->Concludes->format('Y-m-d');
-				}
+				$f->EndDateRecurrence->EndDate = $so->Occurrence->Concludes->format('Y-m-d');
 			}
 			// No Iterations And No Conclusion Date
 			if (empty($so->Occurrence->Iterations) && empty($so->Occurrence->Concludes)) {
