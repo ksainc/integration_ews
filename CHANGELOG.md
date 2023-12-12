@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.0.15 - 2023-12-09
+## 1.0.15 - 2023-12-11
 ### Additions
 - Implemented Support for Windows Active Directory username format
 - Implemented mock ews client for offline debugging
@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Improved Time Zone matching for EWS Time Zone Description Format
 - Improved/Refactored Contact properties conversion (Birth Day, Anniversary Day, Phone Number)
 - Improved Event properties conversion (All Day Flag, Reminders)
+- Fixed Event recurrence concludes on date inconsistency
 ### Deletions
 - Removed Obsolete Test Code
 
