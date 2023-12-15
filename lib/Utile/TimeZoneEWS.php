@@ -1728,6 +1728,8 @@ class TimeZoneEWS {
      */ 
 	public static function toDateTimeZone(string $name): ?DateTimeZone {
 
+		// define place holder
+		$zone = null;
 		// evaluate if name exists in conversion table
 		if (isset(self::$ewstoiana[$name])) {
 			$zone = @timezone_open(self::$ewstoiana[$name]);
