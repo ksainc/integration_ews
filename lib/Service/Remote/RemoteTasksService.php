@@ -590,7 +590,7 @@ class RemoteTasksService {
 	 * 
 	 * @return TaskObject
 	 */
-	public function updateCollectionItem(string $cid, string $iid, TaskObject $so): ?TaskObject {
+	public function updateCollectionItem(string $cid, string $iid, string $istate, TaskObject $so): ?TaskObject {
 
         // request modifications array
         $rm = array();
@@ -685,14 +685,14 @@ class RemoteTasksService {
 			$rm[] = $this->updateFieldUnindexed('item:Importance', 'Importance', $this->toImportance($so->Priority));
 		}
 		else {
-			$rd[] = $this->deleteFieldUnindexed('item:Importance');
+			$rm[] = $this->updateFieldUnindexed('item:Importance', 'Importance', $this->toImportance(5));
 		}
 		// Sensitivity
 		if (!empty($so->Sensitivity)) {
 			$rm[] = $this->updateFieldUnindexed('item:Sensitivity', 'Sensitivity', $this->toSensitivity($so->Sensitivity));
 		}
 		else {
-			$rd[] = $this->deleteFieldUnindexed('item:Sensitivity');
+			$rm[] = $this->updateFieldUnindexed('item:Sensitivity', 'Sensitivity', $this->toSensitivity(0));
 		}
 		// Tag(s)
 		if (count($so->Tags) > 0) {
@@ -708,35 +708,24 @@ class RemoteTasksService {
 		}
 		// Notification(s)
 		if (count($so->Notifications) > 0) {
-			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'true');
 			if ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'A') {
-				$t = ceil(($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp() / 60));
+				$t = ceil((($so->StartsOn->getTimestamp() - $so->Notifications[0]->When->getTimestamp()) / 60));
 				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
-				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'ture');
+				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
 				unset($t);
 			}
 			elseif ($so->Notifications[0]->Type == 'D' && $so->Notifications[0]->Pattern == 'R') {
-				if ($so->Notifications[0]->When->invert == 0) {
-					$t = ($so->Notifications[0]->When->y * -525600) +
-						($so->Notifications[0]->When->m * -43800) +
-						($so->Notifications[0]->When->d * -1440) +
-						($so->Notifications[0]->When->h * -60) +
-						($so->Notifications[0]->When->i * -1);
-				} else {
-					$t = ($so->Notifications[0]->When->y * 525600) +
-						($so->Notifications[0]->When->m * 43800) +
-						($so->Notifications[0]->When->d * 1440) +
-						($so->Notifications[0]->When->h * 60) +
-						($so->Notifications[0]->When->i);
-				}
-				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart',(string) $t);
-				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'ture');
-				unset($t);
+				$w = clone $so->Notifications[0]->When;
+				$w->invert = 0;
+				$t = ceil((new DateTime('@0'))->add($w)->getTimestamp() / 60);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', $t);
+				$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', true);
+				unset($w, $t);
 			}
 		}
 		else {
-			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', 'false');
-			$rd[] = $this->deleteFieldUnindexed('item:ReminderMinutesBeforeStart');
+			$rm[] = $this->updateFieldUnindexed('item:ReminderIsSet', 'ReminderIsSet', false);
+			$rm[] = $this->updateFieldUnindexed('item:ReminderMinutesBeforeStart', 'ReminderMinutesBeforeStart', 0);
 		}
 		// Occurrence
 		if (isset($so->Occurrence) && !empty($so->Occurrence->Precision)) {
@@ -853,7 +842,7 @@ class RemoteTasksService {
 			$rd[] = $this->deleteFieldUnindexed('task:Recurrence');
 		}
         // execute command
-        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, $rd);
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, null, $rm, $rd);
 		// process response
         if ($rs->Task[0]) {
 			$to = clone $so;
@@ -884,13 +873,13 @@ class RemoteTasksService {
 	 * 
 	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
 	 */
-	public function updateCollectionItemUUID(string $cid, string $iid, string $uuid): ?object {
+	public function updateCollectionItemUUID(string $cid, string $iid, string $istate, string $uuid): ?object {
 		// request modifications array
         $rm = array();
         // construct update command object
         $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $uuid);
         // execute request
-        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, $rm, null);
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, null, null, $rm, null);
         // return response
         if ($rs->Task[0]) {
             return (object) array('ID' => $rs->Task[0]->ItemId->Id, 'UID' => $uuid, 'State' => $rs->Task[0]->ItemId->ChangeKey);
@@ -1086,7 +1075,7 @@ class RemoteTasksService {
 	 * 
 	 * @return object
 	 */
-	private function constructDefaultItemProperties(): object {
+	public function constructDefaultItemProperties(): object {
 
 		// evaluate if default item properties collection exisits
 		if (!isset($this->DefaultItemProperties)) {
@@ -1722,7 +1711,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string task object status value
 	 */
-	private function fromStatus(?string $status): string {
+	public function fromStatus(?string $status): string {
 		
 		// status conversion reference
 		$statuses = array(
@@ -1752,7 +1741,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote status value
 	 */
-	private function toStatus(?string $status): string {
+	public function toStatus(?string $status): string {
 		
 		// sensitivity conversion reference
 		$statuses = array(
@@ -1783,7 +1772,7 @@ class RemoteTasksService {
 	 * 
 	 * @return array task object days of the week values(s)
 	 */
-	private function fromDaysOfWeek(string $days, bool $group = false ): array {
+	public function fromDaysOfWeek(string $days, bool $group = false ): array {
 
 		// days conversion reference
 		$_tm = array(
@@ -1832,7 +1821,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote days of the week values(s)
 	 */
-	private function toDaysOfWeek(array $days, bool $group = false): string {
+	public function toDaysOfWeek(array $days, bool $group = false): string {
 		
 		// days conversion reference
 		$_tm = array(
@@ -1883,7 +1872,7 @@ class RemoteTasksService {
 	 * 
 	 * @return array task object days of the month values(s)
 	 */
-	private function fromDaysOfMonth(string $days): array {
+	public function fromDaysOfMonth(string $days): array {
 
 		// convert days to array
 		$days = explode(' ', $days);
@@ -1901,7 +1890,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote days of the month values(s)
 	 */
-	private function toDaysOfMonth(array $days): string {
+	public function toDaysOfMonth(array $days): string {
 
         // convert days to string
         $days = implode(' ', $days);
@@ -1919,7 +1908,7 @@ class RemoteTasksService {
 	 * 
 	 * @return array task object week of the month values(s)
 	 */
-	private function fromWeekOfMonth(string $weeks): array {
+	public function fromWeekOfMonth(string $weeks): array {
 
 		// weeks conversion reference
 		$_tm = array(
@@ -1951,7 +1940,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote week of the month values(s)
 	 */
-	private function toWeekOfMonth(array $weeks): string {
+	public function toWeekOfMonth(array $weeks): string {
 
 		// weeks conversion reference
 		$_tm = array(
@@ -1984,7 +1973,7 @@ class RemoteTasksService {
 	 * 
 	 * @return array task object month of the year values(s)
 	 */
-	private function fromMonthOfYear(string $months): array {
+	public function fromMonthOfYear(string $months): array {
 
 		// months conversion reference
 		$_tm = array(
@@ -2023,7 +2012,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote month of the year values(s)
 	 */
-	private function toMonthOfYear(array $months): string {
+	public function toMonthOfYear(array $months): string {
 
 		// months conversion reference
 		$_tm = array(
@@ -2062,7 +2051,7 @@ class RemoteTasksService {
 	 * 
 	 * @return int task object sensitivity value
 	 */
-	private function fromSensitivity(?string $level): int {
+	public function fromSensitivity(?string $level): int {
 		
 		// sensitivity conversion reference
 		$levels = array(
@@ -2091,7 +2080,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote sensitivity value
 	 */
-	private function toSensitivity(?int $level): string {
+	public function toSensitivity(?int $level): string {
 		
 		// sensitivity conversion reference
 		$levels = array(
@@ -2120,7 +2109,7 @@ class RemoteTasksService {
 	 * 
 	 * @return int task object priority value
 	 */
-	private function fromImportance(?string $level): int {
+	public function fromImportance(?string $level): int {
 		
 		// EWS: 0 = low, 1 = normal (default), 2 = high
 		// VTODO: 0 = undefined, 1-3 = high, 4-6 = normal, 7-9 = low
@@ -2148,7 +2137,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote importance value
 	 */
-	private function toImportance(?int $level): string {
+	public function toImportance(?int $level): string {
 
 		// EWS: 0 = low, 1 = normal (default), 2 = high
 		// VTODO: 0 = undefined, 1-3 = high, 4-6 = normal, 7-9 = low
@@ -2175,7 +2164,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string task object attendee response value
 	 */
-	private function fromAttendeeResponse(?string $response): string {
+	public function fromAttendeeResponse(?string $response): string {
 		
 		// response conversion reference
 		$responses = array(
@@ -2206,7 +2195,7 @@ class RemoteTasksService {
 	 * 
 	 * @return string remote attendee response value
 	 */
-	private function toAttendeeResponse(?string $response): string {
+	public function toAttendeeResponse(?string $response): string {
 		
 		// response conversion reference
 		$responses = array(
