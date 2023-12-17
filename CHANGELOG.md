@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.16 - 2023-12-16
+### Modifications
+- Improved Exchange 2007 Events and Task file attachment support
+- Code and Comments clean up in common remote functions
+### Deletions
+- Removed obsolete code from Contacts, Events and Task hamonization handlers
+
 ## 1.0.15 - 2023-12-11
 ### Additions
 - Implemented Support for Windows Active Directory username format
