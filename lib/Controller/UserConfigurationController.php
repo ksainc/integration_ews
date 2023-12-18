@@ -92,13 +92,14 @@ class UserConfigurationController extends Controller {
 		if (filter_var($flag, FILTER_VALIDATE_BOOLEAN)) {
 			$flags[] = 'CONNECT_MAIL';
 		}
-		// execute command
-		$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_server, $flags);
-		// return response
-		if ($rs) {
+		try {
+			// execute connect
+			$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_server, $flags);
+			// return success message
 			return new DataResponse('success');
-		} else {
-			return new DataResponse($rs['error'], 401);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
 		}
 
 	}
@@ -123,13 +124,15 @@ class UserConfigurationController extends Controller {
 		}
 		// assign flags
 		$flags = ['VALIDATE'];
-		// execute command
-		$rs = $this->CoreService->connectAccountMS365($this->userId, $code, $flags);
-		// return response
-		if ($rs) {
+		
+		try {
+			// execute connect
+			$rs = $this->CoreService->connectAccountMS365($this->userId, $code, $flags);
+			// return success message
 			return new TemplateResponse(Application::APP_ID, 'popupSuccess', [], TemplateResponse::RENDER_AS_GUEST);
-		} else {
-			return new DataResponse($rs['error'], 401);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
 		}
 
 	}
@@ -147,10 +150,15 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// execute command
-		$this->CoreService->disconnectAccount($this->userId);
-		// return response
-		return new DataResponse('success');
+		try {
+			// execute disconnect
+			$this->CoreService->disconnectAccount($this->userId);
+			// return success message
+			return new DataResponse('success');
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
+		}
 
 	}
 
@@ -167,10 +175,15 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// execute command
-		$this->HarmonizationService->performHarmonization($this->userId, 'M');
-		// return response
-		return new DataResponse('success');
+		try {
+			// execute harmonization
+			$this->HarmonizationService->performHarmonization($this->userId, 'M');
+			// return success message
+			return new DataResponse('success');
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
+		}
 
 	}
 
@@ -187,14 +200,14 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// retrieve collections
-		$rs = $this->CoreService->fetchRemoteCollections($this->userId);
-		// return response
-		if (isset($rs)) {
+		try {
+			// retrieve collections
+			$rs = $this->CoreService->fetchRemoteCollections($this->userId);
+			// return success message
 			return new DataResponse($rs);
-		} else {
-			
-			return new DataResponse($rs['error'], 401);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
 		}
 
 	}
@@ -212,13 +225,14 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// retrieve collections
-		$rs = $this->CoreService->fetchLocalCollections($this->userId);
-		// return response
-		if (isset($rs)) {
+		try {
+			// retrieve collections
+			$rs = $this->CoreService->fetchLocalCollections($this->userId);
+			// return success message
 			return new DataResponse($rs);
-		} else {
-			return new DataResponse($rs['error'], 401);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
 		}
 
 	}
@@ -236,13 +250,14 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// retrieve correlations
-		$rs = $this->CoreService->fetchCorrelations($this->userId);
-		// return response
-		if (isset($rs)) {
+		try {
+			// retrieve correlations
+			$rs = $this->CoreService->fetchCorrelations($this->userId);
+			// return success message
 			return new DataResponse($rs);
-		} else {
-			return new DataResponse($rs['error'], 401);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
 		}
 
 	}
@@ -262,10 +277,17 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// execute command
-		$rs = $this->CoreService->depositCorrelations($this->userId, $ContactCorrelations, $EventCorrelations, $TaskCorrelations);
-		// return response
-		return $this->fetchCorrelations();
+		try {
+			// deposit correlations
+			$rs = $this->CoreService->depositCorrelations($this->userId, $ContactCorrelations, $EventCorrelations, $TaskCorrelations);
+			// retrieve correlations
+			$rs = $this->CoreService->fetchCorrelations($this->userId);
+			// return success message
+			return new DataResponse($rs);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
+		}
 
 	}
 
@@ -284,13 +306,14 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// retrieve user configuration
-		$rs = $this->ConfigurationService->retrieveUser($this->userId);
-		// return response
-		if (is_array($rs)) {
+		try {
+			// retrieve user configuration
+			$rs = $this->ConfigurationService->retrieveUser($this->userId);
+			// return success message
 			return new DataResponse($rs);
-		} else {
-			return new DataResponse($rs['error'], 401);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
 		}
 
 	}
@@ -310,10 +333,15 @@ class UserConfigurationController extends Controller {
 		if ($this->userId === null) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// deposit user configuration
-		$this->ConfigurationService->depositUser($this->userId, $values);
-		// return response
-		return new DataResponse(true);
+		try {
+			// deposit user configuration
+			$this->ConfigurationService->depositUser($this->userId, $values);
+			// return success message
+			return new DataResponse(true);
+		} catch (\Throwable $th) {
+			// return error message
+			return new DataResponse($th->getMessage(), 401);
+		}
 
 	}
 
