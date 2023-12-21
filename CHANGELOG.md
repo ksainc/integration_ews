@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.18 - 2023-12-21
+### Modifications
+- Fixed remote delete harmonization issue cause by remote item type check
+
 ## 1.0.17 - 2023-12-20
 ### Modifications
 - Imporved User UI error display
