@@ -77,26 +77,17 @@ try {
 	$ConfigurationService = \OC::$server->get(\OCA\EWS\Service\ConfigurationService::class);
 	$CoreService = \OC::$server->get(\OCA\EWS\Service\CoreService::class);
 	$HarmonizationService = \OC::$server->get(\OCA\EWS\Service\HarmonizationService::class);
-
-	// execute test
-	//$CoreService->performTest($uid, 'D');
-	//$CoreService->performTest($uid, 'C');
+	
 	// execute initial harmonization
 	$HarmonizationService->performHarmonization($uid, 'S');
-	
 
 	$logger->info('Test ended for ' . $uid, ['app' => 'integration_ews']);
 	echo 'Test ended for ' . $uid . PHP_EOL;
 
 	exit();
-} catch (Exception $ex) {
-	$logger->logException($ex, ['app' => 'integration_ews']);
+} catch (\Throwable $e) {
+	$logger->logException($e, ['app' => 'integration_ews']);
 	$logger->info('Test ended unexpectedly', ['app' => 'integration_ews']);
-	echo $ex . PHP_EOL;
-	exit(1);
-} catch (Error $ex) {
-	$logger->logException($ex, ['app' => 'integration_ews']);
-	$logger->info('Test ended unexpectedly', ['app' => 'integration_ews']);
-	echo $ex . PHP_EOL;
+	echo $e . PHP_EOL;
 	exit(1);
 }
