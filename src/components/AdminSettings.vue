@@ -23,15 +23,15 @@
 
 <template>
 	<div id="ews_settings" class="section">
-		<div class="ews-section-heading">
+		<div class="ews-page-title">
 			<EwsIcon :size="32" />
 			<h2>{{ t('integration_ews', 'Exchange EWS Connector') }}</h2>
 		</div>
-		<div class="ews-section-settings">
-			<div class="ews-section-description">
+		<div class="ews-section-general">
+			<div class="description">
 				{{ t('integration_ews', 'Select the system settings for Exchange Integration') }}
 			</div>
-			<div class="ews-section-settings-option">
+			<div class="parameter">
 				<label>
 					{{ t('integration_ews', 'Synchronization Mode') }}
 				</label>
@@ -39,7 +39,7 @@
 					:reduce="item => item.id"
 					:options="[{label: 'Passive', id: 'P'}, {label: 'Active', id: 'A'}]" />
 			</div>
-			<div v-if="state.harmonization_mode === 'A'" class="ews-section-settings-option">
+			<div v-if="state.harmonization_mode === 'A'" class="parameter">
 				<label>
 					{{ t('integration_ews', 'Synchronization Thread Duration') }}
 				</label>
@@ -53,7 +53,7 @@
 					{{ t('integration_ews', 'Seconds') }}
 				</label>
 			</div>
-			<div v-if="state.harmonization_mode === 'A'" class="ews-section-settings-option">
+			<div v-if="state.harmonization_mode === 'A'" class="parameter">
 				<label>
 					{{ t('integration_ews', 'Synchronization Thread Pause') }}
 				</label>
@@ -74,11 +74,11 @@
 			</div>
 		</div>
 		<br>
-		<div class="ews-section-settings">
-			<div class="ews-section-description">
+		<div class="ews-section-ms365">
+			<div class="description">
 				{{ t('integration_ews', 'Microsoft 365 Authentication Settings') }}
 			</div>
-			<div class="ews-section-settings-option">
+			<div class="parameter">
 				<label for="ews-microsoft-tenant-id">
 					<EwsIcon />
 					{{ t('integration_ews', 'Tenant ID') }}
@@ -90,9 +90,9 @@
 					autocomplete="off"
 					autocorrect="off"
 					autocapitalize="none"
-					:style="{ width: '300px' }">
+					:style="{ width: '48ch' }">
 			</div>
-			<div class="ews-section-settings-option">
+			<div class="parameter">
 				<label for="ews-microsoft-application-id">
 					<EwsIcon />
 					{{ t('integration_ews', 'Application ID') }}
@@ -104,9 +104,9 @@
 					autocomplete="off"
 					autocorrect="off"
 					autocapitalize="none"
-					:style="{ width: '300px' }">
+					:style="{ width: '48ch' }">
 			</div>
-			<div class="ews-section-settings-option">
+			<div class="parameter">
 				<label for="ews-microsoft-application-secret">
 					<EwsIcon />
 					{{ t('integration_ews', 'Application Secret') }}
@@ -118,7 +118,7 @@
 					autocomplete="off"
 					autocorrect="off"
 					autocapitalize="none"
-					:style="{ width: '300px' }">
+					:style="{ width: '48ch' }">
 			</div>
 		</div>
 		<br>
@@ -210,25 +210,36 @@ export default {
 
 <style scoped lang="scss">
 #ews_settings {
-	.ews-section-heading {
+	.ews-page-title {
 		display: flex;
 		vertical-align: middle;
 	}
-	.ews-section-heading h2 {
+	.ews-page-title h2 {
 		padding-left: 1%;
 	}
 	.ews-section-actions {
 		display: flex;
 		align-items: center;
 	}
-	.ews-section-description {
-		padding-bottom: 2%;
+	.ews-section-general {
+		padding-bottom: 1%;
 	}
-	.ews-section-settings-option {
-		display: block;
+	.ews-section-general .description {
+		padding-bottom: 1%;
 	}
-	.ews-section-settings-option label{
-		padding-right: 1%;
+	.ews-section-general .parameter label {
+		display: inline-block;
+		width: 32ch;
+	}
+	.ews-section-ms365 {
+		padding-bottom: 1%;
+	}
+	.ews-section-ms365 .description {
+		padding-bottom: 1%;
+	}
+	.ews-section-ms365 .parameter label {
+		display: inline-block;
+		width: 24ch;
 	}
 }
 </style>
