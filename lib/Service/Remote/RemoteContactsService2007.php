@@ -830,4 +830,31 @@ class RemoteContactsService2007 extends RemoteContactsService {
         
     }
 
+    /**
+     * update collection item with uuid in remote storage
+     * 
+     * @since Release 1.0.0
+     * 
+	 * @param string $cid - Collection ID
+     * @param string $iid - Collection Item ID
+     * @param string $iid - Collection Item State
+     * @param string $cid - Collection Item UUID
+	 * 
+	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
+	 */
+	public function updateCollectionItemUUID(string $cid, string $iid, string $istate, string $uuid): ?object {
+		// request modifications array
+        $rm = array();
+        // construct update command object
+        $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $uuid);
+        // execute request
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, $istate, null, $rm, null);
+        // return response
+        if ($rs->Contact[0]) {
+            return (object) array('ID' => $rs->Contact[0]->ItemId->Id, 'UID' => $uuid, 'State' => $rs->Contact[0]->ItemId->ChangeKey);
+        } else {
+            return null;
+        }
+    }
+
 }

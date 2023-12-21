@@ -429,7 +429,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
         $rd = array();
 		// UUID
         if (!empty($so->UUID)) {
-			$rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', $so->UUID);
+			$rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', $this->toUID($so->UUID, 'SH'));
             $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $so->UUID);
         }
         else {
@@ -754,6 +754,34 @@ class RemoteEventsService2007 extends RemoteEventsService {
             return null;
         }
 
+    }
+
+	/**
+     * update collection item with uuid in remote storage
+     * 
+     * @since Release 1.0.0
+     * 
+	 * @param string $cid - Collection ID
+     * @param string $iid - Collection Item ID
+	 * @param string $istate - Collection Item State
+     * @param string $cid - Collection Item UUID
+	 * 
+	 * @return object Status Object - item id, item uuid, item state token / Null - failed to create
+	 */
+	public function updateCollectionItemUUID(string $cid, string $iid, string $istate, string $uuid): ?object {
+		// request modifications array
+        $rm = array();
+        // construct update command object
+        $rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', $this->toUID($uuid, 'SH'));
+        $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $uuid);
+        // execute request
+        $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, $istate, null, $rm, null);
+        // return response
+        if ($rs->CalendarItem[0]) {
+            return (object) array('ID' => $rs->CalendarItem[0]->ItemId->Id, 'UID' => $uuid, 'State' => $rs->CalendarItem[0]->ItemId->ChangeKey);
+        } else {
+            return null;
+        }
     }
 
 	/**
