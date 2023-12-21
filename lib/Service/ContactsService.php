@@ -272,8 +272,8 @@ class ContactsService {
 		}
 		// process remote deleted objects
 		foreach ($rCollectionChanges->Delete as $changed) {
-			// evaluate if change is a contact item and has an id
-			if (!isset($changed->Contact) || empty($changed->Contact->ItemId->Id)) {
+			// evaluate if change has a item id
+			if (empty($changed->ItemId->Id)) {
 				continue;
 			}
 			// process delete

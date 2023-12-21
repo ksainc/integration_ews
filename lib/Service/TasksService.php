@@ -279,8 +279,8 @@ class TasksService {
 		}
 		// process remote deleted objects
 		foreach ($rCollectionChanges->Delete as $changed) {
-			// evaluate if change is a task item and has an id
-			if (!isset($changed->Task) || empty($changed->Task->ItemId->Id)) {
+			// evaluate if change has a item id
+			if (empty($changed->ItemId->Id)) {
 				continue;
 			}
 			// process delete
