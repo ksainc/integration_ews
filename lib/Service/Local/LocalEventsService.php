@@ -511,21 +511,20 @@ class LocalEventsService {
                 if (!$this->FileStore->nodeExists($fl)) {
                     // create folder if missing
                     $this->FileStore->newFolder($fl);
-                    $this->FileStore->unlock($fl);
                 } 
-                // cunstruct file location
+                // construct file location
                 $fl = $fl . '/' . $entry->Name;
                 // check if file exists
                 if (!$this->FileStore->nodeExists($fl)) {
                     // create file
                     $fo = $this->FileStore->newFile($fl, $entry->Data);
-                    $this->FileStore->unlock($fl);
+                    $fo->unlock(1);
                 } else {
                     // select file
                     $fo = $this->FileStore->get($fl);
                     // update file
                     $fo->putContent((string)$entry->Data);
-                    $this->FileStore->unlock($fl);
+                    $fo->unlock(1);
                 }
 
                 $ao = clone $entry;
@@ -535,9 +534,6 @@ class LocalEventsService {
                 $ao->Store = 'D';
 
                 $rc[] = $ao;
-                
-                unset($fl);
-                unset($fo);
 
             } catch(\OCP\Files\NotPermittedException $e) {
                 // you have to create this exception by yourself ;)
