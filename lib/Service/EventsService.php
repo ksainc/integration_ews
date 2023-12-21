@@ -225,6 +225,10 @@ class EventsService {
 		$rCollectionChanges = $this->RemoteEventsService->fetchCollectionChanges($correlation->getroid(), (string) $correlation->getrostate());
 		// process remote created objects
 		foreach ($rCollectionChanges->Create as $changed) {
+			// evaluate if change is a calendar item and has an id
+			if (!isset($changed->CalendarItem) || empty($changed->CalendarItem->ItemId->Id)) {
+				continue;
+			}
 			// process create
 			$as = $this->harmonizeRemoteAltered(
 				$this->Configuration->UserId, 
@@ -248,6 +252,10 @@ class EventsService {
 		}
 		// process remote modified objects
 		foreach ($rCollectionChanges->Update as $changed) {
+			// evaluate if change is a calendar item and has an id
+			if (!isset($changed->CalendarItem) || empty($changed->CalendarItem->ItemId->Id)) {
+				continue;
+			}
 			// process update
 			$as = $this->harmonizeRemoteAltered(
 				$this->Configuration->UserId, 
@@ -271,6 +279,10 @@ class EventsService {
 		}
 		// process remote deleted objects
 		foreach ($rCollectionChanges->Delete as $changed) {
+			// evaluate if change is a calendar item and has an id
+			if (!isset($changed->CalendarItem) || empty($changed->CalendarItem->ItemId->Id)) {
+				continue;
+			}
 			// process delete
 			$as = $this->harmonizeRemoteDelete(
 				$this->Configuration->UserId, 
@@ -532,6 +544,20 @@ class EventsService {
 		// if local object retrieve failed, try to retrieve local object by UUID
 		if (!isset($lo) && !empty($ro->UUID)) {
 			$lo = $this->LocalEventsService->findCollectionItemByUUID($lcid, $ro->UUID);
+			// if local object was found by uuid, check if a correlation exist for the local object to another remote object
+			// work around for duplicate uuid's in remote objects
+			if (isset($lo)) {
+				// retrieve correlation for local object
+				$c = $this->CorrelationsService->findByLocalId($uid, 'EO', $lo->ID, $lcid);
+				// if correlation exists and remote object id is different
+				// then this another object with a duplicate UUID
+				if (isset($c) && ($c->getroid() != $ro->ID)) {
+					// clear local object to force a new local object to be created
+					$lo = null;
+					// clear remote object uuid to force new uuid to be created
+					$ro->UUID = null;
+				}
+			}
 		}
 		// update local object if one was found
 		// create local object if none was found
