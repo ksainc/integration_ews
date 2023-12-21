@@ -231,25 +231,45 @@ class RemoteEventsService {
 	 */
 	public function fetchCollectionItemsUUID(string $cid, bool $ctype = false): array {
 
+		// construct properties required
+		$properties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+		$properties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
+		$properties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+			'PublicStrings',
+			null,
+			null,
+			'DAV:uid',
+			null,
+			'String'
+		);
         // define place holders
         $data = array();
         $offset = 0;
-
         do {
             // execute command
-            $ro = $this->RemoteCommonService->fetchItemsIds($this->DataStore, $cid, $ctype, $offset);
+            $ro = $this->RemoteCommonService->fetchItems($this->DataStore, $cid, $ctype, $offset, 512, 'I', $properties);
             // validate response object
             if (isset($ro) && count($ro->CalendarItem) > 0) {
                 foreach ($ro->CalendarItem as $entry) {
-                    if ($entry->ExtendedProperty) {
-                        $data[] = array('ID'=>$entry->ItemId->Id, 'UUID'=>$entry->ExtendedProperty[0]->Value);
+					// extract and validate UUID from standard properties
+					$uuid = $this->fromUID($entry->UID);
+					// evaluate if valid uuid was not found
+					if (empty($uuid)) {
+						// extract and validate UUID from extended properties
+						$uuid = $this->fromUID($entry->ExtendedProperty[0]->Value);
+					}
+					// evaluate if valid uuid exists
+                    if (!empty($uuid)) {
+						// add item id and uuid to id collection
+                        $data[] = array('ID'=>$entry->ItemId->Id, 'UUID'=>$uuid);
                     }
                 }
+				// increment offset by count of returned items
                 $offset += count($ro->CalendarItem);
             }
         }
         while (isset($ro) && count($ro->CalendarItem) > 0);
-        // return
+        // return id collection
 		return $data;
     }
 

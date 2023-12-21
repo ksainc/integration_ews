@@ -497,7 +497,7 @@ class RemoteCommonService {
 	}
 
 	/**
-     * retrieve all item ids in specific folder from remote storage
+     * retrieve all items in specific folder from remote storage
      * 
      * @since Release 1.0.0
      * 
@@ -507,12 +507,18 @@ class RemoteCommonService {
 	 * 		Folder ID
 	 * @param string $ftype
 	 * 		Folder ID Type (True - Distinguished / False - Normal)
-	 * @param string $ioff
+	 * @param string $ioffset
 	 * 		Items Offset
+	 * @param string $ilimit
+	 * 		Items Limit
+	 * @param string $base
+	 * 		Base Properties to return ( D - Default | A - All | I - ID Only )
+	 * @param object $additional
+	 * 		Additional Properties to return ( Object of NonEmptyArrayOfPathsToElementType )
 	 * @return object
 	 * 		Item Object on success / Null on failure
 	 */
-	public function fetchItemsIds(EWSClient $DataStore, string $fid, bool $ftype = false, int $ioff = 0): ?object {
+	public function fetchItems(EWSClient $DataStore, string $fid, bool $ftype = false, int $ioffset = 0, int $ilimit = 512, string $base = 'I', object $additional = null): ?object {
 		
 		// construct request
 		$request = new \OCA\EWS\Components\EWS\Request\FindItemType();
@@ -527,20 +533,21 @@ class RemoteCommonService {
 		$request->Traversal = self::SCOPE_SEARCH_NARROW;
 		// define required base properties
 		$request->ItemShape = new \OCA\EWS\Components\EWS\Type\ItemResponseShapeType();
-		$request->ItemShape->BaseShape = self::SCOPE_ATTRIBUTES_BASIC;
+		if ($base == 'A') {
+			$request->ItemShape->BaseShape = self::SCOPE_ATTRIBUTES_ENTIRE;
+		}
+		elseif ($base == 'I') {
+			$request->ItemShape->BaseShape = self::SCOPE_ATTRIBUTES_BASIC;
+		}
+		else  {
+			$request->ItemShape->BaseShape = self::SCOPE_ATTRIBUTES_PRESET;
+		}
 		// define required additional properties
-		$request->ItemShape->AdditionalProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-		// define required essential properties
-		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
-			'PublicStrings',
-			null,
-			null,
-			'DAV:uid',
-			null,
-			'String'
-		);
+		if ($additional instanceof \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType) {
+			$request->ItemShape->AdditionalProperties = $additional;
+		}
 		// define paging
-		$request->IndexedPageItemView = new \OCA\EWS\Components\EWS\Type\IndexedPageViewType('Beginning', $ioff, 512);
+		$request->IndexedPageItemView = new \OCA\EWS\Components\EWS\Type\IndexedPageViewType('Beginning', $ioffset, $ilimit);
 		// execute request
 		$response = $DataStore->FindItem($request);
 		// process response

@@ -231,25 +231,39 @@ class RemoteTasksService {
 	 */
 	public function fetchCollectionItemsUUID(string $cid, bool $ctype = false): array {
 
+		// construct properties required
+		$properties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+		$properties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+			'PublicStrings',
+			null,
+			null,
+			'DAV:uid',
+			null,
+			'String'
+		);
         // define place holders
         $data = array();
         $offset = 0;
-
         do {
             // execute command
-            $ro = $this->RemoteCommonService->fetchItemsIds($this->DataStore, $cid, $ctype, $offset);
+            $ro = $this->RemoteCommonService->fetchItems($this->DataStore, $cid, $ctype, $offset, 512, 'I', $properties);
             // validate response object
             if (isset($ro) && count($ro->Task) > 0) {
                 foreach ($ro->Task as $entry) {
-                    if ($entry->ExtendedProperty) {
+					// evaluate if uuid is valid
+					if (!empty($entry->ExtendedProperty[0]->Value) &&
+                        (\OCA\EWS\Utile\Validator::uuid_long($entry->ExtendedProperty[0]->Value) || 
+                        \OCA\EWS\Utile\Validator::uuid_long($entry->ExtendedProperty[0]->Value))) {
+                        // add item id and uuid to id collection
                         $data[] = array('ID'=>$entry->ItemId->Id, 'UUID'=>$entry->ExtendedProperty[0]->Value);
-                    }
+					}
                 }
+				// increment offset by count of returned items
                 $offset += count($ro->Task);
             }
         }
         while (isset($ro) && count($ro->Task) > 0);
-        // return
+        // return id collection
 		return $data;
     }
 
@@ -1131,7 +1145,7 @@ class RemoteTasksService {
         // create field update object
         $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
         $o->FieldURI = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($uri);
-        // create field contact object
+        // create field task object
         $o->Task = new \OCA\EWS\Components\EWS\Type\TaskType();
         $o->Task->$name = $value;
         // return object
@@ -1172,7 +1186,7 @@ class RemoteTasksService {
         // create field update object
         $o = new \OCA\EWS\Components\EWS\Type\SetItemFieldType();
         $o->IndexedFieldURI = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($uri, $index);
-        // create field contact object
+        // create field task object
         $o->Task = new \OCA\EWS\Components\EWS\Type\TaskType();
         $o->Task->$name = $dictionary;
         $o->Task->$name->Entry = $entry;
@@ -1251,7 +1265,7 @@ class RemoteTasksService {
             null,
             $type
         );
-        // create field contact object
+        // create field task object
         $o->Task = new \OCA\EWS\Components\EWS\Type\TaskType();
         $o->Task->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
             new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
@@ -1344,7 +1358,7 @@ class RemoteTasksService {
             $tag,
             $type
         );
-        // create field contact object
+        // create field task object
         $o->Task = new \OCA\EWS\Components\EWS\Type\TaskType();
         $o->Task->ExtendedProperty = new \OCA\EWS\Components\EWS\Type\ExtendedPropertyType(
             new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(

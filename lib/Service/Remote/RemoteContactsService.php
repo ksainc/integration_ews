@@ -219,27 +219,41 @@ class RemoteContactsService {
 	 * 
 	 * @return array
 	 */
-	public function fetchCollectionItemsUUID(string $cid, bool $ctype = false): array {
+    public function fetchCollectionItemsUUID(string $cid, bool $ctype = false): array {
 
+		// construct properties required
+		$properties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+		$properties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+			'PublicStrings',
+			null,
+			null,
+			'DAV:uid',
+			null,
+			'String'
+		);
         // define place holders
         $data = array();
         $offset = 0;
-
         do {
             // execute command
-            $ro = $this->RemoteCommonService->fetchItemsIds($this->DataStore, $cid, $ctype, $offset);
+            $ro = $this->RemoteCommonService->fetchItems($this->DataStore, $cid, $ctype, $offset, 512, 'I', $properties);
             // validate response object
             if (isset($ro) && count($ro->Contact) > 0) {
                 foreach ($ro->Contact as $entry) {
-                    if ($entry->ExtendedProperty) {
+					// evaluate if uuid is valid
+					if (!empty($entry->ExtendedProperty[0]->Value) &&
+                        (\OCA\EWS\Utile\Validator::uuid_long($entry->ExtendedProperty[0]->Value) || 
+                        \OCA\EWS\Utile\Validator::uuid_long($entry->ExtendedProperty[0]->Value))) {
+                        // add item id and uuid to id collection
                         $data[] = array('ID'=>$entry->ItemId->Id, 'UUID'=>$entry->ExtendedProperty[0]->Value);
-                    }
+					}
                 }
+				// increment offset by count of returned items
                 $offset += count($ro->Contact);
             }
         }
         while (isset($ro) && count($ro->Contact) > 0);
-        // return
+        // return id collection
 		return $data;
     }
 
