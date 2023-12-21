@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.17 - 2023-12-20
+### Modifications
+- Imporved User UI error display
+- Imporved Admin UI Layout
+- Fixed remote UUID update issue
+- Fixed short UUID validation issue
+- Fixed local attachment creation issue
+- Implemented remote duplicate uuid check in hamonization processor
+- Implemented remote item type check in hamonization processor
+
 ## 1.0.16 - 2023-12-16
 ### Modifications
 - Improved Exchange 2007 Events and Task file attachment support
