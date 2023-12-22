@@ -655,7 +655,7 @@ class CoreService {
 				$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
 			}
 			catch (Throwable $t) {
-				// Ignore any errors when retrieveing public folder list
+				// Ignore any errors when retrieveing public collections
 			}
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
@@ -668,7 +668,7 @@ class CoreService {
 				$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
 			}
 			catch (Throwable $t) {
-				// Ignore any errors when retrieveing public folder list
+				// Ignore any errors when retrieveing public collections
 			}
 		}
 		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
@@ -681,7 +681,7 @@ class CoreService {
 				$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('P', 'Public - '));
 			}
 			catch (Throwable $t) {
-				// Ignore any errors when retrieveing public folder list
+				// Ignore any errors when retrieveing public collections
 			}
 		}
 		// return response
