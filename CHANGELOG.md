@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.0.19 - 2023-12-22
+## 1.0.21 - 2023-12-22
 ### Additions
 - Added transmission logging for EWS protocol debugging
 
