@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.20 - 2023-12-22
+### Modifications
+- Improved console connect command and refactored connect process
+- Improved console connect command success and failure messages
+
 ## 1.0.19 - 2023-12-22
 ### Additions
 - Added error handling for remote public collections, fix for issue #28
