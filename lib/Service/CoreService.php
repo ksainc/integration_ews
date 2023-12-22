@@ -188,15 +188,15 @@ class CoreService {
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid					nextcloud user id
-	 * @param string $account_bauth_id		account username
-	 * @param string $account_bauth_secret	account secret
+	 * @param string $service_bauth_id		account username
+	 * @param string $service_bauth_secret	account secret
 	 * 
 	 * @return object
 	 */
-	public function locateAccount(string $account_bauth_id, string $account_bauth_secret): ?object {
+	public function locateAccount(string $service_bauth_id, string $service_bauth_secret): ?object {
 
 		// construct locator
-		$locator = new Autodiscover($account_bauth_id, $account_bauth_secret);
+		$locator = new Autodiscover($service_bauth_id, $service_bauth_secret);
 		// find configuration
 		$result = $locator->discover();
 
@@ -207,7 +207,7 @@ class CoreService {
 			$o->UserDisplayName = (isset($data['User']['DisplayName'])) ? $data['User']['DisplayName'] : '';
 			$o->UserEMailAddress = (isset($data['User']['EMailAddress'])) ? $data['User']['EMailAddress'] : '';
 			$o->UserSMTPAddress = (isset($data['User']['AutoDiscoverSMTPAddress'])) ? $data['User']['AutoDiscoverSMTPAddress'] : '';
-			$o->UserSecret = $account_bauth_secret;
+			$o->UserSecret = $service_bauth_secret;
 
 			foreach ($data['Account']['Protocol'] as $entry) {
 				// evaluate if type is EXHTTP
@@ -285,36 +285,37 @@ class CoreService {
 	 * @since Release 1.0.0
 	 * 
 	 * @param string $uid					nextcloud user id
-	 * @param string $account_bauth_id		account username
-	 * @param string $account_bauth_secret	account secret
-	 * @param string $account_server		FQDN or IP
+	 * @param string $service_bauth_id		account username
+	 * @param string $service_bauth_secret	account secret
+	 * @param string $service_location		FQDN or IP
+	 * @param string $service_version		service protocol version (Exchange2007, Exchange2010, Exchange2013, Exchange2016)
 	 * @param array $flags
 	 * 
 	 * @return bool
 	 */
-	public function connectAccountAlternate(string $uid, string $account_bauth_id, string $account_bauth_secret, string $account_server = '', array $flags = []): bool {
+	public function connectAccountAlternate(string $uid, string $service_bauth_id, string $service_bauth_secret, string $service_location = '', string $service_version = '', array $flags = []): bool {
 
 		// define place holders
 		$connect = false;
 		$service_configuration = null;
 
 		// evaluate, if server is empty or connect mail app flag is set
-		if (empty($account_server) || in_array('CONNECT_MAIL', $flags)) {
+		if (empty($service_location) || in_array('CONNECT_MAIL', $flags)) {
 			// locate service information
-			$service_configuration = $this->locateAccount($account_bauth_id, $account_bauth_secret);
+			$service_configuration = $this->locateAccount($service_bauth_id, $service_bauth_secret);
 			// evaluate, if ews server information exists in the located service information
 			if (isset($service_configuration->EXHTTP->Server)) {
-				$account_server = $service_configuration->EXHTTP->Server;
+				$service_location = $service_configuration->EXHTTP->Server;
 			}
 			elseif (isset($service_configuration->EXPR->Server)) {
-				$account_server = $service_configuration->EXPR->Server;
+				$service_location = $service_configuration->EXPR->Server;
 			}
 			elseif (isset($service_configuration->EXCH->Server)) {
-				$account_server = $service_configuration->EXCH->Server;
+				$service_location = $service_configuration->EXCH->Server;
 			}
 			// evaluate, if account id information exists in the located service information
 			if (isset($service_configuration->UserSMTPAddress)) {
-				$account_id = $service_configuration->UserSMTPAddress;
+				$service_id = $service_configuration->UserSMTPAddress;
 			}
 			// evaluate, if account name information exists in the located service information
 			if (isset($service_configuration->UserDisplayName)) {
@@ -322,23 +323,23 @@ class CoreService {
 			}
 		}
 		// validate server
-		if (!\OCA\EWS\Utile\Validator::host($account_server)) {
+		if (!\OCA\EWS\Utile\Validator::host($service_location)) {
 			return false;
 		}
 		// validate auth id
-		if (!\OCA\EWS\Utile\Validator::username($account_bauth_id)) {
+		if (!\OCA\EWS\Utile\Validator::username($service_bauth_id)) {
 			return false;
 		}
 		// validate auth secret
-		if (empty($account_bauth_secret)) {
+		if (empty($service_bauth_secret)) {
 			return false;
 		}
 		// evaluate validate flag
 		if (in_array("VALIDATE", $flags)) {
 			// construct remote data store client
 			$RemoteStore = new EWSClient(
-				$account_server, 
-				new \OCA\EWS\Components\EWS\AuthenticationBasic($account_bauth_id, $account_bauth_secret), 
+				$service_location, 
+				new \OCA\EWS\Components\EWS\AuthenticationBasic($service_bauth_id, $service_bauth_secret), 
 				'Exchange2007_SP1'
 			);
 			// retrieve and evaluate transport verification option
@@ -359,7 +360,7 @@ class CoreService {
 				);
 				// evaluate, if server version was found.
 				if ($match[2][0]) {
-					$account_protocol = $match[2][0];
+					$service_version = $match[2][0];
 				}
 				$connect = true;
 			}
@@ -370,12 +371,12 @@ class CoreService {
 		// evaluate connect status
 		if ($connect) {
 			// evaluate if account protocol has been set.
-			if (empty(trim($account_protocol))) {
-				$account_protocol = 'Exchange2010';
+			if (empty(trim($service_version))) {
+				$service_version = 'Exchange2010';
 			}
 			// evaluate if account id has been set.
-			if (empty($account_id)) {
-				$account_id = $account_bauth_id;
+			if (empty($service_id)) {
+				$service_id = $service_bauth_id;
 			}
 			// evaluate if account name has been set.
 			if (empty($account_name)) {
@@ -383,12 +384,12 @@ class CoreService {
 			}
 			// deposit authentication to datastore
 			$this->ConfigurationService->depositProvider($uid, ConfigurationService::ProviderAlternate);
-			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $account_id);
+			$this->ConfigurationService->depositUserValue($uid, 'account_id', (string) $service_id);
 			$this->ConfigurationService->depositUserValue($uid, 'account_name', (string) $account_name);
-			$this->ConfigurationService->depositUserValue($uid, 'account_server', (string) $account_server);
-			$this->ConfigurationService->depositUserValue($uid, 'account_protocol', (string) $account_protocol);
-			$this->ConfigurationService->depositUserValue($uid, 'account_bauth_id', (string) $account_bauth_id);
-			$this->ConfigurationService->depositUserValue($uid, 'account_bauth_secret', (string) $account_bauth_secret);
+			$this->ConfigurationService->depositUserValue($uid, 'account_server', (string) $service_location);
+			$this->ConfigurationService->depositUserValue($uid, 'account_protocol', (string) $service_version);
+			$this->ConfigurationService->depositUserValue($uid, 'account_bauth_id', (string) $service_bauth_id);
+			$this->ConfigurationService->depositUserValue($uid, 'account_bauth_secret', (string) $service_bauth_secret);
 			$this->ConfigurationService->depositUserValue($uid, 'account_connected', 1);
 			// register harmonization task
 			$this->TaskService->add(\OCA\EWS\Tasks\HarmonizationLauncher::class, ['uid' => $uid]);
@@ -874,15 +875,15 @@ class CoreService {
 						$this->refreshAccountMS365($uid, $account_oauth_refresh);
 					}
 					// retrieve connection information
-					$account_server = $this->ConfigurationService->retrieveUserValue($uid, 'account_server');
-					$account_protocol = $this->ConfigurationService->retrieveUserValue($uid, 'account_protocol');
+					$service_location = $this->ConfigurationService->retrieveUserValue($uid, 'account_server');
+					$service_version = $this->ConfigurationService->retrieveUserValue($uid, 'account_protocol');
 					$account_oauth_access = $this->ConfigurationService->retrieveUserValue($uid, 'account_oauth_access');
 					$account_oauth_expiry = $this->ConfigurationService->retrieveUserValue($uid, 'account_oauth_expiry');
 					// construct remote data store client
 					$this->RemoteStore = new EWSClient(
-						$account_server, 
+						$service_location, 
 						new \OCA\EWS\Components\EWS\AuthenticationBearer($account_oauth_access, $account_oauth_expiry), 
-						$account_protocol
+						$service_version
 					);
 					// retrieve and evaluate transport verification option
 					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
@@ -894,15 +895,15 @@ class CoreService {
 				// evaluate, if client does not exists
 				if (!$this->RemoteStore instanceof EWSClient) {
 					// retrieve connection information
-					$account_server = $this->ConfigurationService->retrieveUserValue($uid, 'account_server');
-					$account_protocol = $this->ConfigurationService->retrieveUserValue($uid, 'account_protocol');
-					$account_bauth_id = $this->ConfigurationService->retrieveUserValue($uid, 'account_bauth_id');
-					$account_bauth_secret = $this->ConfigurationService->retrieveUserValue($uid, 'account_bauth_secret');
+					$service_location = $this->ConfigurationService->retrieveUserValue($uid, 'account_server');
+					$service_version = $this->ConfigurationService->retrieveUserValue($uid, 'account_protocol');
+					$service_bauth_id = $this->ConfigurationService->retrieveUserValue($uid, 'account_bauth_id');
+					$service_bauth_secret = $this->ConfigurationService->retrieveUserValue($uid, 'account_bauth_secret');
 					// construct remote data store client
 					$this->RemoteStore = new EWSClient(
-						$account_server, 
-						new \OCA\EWS\Components\EWS\AuthenticationBasic($account_bauth_id, $account_bauth_secret),
-						$account_protocol
+						$service_location, 
+						new \OCA\EWS\Components\EWS\AuthenticationBasic($service_bauth_id, $service_bauth_secret),
+						$service_version
 					);
 					// retrieve and evaluate transport verification option
 					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {

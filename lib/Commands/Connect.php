@@ -48,19 +48,22 @@ class Connect extends Command {
 			->setDescription('Connects a user to EWS Server')
             ->addArgument('user',
 				InputArgument::REQUIRED,
-				'User whom to connect to the EWS Server')
-			->addArgument('provider',
-				InputArgument::REQUIRED,
-				'FQDN or IP address of the EWS Server')
-            ->addArgument('accountid',
+				'User whom to connect to the EWS Service')
+            ->addArgument('ServiceId',
                 InputArgument::REQUIRED,
-                'The username of the account to connect to on the EWS Server')
-            ->addArgument('accountsecret',
+                'The username of the EWS service account to connect to')
+            ->addArgument('ServiceSecret',
                 InputArgument::REQUIRED,
-                'The password of the account to connect to on the EWS Server')
-            ->addArgument('validate',
+                'The password for the EWS service account to connect to')
+			->addArgument('ServiceLocation',
+				InputArgument::OPTIONAL,
+				'FQDN or IP address of the EWS service')
+            ->addArgument('ServiceValidate',
                 InputArgument::OPTIONAL,
-                'Should we validate the credentials with EWS Server. (default true)');
+                'Should we validate the EWS service location and credentials (default true)')
+			->addArgument('ServiceVersion',
+                InputArgument::OPTIONAL,
+                'The EWS service version. This is required if validation is set to false. (Exchange2007, Exchange2010, Exchange2013, Exchange2016)');
 	}
 
 	/**
@@ -69,10 +72,11 @@ class Connect extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int {
         $uid = $input->getArgument('user');
-        $account_provider = $input->getArgument('provider');
-        $account_id = $input->getArgument('accountid');
-        $account_secret = $input->getArgument('accountsecret');
-        $validate = filter_var($input->getArgument('validate'), FILTER_VALIDATE_BOOLEAN);
+        $service_id = $input->getArgument('ServiceId');
+        $service_secret = $input->getArgument('ServiceSecret');
+        $service_validate = (empty($input->getArgument('ServiceValidate'))) ? true : filter_var($input->getArgument('ServiceValidate'), FILTER_VALIDATE_BOOLEAN);
+		$service_location = (empty($input->getArgument('ServiceLocation'))) ? '' : $input->getArgument('ServiceLocation');
+		$service_version = (empty($input->getArgument('ServiceVersion'))) ? '' : $input->getArgument('ServiceVersion');
 		$flags = [];
 
         if (!$this->userManager->userExists($uid)) {
@@ -80,13 +84,18 @@ class Connect extends Command {
 			return 1;
 		}
 
-		if ($validate) {
-			$flags = ['VALIDATE'];
+		if ($service_validate === true) {
+			$flags[] = 'VALIDATE';
 		}
 		
-        $this->CoreService->connectAccount($uid, $account_id, $account_secret, $account_provider, $flags);
+		if ($service_validate === false && empty($service_version)) {
+			$output->writeln("<error>Service Version is required when validation is set to false. Possible values are Exchange2007, Exchange2007_SP1, Exchange2009, Exchange2010, Exchange2010_SP1, Exchange2010_SP2, Exchange2013, Exchange2013_SP1, Exchange2016</error>");
+			return 1;
+		}
 
-        $output->writeln("<info>User $uid connected to $account_provider as $account_id</info>");
+        $this->CoreService->connectAccountAlternate($uid, $service_id, $service_secret, $service_location, $service_version, $flags);
+
+        $output->writeln("<info>User $uid connected to $service_location as $service_id</info>");
 
 		return 0;
 

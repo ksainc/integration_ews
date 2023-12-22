@@ -94,7 +94,7 @@ class UserConfigurationController extends Controller {
 		}
 		try {
 			// execute connect
-			$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_server, $flags);
+			$rs = $this->CoreService->connectAccountAlternate($this->userId, $account_id, $account_secret, $account_server, '', $flags);
 			// return success message
 			return new DataResponse('success');
 		} catch (\Throwable $th) {
