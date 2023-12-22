@@ -80,7 +80,7 @@ class Connect extends Command {
 		$flags = [];
 
         if (!$this->userManager->userExists($uid)) {
-			$output->writeln("<error>User $uid does not exist</error>");
+			$output->writeln("<error>Failed: Specified user $uid does not exist</error>");
 			return 1;
 		}
 
@@ -89,13 +89,18 @@ class Connect extends Command {
 		}
 		
 		if ($service_validate === false && empty($service_version)) {
-			$output->writeln("<error>Service Version is required when validation is set to false. Possible values are Exchange2007, Exchange2007_SP1, Exchange2009, Exchange2010, Exchange2010_SP1, Exchange2010_SP2, Exchange2013, Exchange2013_SP1, Exchange2016</error>");
+			$output->writeln("<error>Failed: Service version is required when validation is set to false. Possible values are Exchange2007, Exchange2007_SP1, Exchange2009, Exchange2010, Exchange2010_SP1, Exchange2010_SP2, Exchange2013, Exchange2013_SP1, Exchange2016</error>");
 			return 1;
 		}
 
-        $this->CoreService->connectAccountAlternate($uid, $service_id, $service_secret, $service_location, $service_version, $flags);
-
-        $output->writeln("<info>User $uid connected to $service_location as $service_id</info>");
+		try {
+			$this->CoreService->connectAccountAlternate($uid, $service_id, $service_secret, $service_location, $service_version, $flags);
+			$output->writeln("<info>Success: Connected $uid to $service_location as $service_id</info>");
+		}
+		catch (\Throwable $th) {
+			$output->writeln("<error>Failed: " . $th->getMessage() . "</error>");
+			return 1;
+		}
 
 		return 0;
 
