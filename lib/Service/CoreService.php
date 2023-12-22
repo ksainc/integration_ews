@@ -651,7 +651,12 @@ class CoreService {
 			// retrieve remote personal collections
 			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('U', 'Personal - '));
 			// retrieve remote public collections
-			$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
+			try {
+				$response['ContactCollections'] = array_merge($response['ContactCollections'], $this->RemoteContactsService->listCollections('P', 'Public - '));
+			}
+			catch (Throwable $t) {
+				// Ignore any errors when retrieveing public folder list
+			}
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			// configure events service
@@ -659,7 +664,12 @@ class CoreService {
 			// retrieve remote personal collections
 			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('U', 'Personal - '));
 			// retrieve remote public collections
-			$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
+			try {
+				$response['EventCollections'] = array_merge($response['EventCollections'], $this->RemoteEventsService->listCollections('P', 'Public - '));
+			}
+			catch (Throwable $t) {
+				// Ignore any errors when retrieveing public folder list
+			}
 		}
 		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			// configure tasks service
@@ -667,7 +677,12 @@ class CoreService {
 			// retrieve remote personal collections
 			$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('U', 'Personal - '));
 			// retrieve remote public collections
-			$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('P', 'Public - '));
+			try {
+				$response['TaskCollections'] = array_merge($response['TaskCollections'], $this->RemoteTasksService->listCollections('P', 'Public - '));
+			}
+			catch (Throwable $t) {
+				// Ignore any errors when retrieveing public folder list
+			}
 		}
 		// return response
 		return $response;
