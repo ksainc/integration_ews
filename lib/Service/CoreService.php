@@ -889,6 +889,12 @@ class CoreService {
 					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
 						$this->RemoteStore->configureTransportVerification(false);
 					}
+					// retrieve and evaluate transport logging option
+					if ($this->ConfigurationService->retrieveSystemValue('transport_log') == '1') {
+						$path = $this->ConfigurationService->retrieveSystemValue('transport_log_path') . '/' . $uid . '_' . date("Y-m-d_H-i-s") . '_EWS.log';
+						$this->RemoteStore->configureTransportLogState(true);
+						$this->RemoteStore->configureTransportLogLocation($path);
+					}
 				}
 				break;
 			case ConfigurationService::ProviderAlternate:
@@ -908,6 +914,12 @@ class CoreService {
 					// retrieve and evaluate transport verification option
 					if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
 						$this->RemoteStore->configureTransportVerification(false);
+					}
+					// retrieve and evaluate transport logging option
+					if ($this->ConfigurationService->retrieveSystemValue('transport_log') == '1') {
+						$path = $this->ConfigurationService->retrieveSystemValue('transport_log_path') . '/' . $uid . '_' . date("Y-m-d_H-i-s") . '_EWS.log';
+						$this->RemoteStore->configureTransportLogState(true);
+						$this->RemoteStore->configureTransportLogLocation($path);
 					}
 				}
 				break;

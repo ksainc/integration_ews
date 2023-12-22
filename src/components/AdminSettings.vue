@@ -72,6 +72,22 @@
 					{{ t('integration_ews', 'Secure Transport Verification (SSL Certificate Verification). Should always be ON, unless connecting to a Exchange system over an internal LAN.') }}
 				</NcCheckboxRadioSwitch>
 			</div>
+			<div>
+				<NcCheckboxRadioSwitch :checked.sync="transportLog" type="switch">
+					{{ t('integration_ews', 'Enable Transport Logging') }}
+				</NcCheckboxRadioSwitch>
+			</div>
+			<div v-if="state.transport_log === '1'" class="parameter">
+				<label>
+					{{ t('integration_ews', 'Location of Transport Log') }}
+				</label>
+				<input id="ews-thread-pause"
+					v-model="state.transport_log_path"
+					type="text"
+					:autocomplete="off"
+					:autocorrect="off"
+					:autocapitalize="none">
+			</div>
 		</div>
 		<br>
 		<div class="ews-section-ms365">
@@ -175,6 +191,14 @@ export default {
 				this.state.transport_verification = (value === true) ? '1' : '0'
 			},
 		},
+		transportLog: {
+			get() {
+				return (this.state.transport_log === '1')
+			},
+			set(value) {
+				this.state.transport_log = (value === true) ? '1' : '0'
+			},
+		},
 	},
 
 	methods: {
@@ -182,6 +206,8 @@ export default {
 			const req = {
 				values: {
 					transport_verification: this.state.transport_verification,
+					transport_log: this.state.transport_log,
+					transport_log_path: this.state.transport_log_path,
 					harmonization_mode: this.state.harmonization_mode,
 					harmonization_thread_duration: this.state.harmonization_thread_duration,
 					harmonization_thread_pause: this.state.harmonization_thread_pause,

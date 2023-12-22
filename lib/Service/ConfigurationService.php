@@ -46,6 +46,8 @@ class ConfigurationService {
 	 * */
 	private const _SYSTEM = [
 		'transport_verification' => '1',
+		'transport_log' => '0',
+		'transport_log_path' => '/tmp',
 		'harmonization_mode' => 'P',
 		'harmonization_thread_duration' => '3600',
 		'harmonization_thread_pause' => '15',

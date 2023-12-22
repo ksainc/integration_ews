@@ -201,6 +201,20 @@ class EWSClient extends \SoapClient
     protected string $_TransportRepsonseBodyData = '';
 
     /**
+     * Transport Logging State (ON/OFF)
+     *
+     * @var bool
+     */
+    protected bool $_TransportLogState = false;
+
+    /**
+     * Transport Log File Location
+     *
+     * @var string
+     */
+    protected string $_TransportLogLocation = '/tmp/ews.log';
+
+    /**
      * Exchange Web Services WSDL description file
      *
      * @var string 
@@ -244,6 +258,8 @@ class EWSClient extends \SoapClient
         $timezone = null,
         $impersonate = null
     ) {
+        // assign logging location based on system temp folder
+        $this->_TransportLogLocation = sys_get_temp_dir() . '/ews.log';
         // Set the object properties.
         $this->_transport_location = $location;
         $this->_transport_authentication = $authentication;
@@ -313,6 +329,8 @@ class EWSClient extends \SoapClient
         if ($this->_TransportRequestHeaderFlag) { $this->_TransportRequestHeaderData = $header; }
         // evaluate, if we are retaining request body
         if ($this->_TransportRequestBodyFlag) { $this->_TransportRequestBodyData = $request; }
+        // evaluate, if logging is enabled and write to log if enabled
+        if ($this->_TransportLogState) { file_put_contents($this->_TransportLogLocation, date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Request' . PHP_EOL . $request . PHP_EOL, FILE_APPEND); }
 
         // execute request
         $response = curl_exec($this->_client);
@@ -347,6 +365,8 @@ class EWSClient extends \SoapClient
         if ($this->_TransportRepsonseHeaderFlag) { $this->_TransportRepsonseHeaderData = substr($response, 0, $header_size); }
         // evaluate, if we are retaining request body
         if ($this->_TransportRepsonseBodyFlag) { $this->_TransportRepsonseBodyData = substr($response, $header_size); }
+        // evaluate, if logging is enabled and write to log if enabled
+        if ($this->_TransportLogState) { file_put_contents($this->_TransportLogLocation, date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Response' . PHP_EOL . substr($response, $header_size) . PHP_EOL, FILE_APPEND); }
 
         return substr($response, $header_size);
     }
@@ -502,6 +522,29 @@ class EWSClient extends \SoapClient
 
     }
 
+    /**
+     * enables or disables transport log
+     * 
+     * @param bool $value           ture or false flag
+     */
+    public function configureTransportLogState(bool $value): void {
+
+        // store parameter
+        $this->_TransportLogState = $value;
+
+    }
+
+    /**
+     * configures transport log location
+     * 
+     * @param bool $value           ture or false flag
+     */
+    public function configureTransportLogLocation(string $value): void {
+
+        // store parameter
+        $this->_TransportLogLocation = $value;
+
+    }
     /**
      * Enables or disables retention of raw request headers sent
      * 
