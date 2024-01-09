@@ -639,7 +639,27 @@ class LocalEventsService {
         }
         // Notes
         if (isset($vo->DESCRIPTION)) {
-            if (!empty(trim($vo->DESCRIPTION->getValue()))) {
+            // evaluate if formatted description is set
+            if (isset($vo->DESCRIPTION->parameters['ALTREP'])) {
+                // extract formatted description
+                $df = $vo->DESCRIPTION->parameters['ALTREP']->getValue();
+                //
+                $df = str_replace('data:text/html,', '', $df);
+                // decode formatted description
+                $df = html_entity_decode($df, ENT_QUOTES, 'UTF-8');
+                // extract text only description
+                $dn = trim($vo->DESCRIPTION->getValue());
+                // evaluate if formatted version and text only version match
+                // this is a work around for NC's lack of support for html formatted desciptions
+                // Because NC only updates the text only version we need to compare both to determain if anything changed
+                if (trim(html_entity_decode(strip_tags($df))) == $dn) {
+                    $eo->Notes = $df;
+                }
+                else {
+                    $eo->Notes = $dn;
+                }
+            } 
+            else {
                 $eo->Notes = trim($vo->DESCRIPTION->getValue());
             }
         }
@@ -933,7 +953,9 @@ class LocalEventsService {
         }
         // Notes
         if (isset($eo->Notes)) {
-            $vo->add('DESCRIPTION', $eo->Notes);
+            $vo->add('DESCRIPTION');
+            $vo->DESCRIPTION->add('ALTREP', 'data:text/html,' . htmlentities($eo->Notes, ENT_QUOTES | ENT_IGNORE, 'UTF-8'));
+            $vo->DESCRIPTION->setValue(trim(html_entity_decode(strip_tags($eo->Notes))));
         }
         // Location
         if (isset($eo->Location)) {
