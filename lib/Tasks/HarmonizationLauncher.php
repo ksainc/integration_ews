@@ -90,9 +90,9 @@ class HarmonizationLauncher extends TimedJob {
                 }
                 
             } catch (\Throwable $e) {
-                $logger->error("Harmonization launcher encountered an error while starting a thread for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+                $this->logger->error("Harmonization launcher encountered an error while starting a thread for $uid", ['app' => 'integration_ews', 'exception' => $e]);
             } catch (\Exception $e) {
-                $logger->error("Harmonization launcher encountered an error while starting a thread for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+                $this->logger->error("Harmonization launcher encountered an error while starting a thread for $uid", ['app' => 'integration_ews', 'exception' => $e]);
             }
         }
         // passive mode
@@ -102,9 +102,9 @@ class HarmonizationLauncher extends TimedJob {
                 $this->HarmonizationService->performHarmonization($uid);
             
             } catch (\Throwable $e) {
-                $logger->error("Harmonization launcher encountered an error while harmonizing for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+                $this->logger->error("Harmonization launcher encountered an error while harmonizing for $uid", ['app' => 'integration_ews', 'exception' => $e]);
             } catch (\Exception $e) {
-                $logger->error("Harmonization launcher encountered an error while harmonizing for $uid", ['app' => 'integration_ews', 'exception' => $e]);
+                $this->logger->error("Harmonization launcher encountered an error while harmonizing for $uid", ['app' => 'integration_ews', 'exception' => $e]);
             }
         } 
     }
