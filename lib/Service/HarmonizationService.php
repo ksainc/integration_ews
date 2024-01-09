@@ -136,7 +136,7 @@ class HarmonizationService {
 			if ($this->ConfigurationService->isContactsAppAvailable($uid) &&
 				(($mode === 'S' && $Configuration->ContactsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->ContactsHarmonize > -1))) {
-				$this->logger->info('Statred Harmonization of Contacts for ' . $uid);
+				$this->logger->info('Started Harmonization of Contacts for ' . $uid);
 				// configure contacts service
 				$this->ContactsService->configure($Configuration, $RemoteStore);
 				// retrieve list of collections correlations
@@ -185,7 +185,7 @@ class HarmonizationService {
 			if ($this->ConfigurationService->isCalendarAppAvailable($uid) &&
 				(($mode === 'S' && $Configuration->EventsHarmonize > 0) ||
 				($mode === 'M' && $Configuration->EventsHarmonize > -1))) {
-				$this->logger->info('Statred Harmonization of Events for ' . $uid);
+				$this->logger->info('Started Harmonization of Events for ' . $uid);
 				// configure events service
 				$this->EventsService->configure($Configuration, $RemoteStore);
 				// retrieve list of correlations
@@ -234,7 +234,7 @@ class HarmonizationService {
 			if ($this->ConfigurationService->isTasksAppAvailable($uid) &&
 				(($mode === 'S' && $Configuration->TasksHarmonize > 0) ||
 				($mode === 'M' && $Configuration->TasksHarmonize > -1))) {
-				$this->logger->info('Statred Harmonization of Tasks for ' . $uid);
+				$this->logger->info('Started Harmonization of Tasks for ' . $uid);
 				// configure tasks service
 				$this->TasksService->configure($Configuration, $RemoteStore);
 				// retrieve list of correlations
@@ -295,7 +295,7 @@ class HarmonizationService {
 	 */
 	public function performLiveHarmonization(string $uid): void {
 
-		$this->logger->info('Statred Live Harmonization of Collections for ' . $uid);
+		$this->logger->info('Started Live Harmonization of Collections for ' . $uid);
 
 		// update harmonization state and start time
 		$this->ConfigurationService->setHarmonizationState($uid, true);
@@ -312,7 +312,7 @@ class HarmonizationService {
 		try {
 			// evaluate, if contacts app is available and contacts harmonization is turned on
 			if ($this->ConfigurationService->isContactsAppAvailable($uid) && $Configuration->ContactsHarmonize > 0) {
-				$this->logger->info('Statred Harmonization of Contacts for ' . $uid);
+				$this->logger->info('Started Harmonization of Contacts for ' . $uid);
 				// assign remote data store
 				$this->ContactsService->RemoteStore = $RemoteStore;
 				// retrieve list of collections correlations
@@ -363,7 +363,7 @@ class HarmonizationService {
 		try {
 			// evaluate, if calendar app is available and events harmonization is turned on
 			if ($this->ConfigurationService->isCalendarAppAvailable($uid) && $Configuration->EventsHarmonize > 0) {
-				$this->logger->info('Statred Harmonization of Events for ' . $uid);
+				$this->logger->info('Started Harmonization of Events for ' . $uid);
 				// assign remote data store
 				$this->EventsService->RemoteStore = $RemoteStore;
 				// retrieve list of correlations
@@ -415,7 +415,7 @@ class HarmonizationService {
 		try {
 			// evaluate, if tasks app is available and tasks harmonization is turned on
 			if ($this->ConfigurationService->isTasksAppAvailable($uid) && $Configuration->TasksHarmonize > 0) {
-				$this->logger->info('Statred Harmonization of Tasks for ' . $uid);
+				$this->logger->info('Started Harmonization of Tasks for ' . $uid);
 				// assign remote data store
 				$this->TasksService->RemoteStore = $RemoteStore;
 				// retrieve list of correlations
