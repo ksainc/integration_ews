@@ -743,9 +743,7 @@ class LocalEventsService {
                     $t = $this->fromAlarmAction($vo->VALARM->ACTION[0]->getValue());
 
                     if ($t = 'D') {
-                        if (!empty($vo->VALARM->TRIGGER[0]->getValue()) &&
-                            (isset($vo->VALARM->TRIGGER[0]->parameters['RELATED']) || 
-                            isset($vo->VALARM->TRIGGER[0]->parameters['VALUE']))) {
+                        if (!empty($vo->VALARM->TRIGGER[0]->getValue())) {
                             if (isset($vo->VALARM->TRIGGER[0]->parameters['RELATED'])) {
                                 $p = 'R';
                                 $w = $this->fromDurationPeriod($vo->VALARM->TRIGGER[0]->getValue());
@@ -754,13 +752,15 @@ class LocalEventsService {
                                 $p = 'A';
                                 $w = new DateTime($vo->VALARM->TRIGGER[0]->getValue(), $eo->StartsTZ);
                             }
-                            $eo->addNotification(
-                                $t,
-                                $p,
-                                $w
-                            );
-                            unset($p);
-                            unset($w);
+                            if (isset($p) && isset($w)) {
+                                $eo->addNotification(
+                                    $t,
+                                    $p,
+                                    $w
+                                );
+                                unset($p);
+                                unset($w);
+                            }
                         }
                     }
                     unset($t);
