@@ -752,7 +752,7 @@ class LocalEventsService {
                                 $p = 'A';
                                 $w = new DateTime($vo->VALARM->TRIGGER[0]->getValue(), $eo->StartsTZ);
                             }
-                            if (isset($p) && isset($w)) {
+                            if (!empty($p) && !empty($w)) {
                                 $eo->addNotification(
                                     $t,
                                     $p,
