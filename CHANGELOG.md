@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.22 - 2024-01-10
+### Additions
+- Implemented work around for NC Calendar lack of HTML event descriptions
+### Modifications
+- Fixed issue with missing alarm values
+- Fixed minor issues
+
 ## 1.0.21 - 2023-12-22
 ### Additions
 - Added transmission logging for EWS protocol debugging
