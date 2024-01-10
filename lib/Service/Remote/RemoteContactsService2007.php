@@ -110,7 +110,7 @@ class RemoteContactsService2007 extends RemoteContactsService {
 				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
 			}
             
-            // indexed property names collection
+            // construct indexed property collection
 			$_properties = [
                 ['contacts:EmailAddress', 'EmailAddress1'],
                 ['contacts:EmailAddress', 'EmailAddress2'],
@@ -156,6 +156,24 @@ class RemoteContactsService2007 extends RemoteContactsService {
 			foreach ($_properties as $entry) {
 				$this->DefaultItemProperties->IndexedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToIndexedFieldType($entry[0], $entry[1]);
 			}
+
+            // construct extended property collection
+			$this->DefaultItemProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+				'PublicStrings',
+				null,
+				null,
+				'DAV:id',
+				null,
+				'String'
+			);
+			$this->DefaultItemProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+				'PublicStrings',
+				null,
+				null,
+				'DAV:uid',
+				null,
+				'String'
+			);
 		}
 
 		return $this->DefaultItemProperties;

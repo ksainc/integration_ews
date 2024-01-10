@@ -843,6 +843,7 @@ class RemoteCommonService {
 		if ($additional instanceof \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType) {
 			$request->ItemShape->AdditionalProperties = $additional;
 		}
+		/*
 		else {
 			$request->ItemShape->AdditionalProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
 		}
@@ -863,7 +864,6 @@ class RemoteCommonService {
 			null,
 			'String'
 		);
-		/*
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			null,
 			null,
@@ -1089,11 +1089,11 @@ class RemoteCommonService {
 		$data = array();
 		foreach ($response as $entry) {
 			// evaluate if response contained a error
-			if ($response_data->ResponseClass == ResponseClassType::ERROR) {
+			if ($entry->ResponseClass == ResponseClassType::ERROR) {
 				throw new Exception(self::DESCRIPTOR_REMOTE_ERROR . $response_data->ResponseCode . ' - ' . $response_data->MessageText);
 			}
 			// evaluate if response contained a warning 
-			elseif ($response_data->ResponseClass == ResponseClassType::WARNING) {
+			elseif ($entry->ResponseClass == ResponseClassType::WARNING) {
 				$this->logger->warning(self::DESCRIPTOR_REMOTE_WARNING . $response_data->MessageText);
 			}
 			// extract data object from response

@@ -1301,6 +1301,24 @@ class RemoteEventsService {
 			foreach ($_properties as $entry) {
 				$this->DefaultItemProperties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType($entry);
 			}
+
+			// construct extended property collection
+			$this->DefaultItemProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+				'PublicStrings',
+				null,
+				null,
+				'DAV:id',
+				null,
+				'String'
+			);
+			$this->DefaultItemProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+				'PublicStrings',
+				null,
+				null,
+				'DAV:uid',
+				null,
+				'String'
+			);
 		}
 
 		return $this->DefaultItemProperties;
