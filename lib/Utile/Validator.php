@@ -160,6 +160,29 @@ class Validator {
     }
 
     /**
+     * validate uuid
+     * 
+     * @since Release 1.0.23
+     *  
+	 * @param string $uuid         uuid to validate
+	 * 
+	 * @return bool
+	 */
+    static function uuid(string $uuid): bool {
+
+        if (self::uuid_long($uuid)) {
+            return true;
+        }
+
+        if (self::uuid_short($uuid)) {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    /**
      * validate long uuid (with dashes)
      * 
      * @since Release 1.0.15
