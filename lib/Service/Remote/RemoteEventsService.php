@@ -42,35 +42,35 @@ class RemoteEventsService {
 	/**
 	 * @var LoggerInterface
 	 */
-	private $logger;
+	protected $logger;
 	/**
 	 * @var RemoteCommonService
 	 */
-	private $RemoteCommonService;
+	protected $RemoteCommonService;
 	/**
 	 * @var EWSClient
 	 */
-	private ?EWSClient $DataStore = null;
+	protected ?EWSClient $DataStore = null;
 	/**
 	 * @var Object
 	 */
-	private $Configuration;
+	protected $Configuration;
 	/**
 	 * @var DateTimeZone
 	 */
-	private ?DateTimeZone $SystemTimeZone = null;
+	protected ?DateTimeZone $SystemTimeZone = null;
     /**
 	 * @var DateTimeZone
 	 */
-	private ?DateTimeZone $UserTimeZone = null;
+	protected ?DateTimeZone $UserTimeZone = null;
 	/**
 	 * @var Object
 	 */
-	private ?object $DefaultCollectionProperties = null;
+	protected ?object $DefaultCollectionProperties = null;
 	/**
 	 * @var Object
 	 */
-	private ?object $DefaultItemProperties = null;
+	protected ?object $DefaultItemProperties = null;
 	
 	public function __construct (string $appName,
 								LoggerInterface $logger,
@@ -2005,7 +2005,7 @@ class RemoteEventsService {
 			}
         }
         // Attachment(s)
-		if (isset($data->Attachments)) {
+		if (isset($data->Attachments) && is_array($data->Attachments)) {
 			foreach($data->Attachments->FileAttachment as $entry) {
 				if ($entry->ContentType == 'application/octet-stream') {
 					$type = \OCA\EWS\Utile\MIME::fromFileName($entry->Name);

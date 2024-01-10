@@ -43,27 +43,27 @@ class RemoteContactsService {
 	/**
 	 * @var LoggerInterface
 	 */
-	private $logger;
+	protected $logger;
 	/**
 	 * @var RemoteCommonService
 	 */
-	private $RemoteCommonService;
+	protected $RemoteCommonService;
 	/**
 	 * @var EWSClient
 	 */
-	private ?EWSClient $DataStore = null;
+	protected ?EWSClient $DataStore = null;
     /**
 	 * @var Object
 	 */
-	private $Configuration;
+	protected $Configuration;
     /**
 	 * @var Object
 	 */
-	private ?object $DefaultCollectionProperties = null;
+	protected ?object $DefaultCollectionProperties = null;
 	/**
 	 * @var Object
 	 */
-	private ?object $DefaultItemProperties = null;
+	protected ?object $DefaultItemProperties = null;
 
 	public function __construct (string $appName,
 								LoggerInterface $logger,
@@ -1835,7 +1835,7 @@ class RemoteContactsService {
         }
 
         // Attachment(s)
-        if (isset($so->Attachments)) {
+        if (isset($so->Attachments) && is_array($so->Attachments)) {
             foreach($so->Attachments->FileAttachment as $entry) {
                 // evaluate mime type
                 if ($entry->ContentType == 'application/octet-stream') {
