@@ -4,7 +4,7 @@
     <name>Exchange EWS Connector (Exchange Web Services)</name>
     <summary>Exchange Server data sync with Nextcloud</summary>
     <description><![CDATA[Exchange EWS Connector (Exchange Web Services) allows you to automatically sync your calendars and contacts from any EWS compatible service with Nextcloud.]]></description>
-    <version>1.0.22</version>
+    <version>1.0.23</version>
     <licence>agpl</licence>
     <author mail="krupinski01@gmail.com">Sebastian Krupinski</author>
     <namespace>EWS</namespace>

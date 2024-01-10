@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.23 - 2024-01-10
+### Additions
+- Added combined short and long uuid validation
+- Added remote contact uuid validation
+- Added remote task uuid validation
+### Modifications
+- Fixed variable name and correlation type typo in contacts and tasks service
+- Fixed php deprecation warnings
+- Fixed php undeclared vaiable warnings
+- Fixed remote contact attachment creation issue with Exchange 2007
+
 ## 1.0.22 - 2024-01-10
 ### Additions
 - Implemented work around for NC Calendar lack of HTML event descriptions
