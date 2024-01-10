@@ -541,14 +541,14 @@ class ContactsService {
 			// work around for duplicate uuid's in remote objects
 			if (isset($lo)) {
 				// retrieve correlation for local object
-				$c = $this->CorrelationsService->findByLocalId($uid, 'EO', $lo->ID, $lcid);
+				$c = $this->CorrelationsService->findByLocalId($uid, 'CO', $lo->ID, $lcid);
 				// if correlation exists and remote object id is different
 				// then this another object with a duplicate UUID
 				if (isset($c) && ($c->getroid() != $ro->ID)) {
 					// clear local object to force a new local object to be created
 					$lo = null;
 					// clear remote object uuid to force new uuid to be created
-					$ro->UUID = null;
+					$ro->UID = null;
 				}
 			}
 		}

@@ -548,7 +548,7 @@ class TasksService {
 			// work around for duplicate uuid's in remote objects
 			if (isset($lo)) {
 				// retrieve correlation for local object
-				$c = $this->CorrelationsService->findByLocalId($uid, 'EO', $lo->ID, $lcid);
+				$c = $this->CorrelationsService->findByLocalId($uid, 'TO', $lo->ID, $lcid);
 				// if correlation exists and remote object id is different
 				// then this another object with a duplicate UUID
 				if (isset($c) && ($c->getroid() != $ro->ID)) {
