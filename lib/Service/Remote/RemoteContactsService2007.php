@@ -851,7 +851,7 @@ class RemoteContactsService2007 extends RemoteContactsService {
     /**
      * update collection item with uuid in remote storage
      * 
-     * @since Release 1.0.0
+     * @since Release 1.0.15
      * 
 	 * @param string $cid - Collection ID
      * @param string $iid - Collection Item ID
@@ -873,6 +873,64 @@ class RemoteContactsService2007 extends RemoteContactsService {
         } else {
             return null;
         }
+    }
+
+    /**
+     * create collection item attachment in local storage
+     * 
+     * @since Release 1.0.22
+     * 
+	 * @param string $aid - Affiliation ID
+     * @param array $sc - Collection of EventAttachmentObject(S)
+	 * 
+	 * @return string
+	 */
+	public function createCollectionItemAttachment(string $aid, array $batch): array {
+
+		// check to for entries in batch collection
+        if (count($batch) == 0) {
+            return array();
+        }
+		// construct command collection place holder
+		$cc = array();
+		// process batch
+		foreach ($batch as $key => $entry) {
+			// construct command object
+			$co = new \OCA\EWS\Components\EWS\Type\FileAttachmentType();
+			$co->Name = $entry->Name;
+			$co->ContentId = $entry->Name;
+			$co->ContentType = $entry->Type;
+			
+			switch ($entry->Encoding) {
+				case 'B':
+					$co->Content = $entry->Data;
+					break;
+				case 'B64':
+					$co->Content = base64_decode($entry->Data);
+					break;
+			}
+			// insert command object in to collection
+			$cc[] = $co;
+		}
+		// execute command(s)
+		$rs = $this->RemoteCommonService->createAttachment($this->DataStore, $aid, $cc);
+		// construct results collection place holder
+		$rc = array();
+		// check for response
+		if (isset($rs)) {
+			// process collection of objects
+			foreach($rs as $key => $entry) {
+				$ro = clone $batch[$key];
+				$ro->Id = $entry->AttachmentId->Id;
+				$ro->Data = null;
+				$ro->AffiliateId = $entry->AttachmentId->RootItemId;
+				$ro->AffiliateState = $entry->AttachmentId->RootItemChangeKey;
+				$rc[] = $ro;
+			}
+
+        }
+		// return response collection
+		return $rc;
     }
 
 }
