@@ -1869,7 +1869,7 @@ class RemoteContactsService {
             foreach ($so->ExtendedProperty as $entry) {
                 switch ($entry->ExtendedFieldURI->PropertyName) {
                     case 'DAV:uid': // UUID
-                        $co->UID = $entry->Value;
+                        $co->UID = (\OCA\EWS\Utile\Validator::uuid($entry->Value)) ? $entry->Value : null;
                         break;
                 }
                 switch ($entry->ExtendedFieldURI->PropertyTag) {
