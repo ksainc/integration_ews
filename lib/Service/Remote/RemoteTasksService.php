@@ -1716,7 +1716,7 @@ class RemoteTasksService {
 			foreach ($data->ExtendedProperty as $entry) {
 				switch ($entry->ExtendedFieldURI->PropertyName) {
 					case 'DAV:uid':
-						$o->UUID = $entry->Value;
+						$o->UUID = (\OCA\EWS\Utile\Validator::uuid($entry->Value)) ? $entry->Value : null;;
 						break;
 				}
 				switch ($entry->ExtendedFieldURI->PropertyTag) {
