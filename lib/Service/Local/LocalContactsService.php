@@ -420,7 +420,10 @@ class LocalContactsService {
         // Phone(s)
         if (isset($vo->TEL)) {
             foreach($vo->TEL as $entry) {
-                [$primary, $secondary] = explode(',', trim($entry->parameters()['TYPE']->getValue()));
+                // evaluate if type contains sub type and return, split type in to primary/secondary or primary and empty secondary
+                [$primary, $secondary] = (str_contains($entry->parameters()['TYPE']->getValue(), ',')) ? 
+                                         explode(',', trim($entry->parameters()['TYPE']->getValue())) :
+                                         [$entry->parameters()['TYPE']->getValue(), ''];
                 $co->addPhone(
                     $primary,
                     $secondary, 
