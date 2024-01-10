@@ -32,31 +32,13 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCA\DAV\Events\AddressBookDeletedEvent;
-use OCA\DAV\Events\CardCreatedEvent;
-use OCA\DAV\Events\CardDeletedEvent;
-use OCA\DAV\Events\CardUpdatedEvent;
 use OCA\DAV\Events\CalendarDeletedEvent;
-use OCA\DAV\Events\CalendarObjectCreatedEvent;
-use OCA\DAV\Events\CalendarObjectDeletedEvent;
-use OCA\DAV\Events\CalendarObjectUpdatedEvent;
-use OCA\DAV\Events\CalendarObjectMovedEvent;
-use OCA\DAV\Events\CalendarObjectMovedToTrashEvent;
-use OCA\DAV\Events\CalendarObjectRestoredEvent;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Notification\IManager as INotificationManager;
 use OCP\User\Events\UserDeletedEvent;
 
 use OCA\EWS\Events\AddressBookDeletedListener;
-use OCA\EWS\Events\CardCreatedListener;
-use OCA\EWS\Events\CardUpdatedListener;
-use OCA\EWS\Events\CardDeletedListener;
 use OCA\EWS\Events\CalendarDeletedListener;
-use OCA\EWS\Events\CalendarObjectCreatedListener;
-use OCA\EWS\Events\CalendarObjectUpdatedListener;
-use OCA\EWS\Events\CalendarObjectDeletedListener;
-use OCA\EWS\Events\CalendarObjectMovedListener;
-use OCA\EWS\Events\CalendarObjectMovedToTrashListener;
-use OCA\EWS\Events\CalendarObjectRestoredListener;
 use OCA\EWS\Events\UserDeletedListener;
 use OCA\EWS\Notification\Notifier;
 
@@ -87,25 +69,10 @@ class Application extends App implements IBootstrap {
 
         if ($contacts == true) {
             $dispatcher->addServiceListener(AddressBookDeletedEvent::class, AddressBookDeletedListener::class);
-            // evaluate harmonization mode, and only register if set to active
-            if ($mode == 'A') {
-                $dispatcher->addServiceListener(CardCreatedEvent::class, CardCreatedListener::class);
-                $dispatcher->addServiceListener(CardUpdatedEvent::class, CardUpdatedListener::class);
-                $dispatcher->addServiceListener(CardDeletedEvent::class, CardDeletedListener::class);
-            }
         }
         
         if ($calendar == true) {
             $dispatcher->addServiceListener(CalendarDeletedEvent::class, CalendarDeletedListener::class);
-            // evaluate harmonization mode, and only register if set to active
-            if ($mode == 'A') {
-                $dispatcher->addServiceListener(CalendarObjectCreatedEvent::class, CalendarObjectCreatedListener::class);
-                $dispatcher->addServiceListener(CalendarObjectUpdatedEvent::class, CalendarObjectUpdatedListener::class);
-                $dispatcher->addServiceListener(CalendarObjectDeletedEvent::class, CalendarObjectDeletedListener::class);
-                $dispatcher->addServiceListener(CalendarObjectMovedEvent::class, CalendarObjectMovedListener::class);
-                $dispatcher->addServiceListener(CalendarObjectMovedToTrashEvent::class, CalendarObjectMovedToTrashListener::class);
-                $dispatcher->addServiceListener(CalendarObjectRestoredEvent::class, CalendarObjectRestoredListener::class);
-            }
         }
     }
 
