@@ -215,7 +215,6 @@ class RemoteEventsService {
 
 		// construct additional properties required
 		$properties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
-		$properties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
 		$properties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			'PublicStrings',
 			null,
