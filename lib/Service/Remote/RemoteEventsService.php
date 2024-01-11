@@ -251,10 +251,13 @@ class RemoteEventsService {
             // validate response object
             if (isset($ro) && count($ro->CalendarItem) > 0) {
                 foreach ($ro->CalendarItem as $entry) {
-					// extract and validate UUID from standard properties
-					$uuid = $this->fromUID($entry->UID);
-					// evaluate if valid uuid was not found
-					if (empty($uuid)) {
+					// evaluate if standard properties UUID is present
+					if (!empty($entry->UID)) {
+						// extract and validate UUID from standard properties
+						$uuid = $this->fromUID($entry->UID);
+					}
+					// evaluate if valid uuid was not found and extended properties UUID is present
+					if (!isset($uuid) && !empty($entry->ExtendedProperty[0]->Value)) {
 						// extract and validate UUID from extended properties
 						$uuid = $this->fromUID($entry->ExtendedProperty[0]->Value);
 					}
