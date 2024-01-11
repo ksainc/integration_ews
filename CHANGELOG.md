@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.24 - 2024-01-11
+### Additions
+- Implemented delete filter for local collections
+### Modifications
+- Fixed null uuid issue #29
+- Refactored Changes Retrieval
+
 ## 1.0.23 - 2024-01-10
 ### Additions
 - Added combined short and long uuid validation
