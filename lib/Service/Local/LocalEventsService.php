@@ -105,18 +105,25 @@ class LocalEventsService {
 	 * 
 	 * @return array of collections
 	 */
-	public function listCollections(string $uid): array {
+	public function listCollections(string $uid, bool $filterDeleted = false): array {
 
         // retrieve all local collections 
         $collections = $this->DataStore->getCalendarsForUser('principals/users/' . $uid);
 		// construct collections list
 		$data = array();
 		foreach ($collections as $entry) {
-            if (isset($entry['{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set'])) {
-                if (in_array('VEVENT', $entry['{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set']->getValue())) {
-                    $data[] = array('id' => $entry['id'], 'name' => $entry['{DAV:}displayname'], 'uri' => $entry['uri']);
-                }
+            // evaluate if entry is a calendar
+            if (!isset($entry['{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set']) ||
+                !in_array('VEVENT', $entry['{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set']->getValue())) {
+                continue;
             }
+            // evaluate if deleted filter is on, and if calendar is deleted
+            if ($filterDeleted && 
+                isset($entry['{http://nextcloud.com/ns}deleted-at']) && 
+                is_numeric($entry['{http://nextcloud.com/ns}deleted-at'])) {
+                continue;
+            }
+            $data[] = array('id' => $entry['id'], 'name' => $entry['{DAV:}displayname'], 'uri' => $entry['uri']);
 		}
         // return collections list
 		return $data;

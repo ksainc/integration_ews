@@ -608,19 +608,19 @@ class CoreService {
 			// configure contacts service
 			$this->LocalContactsService->configure($Configuration, $this->LocalContactsStore);
 			// retrieve personal collections
-			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid);;
+			$response['ContactCollections'] = $this->LocalContactsService->listCollections($uid, true);
 		}
 		if ($this->ConfigurationService->isCalendarAppAvailable($uid)) {
 			// configure contacts service
 			$this->LocalEventsService->configure($Configuration, $this->LocalEventsStore);
 			// retrieve personal collections
-			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid);
+			$response['EventCollections'] = $this->LocalEventsService->listCollections($uid, true);
 		}
 		if ($this->ConfigurationService->isTasksAppAvailable($uid)) {
 			// configure contacts service
 			$this->LocalTasksService->configure($Configuration, $this->LocalTasksStore);
 			// retrieve personal collections
-			$response['TaskCollections'] = $this->LocalTasksService->listCollections($uid);
+			$response['TaskCollections'] = $this->LocalTasksService->listCollections($uid, true);
 		}
 		// return response
 		return $response;
