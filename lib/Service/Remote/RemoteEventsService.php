@@ -213,8 +213,19 @@ class RemoteEventsService {
 	 */
 	public function fetchCollectionChanges(string $cid, string $state, string $scheme = 'I'): ?object {
 
+		// construct additional properties required
+		$properties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
+		$properties->FieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToUnindexedFieldType('calendar:UID');
+		$properties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
+			'PublicStrings',
+			null,
+			null,
+			'DAV:uid',
+			null,
+			'String'
+		);
         // execute command
-        $cr = $this->RemoteCommonService->fetchFolderChanges($this->DataStore, $cid, $state, false, 512, $scheme);
+        $cr = $this->RemoteCommonService->fetchFolderChanges($this->DataStore, $cid, $state, false, 512, $scheme, $properties);
 		// return response
 		return $cr;
 

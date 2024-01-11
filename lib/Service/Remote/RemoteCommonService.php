@@ -435,10 +435,12 @@ class RemoteCommonService {
 		if ($additional instanceof \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType) {
 			$request->ItemShape->AdditionalProperties = $additional;
 		}
+		/*
 		else {
 			$request->ItemShape->AdditionalProperties = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfPathsToElementType();
 		}
 		// define required essential properties
+		
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			'PublicStrings',
 			null,
@@ -455,7 +457,7 @@ class RemoteCommonService {
 			null,
 			'String'
 		);
-		/*
+		
 		$request->ItemShape->AdditionalProperties->ExtendedFieldURI[] = new \OCA\EWS\Components\EWS\Type\PathToExtendedFieldType(
 			null,
 			null,
