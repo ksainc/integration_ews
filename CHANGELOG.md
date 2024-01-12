@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.25 - 2024-01-11
+### Modifications
+- Added extra spacing in transport log
+- Fixed event changes retrieval bug, when calendar contains non event items
+
 ## 1.0.24 - 2024-01-11
 ### Additions
 - Implemented delete filter for local collections
