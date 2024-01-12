@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.26 - 2024-01-12
+### Modifications
+- Disabled updated of remote DeletedOccurrences property issue #30
+
 ## 1.0.25 - 2024-01-11
 ### Modifications
 - Added extra spacing in transport log
