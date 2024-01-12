@@ -567,6 +567,7 @@ class RemoteTasksService {
 			}
 			// Occurrence Exclusions
 			if (count($so->Occurrence->Excludes) > 0) {
+				/* Issue #30
 				$ro->DeletedOccurrences = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfDeletedOccurrencesType();
 				foreach ($so->Occurrence->Excludes as $entry) {
 					// clone start date
@@ -579,6 +580,7 @@ class RemoteTasksService {
 					);
 					unset($dt);
 				}
+				*/
 			}
 		}
 		

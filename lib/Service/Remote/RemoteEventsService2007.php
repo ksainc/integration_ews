@@ -391,6 +391,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			}
 			// Occurrence Exclusions
 			if (count($so->Occurrence->Excludes) > 0) {
+				/* Issue #30
 				$ro->DeletedOccurrences = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfDeletedOccurrencesType();
 				foreach ($so->Occurrence->Excludes as $entry) {
 					// clone start date
@@ -403,6 +404,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 					);
 					unset($dt);
 				}
+				*/
 			}
 		}
 		
@@ -735,6 +737,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 
 			// Occurrence Exclusions
 			if (count($so->Occurrence->Excludes) > 0) {
+				/* Issue #30
 				$f = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfDeletedOccurrencesType();
 				foreach ($so->Occurrence->Excludes as $entry) {
 					// clone start date
@@ -748,6 +751,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 					unset($dt);
 				}
 				$rm[] = $this->updateFieldUnindexed('calendar:DeletedOccurrences', 'DeletedOccurrences', $f);
+				*/
 			}
 		}
 		else {
