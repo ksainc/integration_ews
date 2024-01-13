@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.27 - 2024-01-13
+### Modifications
+- Changed database remote object state field to blob to fix 65K+ character change key issue
+
 ## 1.0.26 - 2024-01-12
 ### Modifications
 - Disabled updated of remote DeletedOccurrences property issue #30
