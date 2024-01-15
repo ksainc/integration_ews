@@ -346,6 +346,12 @@ class CoreService {
 			if ($this->ConfigurationService->retrieveSystemValue('transport_verification') == '0') {
 				$RemoteStore->configureTransportVerification(false);
 			}
+			// retrieve and evaluate transport logging option
+			if ($this->ConfigurationService->retrieveSystemValue('transport_log') == '1') {
+				$path = $this->ConfigurationService->retrieveSystemValue('transport_log_path') . '/' . $uid . '_' . date("Y-m-d_H-i-s") . '_EWS.log';
+				$RemoteStore->configureTransportLogState(true);
+				$RemoteStore->configureTransportLogLocation($path);
+			}
 			// enable transport body retention
 			$RemoteStore->retainTransportResponseBody(true);
 			// retrieve root folder attributes
