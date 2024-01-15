@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.29 - 2024-01-15
+### Additions
+- Improved transport logging to include errors
 
 ## 1.0.28 - 2024-01-14
 ### Modifications
