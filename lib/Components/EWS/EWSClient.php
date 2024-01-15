@@ -329,20 +329,44 @@ class EWSClient extends \SoapClient
         if ($this->_TransportRequestHeaderFlag) { $this->_TransportRequestHeaderData = $header; }
         // evaluate, if we are retaining request body
         if ($this->_TransportRequestBodyFlag) { $this->_TransportRequestBodyData = $request; }
-        // evaluate, if logging is enabled and write to log if enabled
-        if ($this->_TransportLogState) { file_put_contents($this->_TransportLogLocation, PHP_EOL . date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Request' . PHP_EOL . $request . PHP_EOL, FILE_APPEND); }
+        // evaluate, if logging is enabled and write request to log
+        if ($this->_TransportLogState) { 
+            file_put_contents(
+                $this->_TransportLogLocation, 
+                PHP_EOL . date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Request' . PHP_EOL . $request . PHP_EOL, 
+                FILE_APPEND
+            );
+        }
 
         // execute request
         $response = curl_exec($this->_client);
-        // evealuate execution errors
+        // evaluate execution errors
         $code = curl_errno($this->_client);
         if ($code > 0) {
+            // evaluate, if logging is enabled and write error to log
+            if ($this->_TransportLogState) { 
+                file_put_contents(
+                    $this->_TransportLogLocation, 
+                    PHP_EOL . date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Error' . PHP_EOL . curl_error($this->_client) . PHP_EOL . $response . PHP_EOL, 
+                    FILE_APPEND
+                );
+            }
+            // thrown exception
             throw new RuntimeException(curl_error($this->_client), $code);
         }
 
         // evaluate http responses
         $code = (int) curl_getinfo($this->_client, CURLINFO_RESPONSE_CODE);
         if ($code > 400) {
+            // evaluate, if logging is enabled and write error to log
+            if ($this->_TransportLogState) { 
+                file_put_contents(
+                    $this->_TransportLogLocation, 
+                    PHP_EOL . date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Error' . PHP_EOL . $response . PHP_EOL, 
+                    FILE_APPEND
+                );
+            }
+            // thrown exception
             switch ($code) {
                 case 401:
                     throw new RuntimeException('Unauthorized', $code);
@@ -361,13 +385,19 @@ class EWSClient extends \SoapClient
 
         // extract header size
         $header_size = curl_getinfo($this->_client, CURLINFO_HEADER_SIZE);
-        // evaluate, if we are retaining request headers
+        // evaluate, if we are retaining response headers
         if ($this->_TransportRepsonseHeaderFlag) { $this->_TransportRepsonseHeaderData = substr($response, 0, $header_size); }
-        // evaluate, if we are retaining request body
+        // evaluate, if we are retaining response body
         if ($this->_TransportRepsonseBodyFlag) { $this->_TransportRepsonseBodyData = substr($response, $header_size); }
-        // evaluate, if logging is enabled and write to log if enabled
-        if ($this->_TransportLogState) { file_put_contents($this->_TransportLogLocation, PHP_EOL . date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Response' . PHP_EOL . substr($response, $header_size) . PHP_EOL, FILE_APPEND); }
-
+        // evaluate, if logging is enabled and write response body to log
+        if ($this->_TransportLogState) { 
+            file_put_contents(
+                $this->_TransportLogLocation,
+                PHP_EOL . date("Y-m-d H:i:s.").gettimeofday()["usec"] . ' - Response' . PHP_EOL . substr($response, $header_size) . PHP_EOL, 
+                FILE_APPEND
+            ); 
+        }
+        // return response
         return substr($response, $header_size);
     }
 
