@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.31 - 2024-01-19
+### Modifications
+- Improved correlation creation cli command
+
 ## 1.0.30 - 2024-01-18
 ### Additions
 - Implemented correlation creation cli command
