@@ -200,8 +200,8 @@ class Correlate extends Command {
 		if (!empty($remote) || !empty($local)) {
 			$this->preformCorrelationSpecific($uid, $remote, $local, $match, $create);
 		}
-		elseif (empty($remote) && empty($local) && $create === true) {
-			$this->preformCorrelationAll($uid);
+		elseif (empty($remote) && empty($local) && $match === true) {
+			$this->preformCorrelationAny($uid, $create);
 		}
 
 	}
@@ -244,7 +244,7 @@ class Correlate extends Command {
 			$lid = $this->probability($remote, $LocalCollections);
 		}
 
-		// evaluate, if remote collection was not found, local collection was found and abesnt flag was set
+		// evaluate, if remote collection was not found, local collection was found and create flag was set
 		if ($create === true && empty($rid) && !empty($lid)) {
 			// create collection
 			$collection = $this->_RemoteService->createCollection('msgfolderroot', $local, true);
@@ -254,7 +254,7 @@ class Correlate extends Command {
 			}
 		}
 
-		// evaluate, if local collection was not found, remote collection was found and abesnt flag was set
+		// evaluate, if local collection was not found, remote collection was found and create flag was set
 		if ($create === true && empty($lid) && !empty($rid)) {
 			// create collection
 			$collection = $this->_LocalService->createCollection($uid, \OCA\EWS\Utile\UUID::v4(), $remote, true);
@@ -295,19 +295,81 @@ class Correlate extends Command {
 		}
 	}
 
-	private function preformCorrelationAll(string $uid) {
+	private function preformCorrelationAny(string $uid, bool $create) {
 
-		
+		// retrieve remote and local collections
+		$RemoteCollections = $this->_RemoteService->listCollections();
+		$LocalCollections = $this->_LocalService->listCollections($uid, true);
+
+		foreach ($RemoteCollections as $entry) {
+			
+			// extract remote id and name
+			$rid = (string) $entry['id'];
+			$rname = (string) $entry['name'];
+			// evaluate if id and name is not empty
+			if (empty($rid) || empty($rname)) {
+				// skip collection
+				continue;
+			}
+			// attempt to match remote collection name to local collection name
+			$lid = $this->probability($rname, $LocalCollections);
+			// evaluate if create flag is false and local id is empty
+			if ($create === false && empty($lid)) {
+				// skip collection
+				continue;
+			}
+			// evaluate if create flag is true and local id is empty
+			elseif ($create === true && empty($lid)) {
+				// create collection
+				$collection = $this->_LocalService->createCollection($uid, \OCA\EWS\Utile\UUID::v4(), $rname, true);
+				// evaluate if collection id exists
+				if (isset($collection->Id)) {
+					$lid = $collection->Id;
+				}
+			}
+
+			// evaluate if remote and local collection id's exist
+			if (!empty($rid) && !empty($lid)) {
+				switch ($this->_Module) {
+					case 'contacts':
+						$this->_CoreService->depositCorrelations(
+							$uid,
+							[['action' => 'C', 'roid' => $rid, 'loid' => $lid]],
+							[],
+							[]
+						);
+						break;
+					case 'events':
+						$this->_CoreService->depositCorrelations(
+							$uid,
+							[],
+							[['action' => 'C', 'roid' => $rid, 'loid' => $lid]],
+							[]
+						);
+						break;
+					case 'tasks':
+						$this->_CoreService->depositCorrelations(
+							$uid,
+							[],
+							[],
+							[['action' => 'C', 'roid' => $rid, 'loid' => $lid]]
+						);
+						break;
+				}
+			}
+
+		}
 
 	}
 
 	private function probability(string $needle, array $stack): string {
 
+		$id = '';
 		$best = 0;
 		$percent = 0;
 		foreach ($stack as $entry) {
 			similar_text($needle, $entry['name'], $percent);
-			if ($percent > $best) {
+			if ($percent > 50 && $percent > $best) {
 				$best = $percent;
 				$id = (string) $entry['id'];
 			}
