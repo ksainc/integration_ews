@@ -254,7 +254,7 @@ class RemoteContactsService {
 					// evaluate if uuid is present
 					if (!empty($entry->ExtendedProperty[0]->Value)) {
                         // validate and normalize uuid
-                        $uuid = UUID::nomalize($entry->ExtendedProperty[0]->Value);
+                        $uuid = UUID::normalize($entry->ExtendedProperty[0]->Value);
                         // evaluate if proper uuid was returned
                         if (!empty($uuid)) {
                             // add item id and uuid to id collection
