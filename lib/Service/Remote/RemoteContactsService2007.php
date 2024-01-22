@@ -38,6 +38,7 @@ use OCA\EWS\Components\EWS\Type\ContactItemType;
 use OCA\EWS\Objects\ContactCollectionObject;
 use OCA\EWS\Objects\ContactObject;
 use OCA\EWS\Objects\ContactAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 class RemoteContactsService2007 extends RemoteContactsService {
 	

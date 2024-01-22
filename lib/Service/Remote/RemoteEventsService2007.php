@@ -37,6 +37,7 @@ use OCA\EWS\Components\EWS\Type\CalendarItemType;
 use OCA\EWS\Objects\EventCollectionObject;
 use OCA\EWS\Objects\EventObject;
 use OCA\EWS\Objects\EventAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 class RemoteEventsService2007 extends RemoteEventsService {
 

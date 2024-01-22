@@ -37,6 +37,7 @@ use OCA\EWS\Components\EWS\Type\TaskType;
 use OCA\EWS\Objects\TaskCollectionObject;
 use OCA\EWS\Objects\TaskObject;
 use OCA\EWS\Objects\TaskAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 class RemoteTasksService2007 extends RemoteTasksService {
 
