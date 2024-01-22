@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.34 - 2024-01-22
+### Modifications
+- Fixed invalid function call issue
+- Fixed spelling mistake issue
+
+## 1.0.33 - 2024-01-22
+### Modifications
+- Fixed missing class reference issue
+
 ## 1.0.32 - 2024-01-22
 ### Modifications
 - Improved local and remote uid and timezone handling
