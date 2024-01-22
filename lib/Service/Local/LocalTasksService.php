@@ -37,6 +37,7 @@ use OCA\EWS\Db\TasksUtile;
 use OCA\EWS\Objects\TaskCollectionObject;
 use OCA\EWS\Objects\TaskObject;
 use OCA\EWS\Objects\TaskAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 use Sabre\VObject\Reader;
 use Sabre\VObject\Component\VTodo;
@@ -348,12 +349,12 @@ class LocalTasksService {
         //evaluate if task object contains uuid
         if (empty($to->UUID)) {
             // generate uuid if missing
-            $to->UUID = \OCA\EWS\Utile\UUID::v4();
+            $to->UUID = UUID::v4();
         }
         // convert task object to vtodo object
         $vt = $this->fromTaskObject($to);
         // generate item id
-        $vtid = \OCA\EWS\Utile\UUID::v4() . '.ics';
+        $vtid = UUID::v4() . '.ics';
         // create item in data store
         $rs = $this->DataStore->createCalendarObject(
             $cid, 
@@ -593,7 +594,7 @@ class LocalTasksService {
 		$to->Origin = 'L';
         // UUID
         if (isset($vo->UID)) {
-            $to->UUID = trim($vo->UID->getValue());
+            $to->UUID = UUID::normalize(trim($vo->UID->getValue()));
         }
         // Creation Date
         if (isset($vo->CREATED)) {

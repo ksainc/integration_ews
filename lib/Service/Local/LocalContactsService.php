@@ -34,6 +34,7 @@ use OCA\EWS\AppInfo\Application;
 use OCA\EWS\Db\ContactsUtile;
 use \OCA\EWS\Objects\ContactCollectionObject;
 use \OCA\EWS\Objects\ContactObject;
+use OCA\EWS\Utile\UUID;
 
 use Sabre\VObject\Reader;
 use Sabre\VObject\Component\VCard;
@@ -265,7 +266,7 @@ class LocalContactsService {
         // convert contact object to vcard object
         $lo = $this->fromContactObject($data);
         // generate item id
-        $loid = \OCA\EWS\Utile\UUID::v4() . '.vcf';
+        $loid = UUID::v4() . '.vcf';
         // create item in data store
         $result = $this->DataStore->createCard($cid, $loid, $lo->serialize());
         // return status object or null
@@ -341,7 +342,7 @@ class LocalContactsService {
 		$co = new ContactObject();
         // UUID
         if (isset($vo->UID)) {
-            $co->UID = $this->sanitizeString($vo->UID->getValue());
+            $co->UID = UUID::normalize(trim($vo->UID->getValue()));
         }
         // Label
         if (isset($vo->FN)) {
@@ -539,7 +540,7 @@ class LocalContactsService {
         if (isset($co->UID)) {
             $vo->UID->setValue($co->UID);
         } else {
-            $vo->UID->setValue(\OCA\EWS\Utile\UUID::v4());
+            $vo->UID->setValue(UUID::v4());
         }
         // Label
         if (isset($co->Label)) {

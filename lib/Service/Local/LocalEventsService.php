@@ -37,6 +37,7 @@ use OCA\EWS\Db\EventsUtile;
 use OCA\EWS\Objects\EventCollectionObject;
 use OCA\EWS\Objects\EventObject;
 use OCA\EWS\Objects\EventAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 use Sabre\VObject\Reader;
 use Sabre\VObject\Component\VEvent;
@@ -347,12 +348,12 @@ class LocalEventsService {
         //evaluate if task object contains uuid
         if (empty($eo->UUID)) {
             // generate uuid if missing
-            $eo->UUID = \OCA\EWS\Utile\UUID::v4();
+            $eo->UUID = UUID::v4();
         }
         // convert event object to vevent object
         $ve = $this->fromEventObject($eo);
         // generate item id
-        $veid = \OCA\EWS\Utile\UUID::v4() . '.ics';
+        $veid = UUID::v4() . '.ics';
         // create item in data store
         $rs = $this->DataStore->createCalendarObject(
             $cid, 
@@ -592,7 +593,7 @@ class LocalEventsService {
 		$eo->Origin = 'L';
         // UUID
         if (isset($vo->UID)) {
-            $eo->UUID = trim($vo->UID->getValue());
+            $eo->UUID = UUID::normalize(trim($vo->UID->getValue()));
         }
         // Creation Date
         if (isset($vo->CREATED)) {
@@ -606,7 +607,7 @@ class LocalEventsService {
         // Starts Time Zone
         if (isset($vo->DTSTART)) {
             if (isset($vo->DTSTART->parameters['TZID'])) {
-                $eo->StartsTZ = new DateTimeZone($vo->DTSTART->parameters['TZID']->getValue());
+                $eo->StartsTZ = $this->fromTimeZone($vo->DTSTART->parameters['TZID']->getValue());
             }
             elseif (str_contains($vo->DTSTART, 'Z')) {
                 $eo->StartsTZ = new DateTimeZone('UTC');
@@ -623,7 +624,7 @@ class LocalEventsService {
         // Ends Time Zone
         if (isset($vo->DTEND)) {
             if (isset($vo->DTEND->parameters['TZID'])) {
-                $eo->EndsTZ = new DateTimeZone($vo->DTEND->parameters['TZID']->getValue());
+                $eo->EndsTZ = $this->fromTimeZone($vo->DTEND->parameters['TZID']->getValue());
             }
             elseif (str_contains($vo->DTSTART, 'Z')) {
                 $eo->EndsTZ = new DateTimeZone('UTC');
@@ -853,7 +854,7 @@ class LocalEventsService {
             if (isset($vo->EXDATE)) {
                 foreach ($vo->EXDATE as $entry) {
                     if (isset($entry->parameters['TZID'])) {
-                        $tz = new DateTimeZone($entry->parameters['TZID']->getValue());
+                        $tz = $this->fromTimeZone($entry->parameters['TZID']->getValue());
                     }
                     elseif (str_contains($entry->getValue(), 'Z')) {
                         $tz = new DateTimeZone('UTC');
@@ -1168,6 +1169,22 @@ class LocalEventsService {
         return $vo;
 
     }
+
+    /**
+     * Converts time zone name string to DateTimeZone object
+     * 
+     * @since Release 1.0.31
+     * 
+     * @param string $zone  ews time zone name
+     * 
+     * @return DateTimeZone valid DateTimeZone object on success, or null on failure
+     */
+	public function fromTimeZone(string $name): ?DateTimeZone {
+		
+		// convert time zone name string to DateTimeZone object	
+		return \OCA\EWS\Utile\TimeZoneEWS::toDateTimeZone($name);
+
+	}
 
     /**
      * convert local frequency to event object occurrence precision

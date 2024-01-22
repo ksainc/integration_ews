@@ -38,6 +38,7 @@ use OCA\EWS\Components\EWS\Type\ContactItemType;
 use OCA\EWS\Objects\ContactCollectionObject;
 use OCA\EWS\Objects\ContactObject;
 use OCA\EWS\Objects\ContactAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 class RemoteContactsService {
 	/**
@@ -250,12 +251,15 @@ class RemoteContactsService {
             // validate response object
             if (isset($ro) && count($ro->Contact) > 0) {
                 foreach ($ro->Contact as $entry) {
-					// evaluate if uuid is valid
-					if (!empty($entry->ExtendedProperty[0]->Value) &&
-                        (\OCA\EWS\Utile\Validator::uuid_long($entry->ExtendedProperty[0]->Value) || 
-                        \OCA\EWS\Utile\Validator::uuid_long($entry->ExtendedProperty[0]->Value))) {
-                        // add item id and uuid to id collection
-                        $data[] = array('ID'=>$entry->ItemId->Id, 'UUID'=>$entry->ExtendedProperty[0]->Value);
+					// evaluate if uuid is present
+					if (!empty($entry->ExtendedProperty[0]->Value)) {
+                        // validate and normalize uuid
+                        $uuid = UUID::nomalize($entry->ExtendedProperty[0]->Value);
+                        // evaluate if proper uuid was returned
+                        if (!empty($uuid)) {
+                            // add item id and uuid to id collection
+                            $data[] = array('ID'=>$entry->ItemId->Id, 'UUID'=>$entry->ExtendedProperty[0]->Value);
+                        }
 					}
                 }
 				// increment offset by count of returned items
@@ -1879,7 +1883,7 @@ class RemoteContactsService {
             foreach ($so->ExtendedProperty as $entry) {
                 switch ($entry->ExtendedFieldURI->PropertyName) {
                     case 'DAV:uid': // UUID
-                        $co->UID = (\OCA\EWS\Utile\Validator::uuid($entry->Value)) ? $entry->Value : null;
+                        $co->UID = UUID::normalize($entry->Value);
                         break;
                 }
                 switch ($entry->ExtendedFieldURI->PropertyTag) {

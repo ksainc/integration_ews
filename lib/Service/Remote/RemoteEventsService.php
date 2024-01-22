@@ -37,6 +37,7 @@ use OCA\EWS\Components\EWS\Type\CalendarItemType;
 use OCA\EWS\Objects\EventCollectionObject;
 use OCA\EWS\Objects\EventObject;
 use OCA\EWS\Objects\EventAttachmentObject;
+use OCA\EWS\Utile\UUID;
 
 class RemoteEventsService {
 	/**
@@ -264,12 +265,12 @@ class RemoteEventsService {
 					// evaluate if standard properties UUID is present
 					if (!empty($entry->UID)) {
 						// extract and validate UUID from standard properties
-						$uuid = $this->fromUID($entry->UID);
+						$uuid = UUID::normalize($entry->UID);
 					}
 					// evaluate if valid uuid was not found and extended properties UUID is present
-					if (!isset($uuid) && !empty($entry->ExtendedProperty[0]->Value)) {
+					if (!empty($uuid) && !empty($entry->ExtendedProperty[0]->Value)) {
 						// extract and validate UUID from extended properties
-						$uuid = $this->fromUID($entry->ExtendedProperty[0]->Value);
+						$uuid = UUID::normalize($entry->ExtendedProperty[0]->Value);
 					}
 					// evaluate if valid uuid exists
                     if (!empty($uuid)) {
@@ -363,7 +364,7 @@ class RemoteEventsService {
         $ro = new CalendarItemType();
 		// UUID
 		if (!empty($so->UUID)) {
-            $ro->UID = $so->UUID;
+            $ro->UID = UUID::convert($so->UUID, UUID::TYPE_MICROSOFT_HEX_SHORT);
 			$ro->ExtendedProperty[] = $this->createFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $so->UUID);
         }
 		// Start Date/Time
@@ -1788,7 +1789,7 @@ class RemoteEventsService {
         }
 		// UUID
 		if (!empty($data->UID)) {
-            $o->UUID = $this->fromUID($data->UID);
+            $o->UUID = UUID::normalize($data->UID);
         }
         // Collection ID
         if (isset($data->ParentFolderId)) {
@@ -2093,80 +2094,6 @@ class RemoteEventsService {
 
 		// convert DateTimeZone object to EWS time zone name
 		return \OCA\EWS\Utile\TimeZoneEWS::fromDateTimeZone($zone);
-
-	}
-
-	/**
-     * Converts remote guid format to local uuid format
-     * 
-     * @since Release 1.0.15
-     * 
-     * @param string $value
-     * 
-     * @return string
-     */
-	public function fromUID(string $value): ?string {
-		
-		//https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-asemail/e7424ddc-dd10-431e-a0b7-5c794863370e
-		//https://docs.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxocal/1d3aac05-a7b9-45cc-a213-47f0a0a2c5c1
-
-		if (strlen($value) == 112 || (strlen($value) == 56 && mb_detect_encoding((string)$value, null, true) === false)) {
-			$value = (strlen($value) == 112) ? substr($value, 80, 32) : substr(bin2hex($value), 80, 32);
-			return (substr($value, 0, 8) . '-' . 
-					substr($value, 8, 4) . '-' .
-					substr($value, 12, 4) . '-' .
-					substr($value, 16, 4) . '-' .
-					substr($value, 20, 12));
-		}
-		elseif (strlen($value) == 91 && mb_detect_encoding((string)$value, null, true) === false) {
-			$value = substr($value, 53, 36);
-			return $value;
-		}
-		elseif (\OCA\EWS\Utile\Validator::uuid_long($value)) {
-			return $value;
-		}
-		elseif (\OCA\EWS\Utile\Validator::uuid_short($value)) {
-			return $value;
-		}
-		return null;
-
-	}
-
-	/**
-     * Converts local uuid format to remote guid format
-     * 
-     * @since Release 1.0.15
-     * 
-     * @param string $value
-     * 
-     * @return string 
-     */ 
-	public function toUID(string $value, string $type = 'SB'): ?string {
-
-		// https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-asemail/e7424ddc-dd10-431e-a0b7-5c794863370e
-		// https://docs.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-oxocal/1d3aac05-a7b9-45cc-a213-47f0a0a2c5c1
-
-		// Blob Id + Instance Date (YYYY-MM-DD) + Creation Stamp (YYYY-MM-DD-HH-MM-SS) + Padding
-		$prefix = '040000008200E00074C5B7101A82E008' . '00000000' . '0000000000000000' . '0000000000000000';
-
-		if ($type == 'SH') {
-			// Prefix + Size + Data
-			return $prefix . '10000000' . strtoupper(str_replace('-', '', $value));
-		}
-		elseif ($type == 'SB') {
-			// Prefix + Size + Data
-			return hex2bin($prefix . '10000000' . strtoupper(str_replace('-', '', $value)));
-		}
-		elseif ($type == 'LH') {
-			// Prefix + Size + Data
-			return $prefix . '33000000' . bin2hex('vCal-Uid') . '01000000' . bin2hex('{' . strtoupper($value) . '}') . '00';
-		}
-		elseif ($type == 'LB') {
-			// Prefix + Size + Data
-			return hex2bin($prefix . '33000000') . 'vCal-Uid' . hex2bin('01000000') . '{' . strtoupper($value) . '}' . hex2bin('00');
-		}
-
-		return null;
 
 	}
 

@@ -149,7 +149,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
         $ro = new CalendarItemType();
 		// UUID
 		if (!empty($so->UUID)) {
-            $ro->UID = $this->toUID($so->UUID, 'SH');
+            $ro->UID = UUID::convert($so->UUID, UUID::TYPE_MICROSOFT_HEX_SHORT);
 			$ro->ExtendedProperty[] = $this->createFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $so->UUID);
         }
 		// Start Date/Time
