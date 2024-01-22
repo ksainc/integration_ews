@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.32 - 2024-01-22
+### Modifications
+- Improved local and remote uid and timezone handling
+
 ## 1.0.31 - 2024-01-19
 ### Modifications
 - Improved correlation creation cli command
