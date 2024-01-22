@@ -450,7 +450,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
         $rd = array();
 		// UUID
         if (!empty($so->UUID)) {
-			$rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', $this->toUID($so->UUID, 'SH'));
+			$rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', UUID::convert($so->UUID, UUID::TYPE_MICROSOFT_HEX_SHORT));
             $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $so->UUID);
         }
         else {
