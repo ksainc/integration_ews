@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.35 - 2024-01-22
+### Modifications
+- Improved excemption handling if a collection is missing
+
 ## 1.0.34 - 2024-01-22
 ### Modifications
 - Fixed invalid function call issue
