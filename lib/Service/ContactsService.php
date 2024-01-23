@@ -142,12 +142,19 @@ class ContactsService {
 			return $statistics;
 		}
 		// delete and skip collection correlation if remote collection is missing
-		$rcollection = $this->RemoteContactsService->fetchCollection($rcid);
-		if (!isset($rcollection) || ($rcollection->Id != $rcid)) {
-			$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
-			$this->CorrelationsService->delete($correlation);
-			$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
-			return $statistics;
+		try {
+			$rcollection = $this->RemoteContactsService->fetchCollection($rcid);
+		} 
+		catch (\Throwable $th) {
+			if (str_contains($th->getMessage(), 'Remote Error: ErrorItemNotFound')) {
+				$this->CorrelationsService->deleteByAffiliationId($this->Configuration->UserId, $caid);
+				$this->CorrelationsService->delete($correlation);
+				$this->logger->debug('EWS - Deleted contacts collection correlation for ' . $this->Configuration->UserId . ' due to missing Remote Collection');
+				return $statistics;
+			}
+			else {
+				throw $th;
+			}
 		}
 		// retrieve list of local changed objects
 		$lCollectionChanges = $this->LocalContactsService->fetchCollectionChanges($correlation->getloid(), (string) $correlation->getlostate());
