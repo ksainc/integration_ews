@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.36 - 2024-01-23
+### Modifications
+- Fixed issue creating and updating recurring events/tasks with no end in remote system
+- Fixed issue creating and updating absolute yearly events/tasks in remote system
+- Fixed issue translating local events to remote events with multiple months (EWS only support a single month)
+- Fixed issue creating and updating events/tasks on remote system due to invalid function call
+
 ## 1.0.35 - 2024-01-22
 ### Modifications
 - Improved excemption handling if a collection is missing

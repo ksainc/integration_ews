@@ -1,7 +1,7 @@
 {
 	"name": "integration_ews",
 	"description": "Exchange EWS Connector (Exchange Web Services)",
-	"version": "1.0.35",
+	"version": "1.0.36",
 	"author": "Sebastian Krupinski <krupinski01@gmail.com> (https://github.com/ksainc/)",
 	"license": "AGPL-3.0",
 	"private": true,
