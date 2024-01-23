@@ -234,6 +234,7 @@ class RemoteTasksService2007 extends RemoteTasksService {
 			// No Iterations And No Conclusion Date
 			if (empty($so->Occurrence->Iterations) && empty($so->Occurrence->Concludes)) {
 				$f->NoEndRecurrence = new \OCA\EWS\Components\EWS\Type\NoEndRecurrenceRangeType();
+				$f->NoEndRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 			}
 
 			// Based on Precision
@@ -291,6 +292,7 @@ class RemoteTasksService2007 extends RemoteTasksService {
 			elseif ($so->Occurrence->Precision == 'Y') {
 				if ($so->Occurrence->Pattern == 'A') {
 					$f->AbsoluteYearlyRecurrence = new \OCA\EWS\Components\EWS\Type\AbsoluteYearlyRecurrencePatternType();
+					// evaluate if occurance interval has a value
 					if (!empty($so->Occurrence->Interval)) {
 						$f->AbsoluteYearlyRecurrence->Interval = $so->Occurrence->Interval;
 					}
@@ -298,7 +300,13 @@ class RemoteTasksService2007 extends RemoteTasksService {
 						$f->AbsoluteYearlyRecurrence->Interval = '1';
 					}
 					$f->AbsoluteYearlyRecurrence->Month = $this->toMonthOfYear($so->Occurrence->OnMonthOfYear);
-					$f->AbsoluteYearlyRecurrence->DayOfMonth = $this->toDaysOfMonth($so->Occurrence->OnDayOfMonth);
+					// evaluate if day of month has a value
+					if (!empty($so->Occurrence->OnDayOfMonth)) {
+						$f->AbsoluteYearlyRecurrence->DayOfMonth = $this->toDaysOfMonth($so->Occurrence->OnDayOfMonth);
+					}
+					else {
+						$f->AbsoluteYearlyRecurrence->DayOfMonth = $so->StartsOn->format('d');
+					}
 				}
 				elseif ($so->Occurrence->Pattern == 'R') {
 					$f->RelativeYearlyRecurrence = new \OCA\EWS\Components\EWS\Type\RelativeYearlyRecurrencePatternType();

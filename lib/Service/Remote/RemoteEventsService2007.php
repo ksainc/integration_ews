@@ -304,6 +304,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			// No Iterations And No Conclusion Date
 			if (empty($so->Occurrence->Iterations) && empty($so->Occurrence->Concludes)) {
 				$ro->Recurrence->NoEndRecurrence = new \OCA\EWS\Components\EWS\Type\NoEndRecurrenceRangeType();
+				$ro->Recurrence->NoEndRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 			}
 
 			// Based on Precision
@@ -362,6 +363,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			elseif ($so->Occurrence->Precision == 'Y') {
 				if ($so->Occurrence->Pattern == 'A') {
 					$ro->Recurrence->AbsoluteYearlyRecurrence = new \OCA\EWS\Components\EWS\Type\AbsoluteYearlyRecurrencePatternType();
+					// evaluate if occurance interval has a value
 					if (!empty($so->Occurrence->Interval)) {
 						$ro->Recurrence->AbsoluteYearlyRecurrence->Interval = $so->Occurrence->Interval;
 					}
@@ -369,7 +371,13 @@ class RemoteEventsService2007 extends RemoteEventsService {
 						$ro->Recurrence->AbsoluteYearlyRecurrence->Interval = '1';
 					}
 					$ro->Recurrence->AbsoluteYearlyRecurrence->Month = $this->toMonthOfYear($so->Occurrence->OnMonthOfYear);
-					$ro->Recurrence->AbsoluteYearlyRecurrence->DayOfMonth = $this->toDaysOfMonth($so->Occurrence->OnDayOfMonth);
+					// evaluate if day of month has a value
+					if (!empty($so->Occurrence->OnDayOfMonth)) {
+						$ro->Recurrence->AbsoluteYearlyRecurrence->DayOfMonth = $this->toDaysOfMonth($so->Occurrence->OnDayOfMonth);
+					}
+					else {
+						$ro->Recurrence->AbsoluteYearlyRecurrence->DayOfMonth = $so->StartsOn->format('d');
+					}
 				}
 				elseif ($so->Occurrence->Pattern == 'R') {
 					$ro->Recurrence->RelativeYearlyRecurrence = new \OCA\EWS\Components\EWS\Type\RelativeYearlyRecurrencePatternType();
@@ -649,6 +657,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			// No Iterations And No Conclusion Date
 			if (empty($so->Occurrence->Iterations) && empty($so->Occurrence->Concludes)) {
 				$f->NoEndRecurrence = new \OCA\EWS\Components\EWS\Type\NoEndRecurrenceRangeType();
+				$f->NoEndRecurrence->StartDate = $so->StartsOn->format('Y-m-d');
 			}
 
 			// Based on Precision
@@ -705,6 +714,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 			elseif ($so->Occurrence->Precision == 'Y') {
 				if ($so->Occurrence->Pattern == 'A') {
 					$f->AbsoluteYearlyRecurrence = new \OCA\EWS\Components\EWS\Type\AbsoluteYearlyRecurrencePatternType();
+					// evaluate if occurance interval has a value
 					if (!empty($so->Occurrence->Interval)) {
 						$f->AbsoluteYearlyRecurrence->Interval = $so->Occurrence->Interval;
 					}
@@ -712,7 +722,13 @@ class RemoteEventsService2007 extends RemoteEventsService {
 						$f->AbsoluteYearlyRecurrence->Interval = '1';
 					}
 					$f->AbsoluteYearlyRecurrence->Month = $this->toMonthOfYear($so->Occurrence->OnMonthOfYear);
-					$f->AbsoluteYearlyRecurrence->DayOfMonth = $this->toDaysOfMonth($so->Occurrence->OnDayOfMonth);
+					// evaluate if day of month has a value
+					if (!empty($so->Occurrence->OnDayOfMonth)) {
+						$f->AbsoluteYearlyRecurrence->DayOfMonth = $this->toDaysOfMonth($so->Occurrence->OnDayOfMonth);
+					}
+					else {
+						$f->AbsoluteYearlyRecurrence->DayOfMonth = $so->StartsOn->format('d');
+					}
 				}
 				elseif ($so->Occurrence->Pattern == 'R') {
 					$f->RelativeYearlyRecurrence = new \OCA\EWS\Components\EWS\Type\RelativeYearlyRecurrencePatternType();
@@ -795,7 +811,7 @@ class RemoteEventsService2007 extends RemoteEventsService {
 		// request modifications array
         $rm = array();
         // construct update command object
-        $rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', $this->toUID($uuid, 'SH'));
+        $rm[] = $this->updateFieldUnindexed('calendar:UID', 'UID', UUID::convert($uuid, UUID::TYPE_MICROSOFT_HEX_SHORT));
         $rm[] = $this->updateFieldExtendedByName('PublicStrings', 'DAV:uid', 'String', $uuid);
         // execute request
         $rs = $this->RemoteCommonService->updateItem($this->DataStore, $cid, $iid, $istate, null, $rm, null);
