@@ -483,6 +483,12 @@ class RemoteEventsService {
 		// Attendee(s)
 		if (count($so->Attendee) > 0) {
             foreach ($so->Attendee as $entry) {
+				// evaluate if email address is empty
+				if (empty($entry->Address)) {
+					// skip attendee if address is empty
+					continue;
+				}
+				// evaluate if type is optional
 				if ($entry->Type == 'O') {
 					if (!isset($ro->OptionalAttendees)) {$ro->OptionalAttendees = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfAttendeesType;}
 						$ro->OptionalAttendees->Attendee[] = new \OCA\EWS\Components\EWS\Type\AttendeeType(
@@ -857,6 +863,12 @@ class RemoteEventsService {
 		// Attendee(s)
 		if (count($so->Attendee) > 0) {
 			foreach ($so->Attendee as $entry) {
+				// evaluate if email address is empty
+				if (empty($entry->Address)) {
+					// skip attendee if address is empty
+					continue;
+				}
+				// evaluate if type is optional
 				if ($entry->Type == 'O') {
 					if (!isset($oa)) {$oa = new \OCA\EWS\Components\EWS\ArrayType\NonEmptyArrayOfAttendeesType;}
 						$oa->Attendee[] = new \OCA\EWS\Components\EWS\Type\AttendeeType(
