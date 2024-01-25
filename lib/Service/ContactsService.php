@@ -343,10 +343,17 @@ class ContactsService {
 			return $status;
 		}
 		// if correlation exists, try to retrieve remote object
-		if ($ci instanceof \OCA\EWS\Db\Correlation && 
-			!empty($ci->getroid())) {		
-			// retrieve remote contact object	
-			$ro = $this->RemoteContactsService->fetchCollectionItem($ci->getroid());
+		if ($ci instanceof \OCA\EWS\Db\Correlation && !empty($ci->getroid())) {
+			try {
+				// retrieve remote contact object	
+				$ro = $this->RemoteContactsService->fetchCollectionItem($ci->getroid());
+			}
+			catch (\Throwable $th) {
+				// evaluate if error is NOT an item not found error
+				if (!str_contains($th->getMessage(), 'Remote Error: ErrorItemNotFound')) {
+					throw $th;
+				}
+			}
 		}
 		// if remote object retrieve failed, try to retrieve remote object by UUID
 		if (!isset($ro) && !empty($lo->UID)) {
@@ -529,8 +536,16 @@ class ContactsService {
 		$ro = null;
 		// create/reset local object place holder
 		$lo = null;
-		// retrieve remote contact object
-		$ro = $this->RemoteContactsService->fetchCollectionItem($roid);
+		try {
+			// retrieve remote contact object
+			$ro = $this->RemoteContactsService->fetchCollectionItem($roid);
+		}
+		catch (\Throwable $th) {
+			// evaluate if error is NOT an item not found error
+			if (!str_contains($th->getMessage(), 'Remote Error: ErrorItemNotFound')) {
+				throw $th;
+			}
+		}
 		// evaluate, if remote contact object was returned
 		if (!($ro instanceof \OCA\EWS\Objects\ContactObject)) {
 			// return status of action

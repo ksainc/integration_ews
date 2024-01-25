@@ -350,10 +350,17 @@ class EventsService {
 			return $status;
 		}
 		// if correlation exists, try to retrieve remote object
-		if ($ci instanceof \OCA\EWS\Db\Correlation && 
-			!empty($ci->getroid())) {
-			// retrieve remote event object
-			$ro = $this->RemoteEventsService->fetchCollectionItem($ci->getroid());
+		if ($ci instanceof \OCA\EWS\Db\Correlation && !empty($ci->getroid())) {
+			try {
+				// retrieve remote event object
+				$ro = $this->RemoteEventsService->fetchCollectionItem($ci->getroid());
+			}
+			catch (\Throwable $th) {
+				// evaluate if error is NOT an item not found error
+				if (!str_contains($th->getMessage(), 'Remote Error: ErrorItemNotFound')) {
+					throw $th;
+				}
+			}
 		}
 		// if remote object retrieve failed, try to retrieve remote object by UUID
 		if (!isset($ro) && !empty($lo->UUID)) {
@@ -536,8 +543,16 @@ class EventsService {
 		$ro = null;
 		// create/reset local object place holder
 		$lo = null;
-		// retrieve remote event object
-		$ro = $this->RemoteEventsService->fetchCollectionItem($roid);
+		try {
+			// retrieve remote event object
+			$ro = $this->RemoteEventsService->fetchCollectionItem($roid);
+		}
+		catch (\Throwable $th) {
+			// evaluate if error is NOT an item not found error
+			if (!str_contains($th->getMessage(), 'Remote Error: ErrorItemNotFound')) {
+				throw $th;
+			}
+		}
 		// evaluate, if remote event object was returned
 		if (!($ro instanceof \OCA\EWS\Objects\EventObject)) {
 			// return status of action
