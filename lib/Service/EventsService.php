@@ -493,8 +493,16 @@ class EventsService {
 		$ci = $this->CorrelationsService->findByLocalId($uid, 'EO', $loid, $lcid);
 		// evaluate correlation object
 		if ($ci instanceof \OCA\EWS\Db\Correlation) {
-			// destroy remote object
-			$rs = $this->RemoteEventsService->deleteCollectionItem($ci->getroid());
+			try {
+				// destroy remote object
+				$rs = $this->RemoteEventsService->deleteCollectionItem($ci->getroid());
+			}
+			catch (\Throwable $th) {
+				// evaluate if error is NOT an item not found error
+				if (!str_contains($th->getMessage(), 'Remote Error: ErrorItemNotFound')) {
+					throw $th;
+				}
+			}
 			// destroy correlation
 			$this->CorrelationsService->delete($ci);
 			// return status of action
