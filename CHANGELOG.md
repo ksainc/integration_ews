@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.37 - 2024-01-25
+### Modifications
+- Improved handling of missing remote items during remote fetch
+- Improved handling of missing remote items during remote delete
+- Fixed issue with remote create and update due to blank attendee email
+
 ## 1.0.36 - 2024-01-23
 ### Modifications
 - Fixed issue creating and updating recurring events/tasks with no end in remote system
