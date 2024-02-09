@@ -132,7 +132,6 @@ appstore:
 	composer install --no-dev
 	rsync -a --delete \
 	--include=/CHANGELOG.md \
-	--include=/README.md \
 	--include=/AUTHORS.md \
 	--include=/COPYING \
 	--include=/LICENSE \
