@@ -2,25 +2,27 @@
 
 EWS (Exchange Web Services) integration allows you to automatically bidirectionally synchronize your Nextcloud calendars and contacts with an external EWS protocol capable system like Microsoft Exchange, Kerio Connect, etc
 
-![EWS Connector](https://github.com/ksainc/integration_ews/blob/62a4ae5081526009e310ea9e9734809a769697cf/img/EWS%20Notification%20Screen.png?raw=true 'Notifications')
+![EWS Connector](docs/images/EWS%20Notification%20Screen.png 'Notifications')
 
 ## How to use
 
 Before proceeding further please make sure you read the following sections, Requirements, Installation, Capabilities and Limitations.
 
-After the app is installed and enabled in Nextcloud you should have a new section call "Connected Accounts" under "Personal Settings", if you don't see it refresh the browser window.
+After the app is installed and enabled in Nextcloud you should have a new section called "Connected Accounts" under "Personal Settings", if you don't see it refresh the browser window.
 
-![EWS Connector](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Initial%20Screen.png?raw=true 'Initial Configuration')
+![EWS Connector](docs/images/EWS%20Initial%20Screen.png 'Initial Configuration')
 
-On the initial screen you will be asked for the account information (hostname, username, password) for the remote system. After filling in the required information, press the "Connect" button. The app will then attempt an initial connection to the remote system, if successful, it will retrieve a list of all available calendars and contacts folders from the remote system, and display them below the authentication section.
+### On-premises / Self-Hosted Exchange
+On the initial screen you will be asked for the account information hostname (formats IP/domain), username (formats "user@domain.local" or "domain\username"), password for the remote system. After filling in the required information, press the "Connect" button. The app will then attempt an initial connection to the remote system, if successful, it will retrieve a list of all available contacts, calendar and task folders from the remote system, and display them below the authentication section.
 
-![EWS Connector](https://github.com/ksainc/integration_ews/blob/969e0f6a2bfe28e4197c0cc941333a43fce25b5c/img/EWS%20Connected%20Screen.png?raw=true 'Correlation Configuration')
+### Exchange 365
+To connect to a Office 365 Account the system administrator for your organization needs to pre-setup the appropriate settings in both the Office 365 control panel and Nextcloud. Please see [Microsoft Exchange 365 Configuration](docs/o365.md)
 
-Once your accounts is connected and the remote calendars and contacts folders are listed similar to the image above. The next step is to create some correlations (associations/relations/links) between the local and remote, calendar or contacts collections by clicking the link icon beside the remote collection name and selecting the local calendar or contacts address book to associate with and click save. PLEASE READ THE WARNING BELOW BEFORE CLICK SAVE
+After the above inital configuration has been completed. On the initial configuration screen change the provider to "Microsoft Exchange 365". Then press the connect button, a popup will appear asking for your account information, upon successful authentication the app will then attempt an initial connection to the remote system, if successful, it will retrieve a list of all available contacts, calendar and task folders from the remote system, and display them below the authentication section.
 
-##### WARNING
+![EWS Connector](docs/images/EWS%20Connected%20Screen.png 'Correlation Configuration')
 
-This is an initial alpha release. Although the app has been thoroughly tested in our environment with live data, we recommend creating a new address book and calendar in both the local and remote systems and linking them together first. Testing the functionality then once satisfied with the results, unlink the test address books/calendars and linking to your live data.
+Once your accounts is connected and the remote calendars and contacts folders are listed, similar to the image above. The next step is to create some correlations (associations/relations/links) between the local and remote, contacts, calendar or task collections by clicking the link icon beside the remote collection name and selecting the local addressbook, calendar or tasks list to associate with and click save.
 
 ## How it works
 
