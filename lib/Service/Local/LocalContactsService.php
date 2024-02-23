@@ -500,9 +500,12 @@ class LocalContactsService {
         // Tag(s)
         if (isset($vo->CATEGORIES)) {
             foreach($vo->CATEGORIES->getParts() as $entry) {
-                $co->addTag(
-                    $this->sanitizeString($entry)
-                );
+                // evaluate if tag is NOT empty
+                if (!empty($entry)) {
+                    $co->addTag(
+                        $this->sanitizeString($entry)
+                    );
+                }
             }
         }
         // Notes
