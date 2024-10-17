@@ -27,7 +27,7 @@
         <command>kill</command>
         <lib>curl</lib>
         <lib>soap</lib>
-        <nextcloud min-version="26" max-version="28"/>
+        <nextcloud min-version="26" max-version="29"/>
     </dependencies>
     <commands>
 		<command>OCA\EWS\Commands\Connect</command>
